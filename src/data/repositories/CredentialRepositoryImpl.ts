@@ -1,0 +1,208 @@
+/**
+ * Credential Repository Implementation
+ * Implements ICredentialRepository with encrypted storage
+ */
+
+import { ICredentialRepository } from '@/domain/repositories/ICredentialRepository';
+import { Credential, CredentialInput } from '@/domain/entities/Credential';
+import { db, type StoredCredential } from '../storage/database';
+import { encrypt, decrypt } from '@/core/crypto/encryption';
+import { analyzePasswordStrength } from '@/core/crypto/password';
+
+export class CredentialRepository implements ICredentialRepository {
+  async create(input: CredentialInput, encryptionKey: CryptoKey): Promise<Credential> {
+    // Encrypt the password
+    const encryptedPassword = await encrypt(input.password, encryptionKey);
+
+    const credential: StoredCredential = {
+      id: crypto.randomUUID(),
+      title: input.title,
+      username: input.username,
+      encryptedPassword: JSON.stringify(encryptedPassword),
+      url: input.url ?? undefined,
+      notes: input.notes ?? undefined,
+      category: input.category,
+      tags: input.tags || [],
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      isFavorite: false,
+      securityScore: analyzePasswordStrength(input.password).score,
+    };
+
+    await db.credentials.add(credential);
+
+    return this.mapToDomain(credential);
+  }
+
+  async findById(id: string, _decryptionKey: CryptoKey): Promise<Credential | null> {
+    const stored = await db.credentials.get(id);
+    if (!stored) {
+      return null;
+    }
+
+    return this.mapToDomain(stored);
+  }
+
+  async findAll(_decryptionKey: CryptoKey): Promise<Credential[]> {
+    const storedCredentials = await db.credentials.toArray();
+    return storedCredentials.map((c) => this.mapToDomain(c));
+  }
+
+  async update(
+    id: string,
+    input: Partial<CredentialInput>,
+    encryptionKey: CryptoKey
+  ): Promise<Credential> {
+    const existing = await db.credentials.get(id);
+    if (!existing) {
+      throw new Error('Credential not found');
+    }
+
+    const updates: Partial<StoredCredential> = {
+      updatedAt: Date.now(),
+    };
+
+    if (input.title) updates.title = input.title;
+    if (input.username) updates.username = input.username;
+    if (input.url !== undefined) updates.url = input.url;
+    if (input.notes !== undefined) updates.notes = input.notes;
+    if (input.category) updates.category = input.category;
+    if (input.tags) updates.tags = input.tags;
+
+    if (input.password) {
+      const encryptedPassword = await encrypt(input.password, encryptionKey);
+      updates.encryptedPassword = JSON.stringify(encryptedPassword);
+      updates.securityScore = analyzePasswordStrength(input.password).score;
+    }
+
+    await db.credentials.update(id, updates);
+
+    const updated = await db.credentials.get(id);
+    return this.mapToDomain(updated!);
+  }
+
+  async delete(id: string): Promise<void> {
+    await db.credentials.delete(id);
+  }
+
+  async search(query: string, _decryptionKey: CryptoKey): Promise<Credential[]> {
+    const lowerQuery = query.toLowerCase();
+    const allCredentials = await db.credentials.toArray();
+
+    const filtered = allCredentials.filter(
+      (c) =>
+        c.title.toLowerCase().includes(lowerQuery) ||
+        c.username.toLowerCase().includes(lowerQuery) ||
+        c.url?.toLowerCase().includes(lowerQuery) ||
+        c.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
+    );
+
+    return filtered.map((c) => this.mapToDomain(c));
+  }
+
+  async findByCategory(category: string, _decryptionKey: CryptoKey): Promise<Credential[]> {
+    const credentials = await db.credentials.where('category').equals(category).toArray();
+    return credentials.map((c) => this.mapToDomain(c));
+  }
+
+  async findFavorites(_decryptionKey: CryptoKey): Promise<Credential[]> {
+    const credentials = await db.credentials.where('isFavorite').equals(1).toArray();
+    return credentials.map((c) => this.mapToDomain(c));
+  }
+
+  async exportAll(decryptionKey: CryptoKey): Promise<string> {
+    const credentials = await db.credentials.toArray();
+    
+    // Decrypt passwords for export
+    const decrypted = await Promise.all(
+      credentials.map(async (c) => {
+        try {
+          const encData = JSON.parse(c.encryptedPassword);
+          const password = await decrypt(encData, decryptionKey);
+          return {
+            ...c,
+            password, // Include plain password for export
+            encryptedPassword: undefined,
+          };
+        } catch {
+          return {
+            ...c,
+            password: '[DECRYPTION_FAILED]',
+            encryptedPassword: undefined,
+          };
+        }
+      })
+    );
+
+    return JSON.stringify(decrypted, null, 2);
+  }
+
+  async importFromJson(data: string, encryptionKey: CryptoKey): Promise<number> {
+    try {
+      const parsed = JSON.parse(data) as Array<
+        Omit<StoredCredential, 'encryptedPassword'> & { password: string }
+      >;
+
+      let imported = 0;
+      for (const item of parsed) {
+        try {
+          await this.create(
+            {
+              title: item.title,
+              username: item.username,
+              password: item.password,
+              url: item.url ?? undefined,
+              notes: item.notes ?? undefined,
+              category: item.category,
+              tags: item.tags,
+            },
+            encryptionKey
+          );
+          imported++;
+        } catch (error) {
+          console.error('Failed to import credential:', error);
+        }
+      }
+
+      return imported;
+    } catch (error) {
+      console.error('Failed to parse import data:', error);
+      throw new Error('Invalid import data format');
+    }
+  }
+
+  async updateAccessTime(id: string): Promise<void> {
+    await db.credentials.update(id, { lastAccessedAt: Date.now() });
+  }
+
+  async analyzeSecurityScore(id: string, decryptionKey: CryptoKey): Promise<number> {
+    const credential = await db.credentials.get(id);
+    if (!credential) {
+      throw new Error('Credential not found');
+    }
+
+    try {
+      const encData = JSON.parse(credential.encryptedPassword);
+      const password = await decrypt(encData, decryptionKey);
+      const analysis = analyzePasswordStrength(password);
+      
+      // Update the security score
+      await db.credentials.update(id, { securityScore: analysis.score });
+      
+      return analysis.score;
+    } catch {
+      return 0;
+    }
+  }
+
+  private mapToDomain(stored: StoredCredential): Credential {
+    return {
+      ...stored,
+      createdAt: new Date(stored.createdAt),
+      updatedAt: new Date(stored.updatedAt),
+      lastAccessedAt: stored.lastAccessedAt ? new Date(stored.lastAccessedAt) : undefined,
+    };
+  }
+}
+
+export const credentialRepository = new CredentialRepository();
