@@ -125,7 +125,7 @@ export default defineConfig({
         "default-src 'self'",
         "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src 'self' https://fonts.gstatic.com",
+        "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai",
         "img-src 'self' data: blob:",
         "connect-src 'self'",
         "frame-ancestors 'none'",

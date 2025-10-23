@@ -20,8 +20,30 @@ import { Box, CircularProgress } from '@mui/material';
 import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
 import ClipboardNotification from './components/ClipboardNotification';
 
+// Protected route wrapper
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLocked } = useAuthStore();
+  
+  if (!isAuthenticated || isLocked) {
+    return <Navigate to="/signin" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
+// Public route wrapper (redirects to dashboard if already authenticated)
+function PublicRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated } = useAuthStore();
+  
+  if (isAuthenticated) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return <>{children}</>;
+}
+
 function AppRoutes() {
-  const { isAuthenticated, isLocked, user } = useAuthStore();
+  const { user } = useAuthStore();
 
   // Setup auto-lock with user's security settings (must be inside BrowserRouter)
   const autoLockConfig = getDefaultAutoLockConfig(user?.securitySettings?.sessionTimeoutMinutes);
@@ -33,24 +55,30 @@ function AppRoutes() {
         {/* Signin route */}
         <Route
           path="/signin"
-          element={!isAuthenticated ? <SigninPage /> : <Navigate to="/dashboard" replace />}
+          element={
+            <PublicRoute>
+              <SigninPage />
+            </PublicRoute>
+          }
         />
 
         {/* Signup route */}
         <Route
           path="/signup"
-          element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" replace />}
+          element={
+            <PublicRoute>
+              <SignupPage />
+            </PublicRoute>
+          }
         />
 
         {/* Dashboard route */}
         <Route
           path="/dashboard"
           element={
-            isAuthenticated && !isLocked ? (
+            <ProtectedRoute>
               <DashboardPage />
-            ) : (
-              <Navigate to="/signin" replace />
-            )
+            </ProtectedRoute>
           }
         />
 
@@ -58,11 +86,9 @@ function AppRoutes() {
         <Route
           path="/credentials/add"
           element={
-            isAuthenticated && !isLocked ? (
+            <ProtectedRoute>
               <AddCredentialPage />
-            ) : (
-              <Navigate to="/signin" replace />
-            )
+            </ProtectedRoute>
           }
         />
 
@@ -70,11 +96,9 @@ function AppRoutes() {
         <Route
           path="/credentials/:id/edit"
           element={
-            isAuthenticated && !isLocked ? (
+            <ProtectedRoute>
               <EditCredentialPage />
-            ) : (
-              <Navigate to="/signin" replace />
-            )
+            </ProtectedRoute>
           }
         />
 
@@ -82,11 +106,9 @@ function AppRoutes() {
         <Route
           path="/settings"
           element={
-            isAuthenticated && !isLocked ? (
+            <ProtectedRoute>
               <SettingsPage />
-            ) : (
-              <Navigate to="/signin" replace />
-            )
+            </ProtectedRoute>
           }
         />
 
