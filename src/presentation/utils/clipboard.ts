@@ -1,7 +1,14 @@
 /**
  * Clipboard Utilities
  * Secure clipboard operations with auto-clear functionality
+ * Enhanced with SecureClipboardManager for countdown notifications
  */
+
+/**
+ * Clipboard event callback types
+ */
+export type ClipboardCountdownCallback = (remaining: number) => void;
+export type ClipboardClearCallback = () => void;
 
 /**
  * Copy text to clipboard with auto-clear after specified duration
@@ -147,3 +154,154 @@ export function formatRemainingTime(seconds: number): string {
 
   return `${minutes}m ${remainingSeconds}s`;
 }
+
+/**
+ * Secure Clipboard Manager
+ * Manages clipboard operations with auto-clear timers and countdown notifications
+ */
+export class SecureClipboardManager {
+  private clearTimer: NodeJS.Timeout | null = null;
+  private countdownTimer: NodeJS.Timeout | null = null;
+  private copiedText: string = '';
+  private remaining: number = 0;
+  private onCountdownCallback: ClipboardCountdownCallback | null = null;
+  private onClearCallback: ClipboardClearCallback | null = null;
+
+  /**
+   * Copy text to clipboard with optional auto-clear
+   * @param text - Text to copy
+   * @param isSensitive - Whether this is sensitive data (passwords, etc.)
+   * @param clearAfterSeconds - Duration before clearing (0 = no auto-clear)
+   * @returns Promise that resolves to true if successful
+   */
+  async copy(
+    text: string,
+    isSensitive: boolean = false,
+    clearAfterSeconds: number = 30
+  ): Promise<boolean> {
+    try {
+      // Cancel any existing timers
+      this.cancelTimers();
+
+      // Copy to clipboard
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(text);
+      } else {
+        const success = fallbackCopyToClipboard(text);
+        if (!success) return false;
+      }
+
+      // Store copied text for verification
+      this.copiedText = text;
+
+      // Start auto-clear timer if sensitive and clearAfterSeconds > 0
+      if (isSensitive && clearAfterSeconds > 0) {
+        this.startClearTimer(clearAfterSeconds);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Failed to copy to clipboard:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Start the auto-clear timer with countdown
+   */
+  private startClearTimer(seconds: number): void {
+    this.remaining = seconds;
+
+    // Notify initial countdown
+    this.onCountdownCallback?.(this.remaining);
+
+    // Start countdown timer (updates every second)
+    this.countdownTimer = setInterval(() => {
+      this.remaining--;
+      this.onCountdownCallback?.(this.remaining);
+
+      if (this.remaining <= 0) {
+        this.clearClipboard();
+      }
+    }, 1000);
+
+    // Failsafe: clear after exact duration
+    this.clearTimer = setTimeout(() => {
+      this.clearClipboard();
+    }, seconds * 1000);
+  }
+
+  /**
+   * Clear the clipboard
+   */
+  private async clearClipboard(): Promise<void> {
+    try {
+      // Only clear if clipboard still contains our text
+      if (navigator.clipboard && navigator.clipboard.readText) {
+        const current = await navigator.clipboard.readText();
+        if (current === this.copiedText) {
+          await navigator.clipboard.writeText('');
+        }
+      } else {
+        // Fallback: just clear regardless
+        await navigator.clipboard.writeText('');
+      }
+    } catch (error) {
+      console.debug('Could not clear clipboard:', error);
+    }
+
+    this.cancelTimers();
+    this.onClearCallback?.();
+  }
+
+  /**
+   * Cancel all active timers
+   */
+  cancelTimers(): void {
+    if (this.clearTimer) {
+      clearTimeout(this.clearTimer);
+      this.clearTimer = null;
+    }
+
+    if (this.countdownTimer) {
+      clearInterval(this.countdownTimer);
+      this.countdownTimer = null;
+    }
+
+    this.remaining = 0;
+    this.copiedText = '';
+  }
+
+  /**
+   * Set countdown callback
+   */
+  onCountdown(callback: ClipboardCountdownCallback): void {
+    this.onCountdownCallback = callback;
+  }
+
+  /**
+   * Set clear callback
+   */
+  onClear(callback: ClipboardClearCallback): void {
+    this.onClearCallback = callback;
+  }
+
+  /**
+   * Get remaining time
+   */
+  getRemaining(): number {
+    return this.remaining;
+  }
+
+  /**
+   * Check if there's an active timer
+   */
+  isActive(): boolean {
+    return this.clearTimer !== null;
+  }
+}
+
+/**
+ * Singleton instance of SecureClipboardManager
+ */
+export const clipboardManager = new SecureClipboardManager();

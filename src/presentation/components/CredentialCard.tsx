@@ -37,7 +37,7 @@ import {
   Code,
 } from '@mui/icons-material';
 import type { Credential } from '@/domain/entities/Credential';
-import { copyUsername, copyPassword } from '@/presentation/utils/clipboard';
+import { clipboardManager } from '@/presentation/utils/clipboard';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
 import TotpDisplay from './TotpDisplay';
 
@@ -60,7 +60,7 @@ export default function CredentialCard({
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const handleCopyUsername = async () => {
-    const success = await copyUsername(credential.username);
+    const success = await clipboardManager.copy(credential.username, false, 0);
     if (success) {
       onCopySuccess(`Username copied: ${credential.username}`);
     } else {
@@ -69,9 +69,9 @@ export default function CredentialCard({
   };
 
   const handleCopyPassword = async () => {
-    const success = await copyPassword(credential.password, 30);
+    const success = await clipboardManager.copy(credential.password, true, 30);
     if (success) {
-      onCopySuccess('Password copied! Will auto-clear in 30 seconds');
+      onCopySuccess('Password copied! Auto-clearing in 30 seconds');
     } else {
       onCopySuccess('Failed to copy password');
     }
