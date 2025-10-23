@@ -13,6 +13,7 @@ import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
 import AddCredentialPage from './pages/AddCredentialPage';
 import EditCredentialPage from './pages/EditCredentialPage';
+import SettingsPage from './pages/SettingsPage';
 import { useEffect, useState } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
@@ -71,6 +72,18 @@ function AppRoutes() {
           element={
             isAuthenticated && !isLocked ? (
               <EditCredentialPage />
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
+        />
+
+        {/* Settings route */}
+        <Route
+          path="/settings"
+          element={
+            isAuthenticated && !isLocked ? (
+              <SettingsPage />
             ) : (
               <Navigate to="/signin" replace />
             )

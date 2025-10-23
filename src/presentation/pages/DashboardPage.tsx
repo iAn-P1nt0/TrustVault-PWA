@@ -258,6 +258,17 @@ export default function DashboardPage() {
             open={Boolean(menuAnchor)}
             onClose={() => setMenuAnchor(null)}
           >
+            <MenuItem
+              onClick={() => {
+                setMenuAnchor(null);
+                navigate('/settings');
+              }}
+            >
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              Settings
+            </MenuItem>
             <MenuItem onClick={handleLogout}>
               <ListItemIcon>
                 <LogoutIcon />
@@ -303,7 +314,7 @@ export default function DashboardPage() {
               </ListItemIcon>
               <ListItemText primary="Security Audit" />
             </ListItemButton>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/settings')}>
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
