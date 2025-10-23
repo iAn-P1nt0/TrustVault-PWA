@@ -16,6 +16,76 @@ import EditCredentialPage from './pages/EditCredentialPage';
 import { useEffect, useState } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
+import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
+
+function AppRoutes() {
+  const { isAuthenticated, isLocked, user } = useAuthStore();
+
+  // Setup auto-lock with user's security settings (must be inside BrowserRouter)
+  const autoLockConfig = getDefaultAutoLockConfig(user?.securitySettings?.sessionTimeoutMinutes);
+  useAutoLock(autoLockConfig);
+
+  return (
+    <Routes>
+      {/* Signin route */}
+      <Route
+        path="/signin"
+        element={!isAuthenticated ? <SigninPage /> : <Navigate to="/dashboard" replace />}
+      />
+
+      {/* Signup route */}
+      <Route
+        path="/signup"
+        element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" replace />}
+      />
+
+      {/* Dashboard route */}
+      <Route
+        path="/dashboard"
+        element={
+          isAuthenticated && !isLocked ? (
+            <DashboardPage />
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+
+      {/* Add Credential route */}
+      <Route
+        path="/credentials/add"
+        element={
+          isAuthenticated && !isLocked ? (
+            <AddCredentialPage />
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+
+      {/* Edit Credential route */}
+      <Route
+        path="/credentials/:id/edit"
+        element={
+          isAuthenticated && !isLocked ? (
+            <EditCredentialPage />
+          ) : (
+            <Navigate to="/signin" replace />
+          )
+        }
+      />
+
+      {/* Legacy /login redirect to /signin */}
+      <Route path="/login" element={<Navigate to="/signin" replace />} />
+
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/signin" replace />} />
+
+      {/* Catch all */}
+      <Route path="*" element={<Navigate to="/signin" replace />} />
+    </Routes>
+  );
+}
 
 function AppContent() {
   const { isAuthenticated, isLocked } = useAuthStore();
@@ -86,64 +156,7 @@ function AppContent() {
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh', flexDirection: 'column' }}>
       <BrowserRouter>
-        <Routes>
-          {/* Signin route */}
-          <Route
-            path="/signin"
-            element={!isAuthenticated ? <SigninPage /> : <Navigate to="/dashboard" replace />}
-          />
-
-          {/* Signup route */}
-          <Route
-            path="/signup"
-            element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" replace />}
-          />
-
-          {/* Dashboard route */}
-          <Route
-            path="/dashboard"
-            element={
-              isAuthenticated && !isLocked ? (
-                <DashboardPage />
-              ) : (
-                <Navigate to="/signin" replace />
-              )
-            }
-          />
-
-          {/* Add Credential route */}
-          <Route
-            path="/credentials/add"
-            element={
-              isAuthenticated && !isLocked ? (
-                <AddCredentialPage />
-              ) : (
-                <Navigate to="/signin" replace />
-              )
-            }
-          />
-
-          {/* Edit Credential route */}
-          <Route
-            path="/credentials/:id/edit"
-            element={
-              isAuthenticated && !isLocked ? (
-                <EditCredentialPage />
-              ) : (
-                <Navigate to="/signin" replace />
-              )
-            }
-          />
-
-          {/* Legacy /login redirect to /signin */}
-          <Route path="/login" element={<Navigate to="/signin" replace />} />
-
-          {/* Root redirect */}
-          <Route path="/" element={<Navigate to="/signin" replace />} />
-
-          {/* Catch all */}
-          <Route path="*" element={<Navigate to="/signin" replace />} />
-        </Routes>
+        <AppRoutes />
       </BrowserRouter>
     </div>
   );

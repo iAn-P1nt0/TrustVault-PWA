@@ -131,11 +131,21 @@ export function usePasswordGenerator() {
     updateOptions({ excludeAmbiguous: !options.excludeAmbiguous });
   }, [options.excludeAmbiguous, updateOptions]);
 
-  // Regenerate when options change
+  // Regenerate when options change (excluding initial mount)
   useEffect(() => {
     if (password) {
-      generatePassword();
+      // Don't include generatePassword in deps to avoid infinite loop
+      const newPassword = generateSecurePassword(options.length, {
+        lowercase: options.lowercase,
+        uppercase: options.uppercase,
+        numbers: options.numbers,
+        symbols: options.symbols,
+        excludeAmbiguous: options.excludeAmbiguous,
+      });
+      setPassword(newPassword);
+      setStrength(analyzePasswordStrength(newPassword));
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     options.length,
     options.lowercase,
@@ -143,8 +153,6 @@ export function usePasswordGenerator() {
     options.numbers,
     options.symbols,
     options.excludeAmbiguous,
-    generatePassword,
-    password,
   ]);
 
   return {

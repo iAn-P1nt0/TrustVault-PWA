@@ -21,6 +21,7 @@ interface AuthState {
   setVaultKey: (key: CryptoKey | null) => void;
   lockVault: () => void;
   unlockVault: (key: CryptoKey) => void;
+  lock: () => void; // Auto-lock method (clears vault key, keeps user)
   logout: () => void;
 }
 
@@ -50,18 +51,25 @@ export const useAuthStore = create<AuthState>()(
         session: state.session ? { ...state.session, isLocked: true } : null
       })),
       
-      unlockVault: (key) => set((state) => ({ 
-        isLocked: false, 
+      unlockVault: (key) => set((state) => ({
+        isLocked: false,
         vaultKey: key,
         session: state.session ? { ...state.session, isLocked: false } : null
       })),
-      
-      logout: () => set({ 
-        user: null, 
-        session: null, 
-        isAuthenticated: false, 
+
+      lock: () => set((state) => ({
+        isLocked: true,
+        vaultKey: null,
+        session: state.session ? { ...state.session, isLocked: true } : null,
+        // Keep user and isAuthenticated to allow re-unlock
+      })),
+
+      logout: () => set({
+        user: null,
+        session: null,
+        isAuthenticated: false,
         isLocked: false,
-        vaultKey: null 
+        vaultKey: null
       }),
     }),
     {
