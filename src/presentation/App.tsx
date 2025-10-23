@@ -11,6 +11,8 @@ import { useAuthStore } from './store/authStore';
 import SigninPage from './pages/SigninPage';
 import SignupPage from './pages/SignupPage';
 import DashboardPage from './pages/DashboardPage';
+import AddCredentialPage from './pages/AddCredentialPage';
+import EditCredentialPage from './pages/EditCredentialPage';
 import { useEffect, useState } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
@@ -103,6 +105,30 @@ function AppContent() {
             element={
               isAuthenticated && !isLocked ? (
                 <DashboardPage />
+              ) : (
+                <Navigate to="/signin" replace />
+              )
+            }
+          />
+
+          {/* Add Credential route */}
+          <Route
+            path="/credentials/add"
+            element={
+              isAuthenticated && !isLocked ? (
+                <AddCredentialPage />
+              ) : (
+                <Navigate to="/signin" replace />
+              )
+            }
+          />
+
+          {/* Edit Credential route */}
+          <Route
+            path="/credentials/:id/edit"
+            element={
+              isAuthenticated && !isLocked ? (
+                <EditCredentialPage />
               ) : (
                 <Navigate to="/signin" replace />
               )

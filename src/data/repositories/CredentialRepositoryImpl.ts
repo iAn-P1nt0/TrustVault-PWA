@@ -14,11 +14,19 @@ export class CredentialRepository implements ICredentialRepository {
     // Encrypt the password
     const encryptedPassword = await encrypt(input.password, encryptionKey);
 
+    // Encrypt TOTP secret if provided
+    let encryptedTotpSecret: string | undefined;
+    if (input.totpSecret) {
+      const totpSecretEncrypted = await encrypt(input.totpSecret, encryptionKey);
+      encryptedTotpSecret = JSON.stringify(totpSecretEncrypted);
+    }
+
     const credential: StoredCredential = {
       id: crypto.randomUUID(),
       title: input.title,
       username: input.username,
       encryptedPassword: JSON.stringify(encryptedPassword),
+      encryptedTotpSecret,
       url: input.url ?? undefined,
       notes: input.notes ?? undefined,
       category: input.category,
@@ -34,18 +42,18 @@ export class CredentialRepository implements ICredentialRepository {
     return this.mapToDomain(credential);
   }
 
-  async findById(id: string, _decryptionKey: CryptoKey): Promise<Credential | null> {
+  async findById(id: string, decryptionKey: CryptoKey): Promise<Credential | null> {
     const stored = await db.credentials.get(id);
     if (!stored) {
       return null;
     }
 
-    return this.mapToDomain(stored);
+    return this.decryptCredential(stored, decryptionKey);
   }
 
-  async findAll(_decryptionKey: CryptoKey): Promise<Credential[]> {
+  async findAll(decryptionKey: CryptoKey): Promise<Credential[]> {
     const storedCredentials = await db.credentials.toArray();
-    return storedCredentials.map((c) => this.mapToDomain(c));
+    return Promise.all(storedCredentials.map((c) => this.decryptCredential(c, decryptionKey)));
   }
 
   async update(
@@ -75,6 +83,16 @@ export class CredentialRepository implements ICredentialRepository {
       updates.securityScore = analyzePasswordStrength(input.password).score;
     }
 
+    if (input.totpSecret !== undefined) {
+      if (input.totpSecret) {
+        const totpSecretEncrypted = await encrypt(input.totpSecret, encryptionKey);
+        updates.encryptedTotpSecret = JSON.stringify(totpSecretEncrypted);
+      } else {
+        // Empty string means remove TOTP secret
+        updates.encryptedTotpSecret = undefined;
+      }
+    }
+
     await db.credentials.update(id, updates);
 
     const updated = await db.credentials.get(id);
@@ -85,7 +103,7 @@ export class CredentialRepository implements ICredentialRepository {
     await db.credentials.delete(id);
   }
 
-  async search(query: string, _decryptionKey: CryptoKey): Promise<Credential[]> {
+  async search(query: string, decryptionKey: CryptoKey): Promise<Credential[]> {
     const lowerQuery = query.toLowerCase();
     const allCredentials = await db.credentials.toArray();
 
@@ -97,17 +115,17 @@ export class CredentialRepository implements ICredentialRepository {
         c.tags.some((tag) => tag.toLowerCase().includes(lowerQuery))
     );
 
-    return filtered.map((c) => this.mapToDomain(c));
+    return Promise.all(filtered.map((c) => this.decryptCredential(c, decryptionKey)));
   }
 
-  async findByCategory(category: string, _decryptionKey: CryptoKey): Promise<Credential[]> {
+  async findByCategory(category: string, decryptionKey: CryptoKey): Promise<Credential[]> {
     const credentials = await db.credentials.where('category').equals(category).toArray();
-    return credentials.map((c) => this.mapToDomain(c));
+    return Promise.all(credentials.map((c) => this.decryptCredential(c, decryptionKey)));
   }
 
-  async findFavorites(_decryptionKey: CryptoKey): Promise<Credential[]> {
+  async findFavorites(decryptionKey: CryptoKey): Promise<Credential[]> {
     const credentials = await db.credentials.where('isFavorite').equals(1).toArray();
-    return credentials.map((c) => this.mapToDomain(c));
+    return Promise.all(credentials.map((c) => this.decryptCredential(c, decryptionKey)));
   }
 
   async exportAll(decryptionKey: CryptoKey): Promise<string> {
@@ -195,9 +213,69 @@ export class CredentialRepository implements ICredentialRepository {
     }
   }
 
+  private async decryptCredential(
+    stored: StoredCredential,
+    vaultKey: CryptoKey
+  ): Promise<Credential> {
+    try {
+      // Decrypt the password
+      const encryptedPasswordData = JSON.parse(stored.encryptedPassword);
+      const password = await decrypt(encryptedPasswordData, vaultKey);
+
+      // Decrypt TOTP secret if present
+      let totpSecret: string | undefined;
+      if (stored.encryptedTotpSecret) {
+        try {
+          const encryptedTotpData = JSON.parse(stored.encryptedTotpSecret);
+          totpSecret = await decrypt(encryptedTotpData, vaultKey);
+        } catch (error) {
+          console.error('Failed to decrypt TOTP secret:', error);
+          // Continue without TOTP secret if decryption fails
+        }
+      }
+
+      return {
+        id: stored.id,
+        title: stored.title,
+        username: stored.username,
+        password, // Decrypted password
+        url: stored.url,
+        notes: stored.notes,
+        category: stored.category,
+        tags: stored.tags,
+        createdAt: new Date(stored.createdAt),
+        updatedAt: new Date(stored.updatedAt),
+        lastAccessedAt: stored.lastAccessedAt ? new Date(stored.lastAccessedAt) : undefined,
+        isFavorite: stored.isFavorite,
+        securityScore: stored.securityScore,
+        totpSecret, // Decrypted TOTP secret
+      };
+    } catch (error) {
+      console.error('Failed to decrypt credential:', error);
+      // Return credential with placeholder password if decryption fails
+      return {
+        id: stored.id,
+        title: stored.title,
+        username: stored.username,
+        password: '[Decryption Failed]',
+        url: stored.url,
+        notes: stored.notes,
+        category: stored.category,
+        tags: stored.tags,
+        createdAt: new Date(stored.createdAt),
+        updatedAt: new Date(stored.updatedAt),
+        lastAccessedAt: stored.lastAccessedAt ? new Date(stored.lastAccessedAt) : undefined,
+        isFavorite: stored.isFavorite,
+        securityScore: stored.securityScore,
+        totpSecret: undefined, // Don't include failed TOTP secret
+      };
+    }
+  }
+
   private mapToDomain(stored: StoredCredential): Credential {
     return {
       ...stored,
+      password: stored.encryptedPassword, // This will show encrypted data - used only in create() which returns immediately
       createdAt: new Date(stored.createdAt),
       updatedAt: new Date(stored.updatedAt),
       lastAccessedAt: stored.lastAccessedAt ? new Date(stored.lastAccessedAt) : undefined,

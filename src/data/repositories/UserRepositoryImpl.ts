@@ -88,16 +88,32 @@ export class UserRepositoryImpl implements IUserRepository {
       throw new Error('Invalid email or password');
     }
 
-    // Derive vault key from password + salt
+    // Derive temporary key from password + salt (used to decrypt the vault key)
     const salt = Uint8Array.from(atob(storedUser.salt), c => c.charCodeAt(0));
-    const vaultKey = await deriveKeyFromPassword(masterPassword, salt);
+    const tempKey = await deriveKeyFromPassword(masterPassword, salt);
+
+    // Decrypt the actual vault key (masterVaultKey) from storage
+    const encryptedVaultKeyData = JSON.parse(storedUser.encryptedVaultKey);
+    const masterVaultKeyBase64 = await decrypt(encryptedVaultKeyData, tempKey);
+
+    // Convert base64 master vault key to raw bytes
+    const masterVaultKeyBytes = Uint8Array.from(atob(masterVaultKeyBase64), c => c.charCodeAt(0));
+
+    // Import the raw master vault key as a CryptoKey
+    const vaultKey = await crypto.subtle.importKey(
+      'raw',
+      masterVaultKeyBytes,
+      { name: 'AES-GCM' },
+      true,
+      ['encrypt', 'decrypt']
+    );
 
     // Update last login time
     await db.users.update(storedUser.id, {
       lastLoginAt: Date.now(),
     });
 
-    // Create session
+    // Create session with the actual vault key
     return {
       userId: storedUser.id,
       vaultKey,

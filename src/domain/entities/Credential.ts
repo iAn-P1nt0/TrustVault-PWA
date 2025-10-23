@@ -6,7 +6,7 @@ export interface Credential {
   id: string;
   title: string;
   username: string;
-  encryptedPassword: string; // Base64 encoded encrypted data
+  password: string; // Decrypted password (plain text in memory only)
   url?: string | undefined;
   notes?: string | undefined;
   category: CredentialCategory;
@@ -16,6 +16,7 @@ export interface Credential {
   lastAccessedAt?: Date | undefined;
   isFavorite: boolean;
   securityScore?: number | undefined; // 0-100 based on password strength
+  totpSecret?: string | undefined; // TOTP/2FA secret (base32-encoded, decrypted in memory)
 }
 
 export type CredentialCategory = 
@@ -35,4 +36,5 @@ export interface CredentialInput {
   notes?: string | undefined;
   category: CredentialCategory;
   tags?: string[];
+  totpSecret?: string | undefined; // TOTP/2FA secret (base32-encoded) - will be encrypted before storage
 }

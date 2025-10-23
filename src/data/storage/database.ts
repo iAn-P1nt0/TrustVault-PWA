@@ -20,6 +20,7 @@ export interface StoredCredential {
   title: string;
   username: string;
   encryptedPassword: string;
+  encryptedTotpSecret?: string | undefined; // Encrypted TOTP secret
   url?: string | undefined;
   notes?: string | undefined;
   category: CredentialCategory;

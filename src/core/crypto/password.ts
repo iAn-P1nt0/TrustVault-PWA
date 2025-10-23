@@ -194,6 +194,7 @@ export function generateSecurePassword(
     uppercase?: boolean;
     numbers?: boolean;
     symbols?: boolean;
+    excludeAmbiguous?: boolean;
   } = {}
 ): string {
   const {
@@ -201,23 +202,51 @@ export function generateSecurePassword(
     uppercase = true,
     numbers = true,
     symbols = true,
+    excludeAmbiguous = false,
   } = options;
 
-  const lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  const uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  const numberChars = '0123456789';
-  const symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  // Character sets
+  let lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
+  let uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  let numberChars = '0123456789';
+  let symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-  let charset = '';
-  if (lowercase) charset += lowercaseChars;
-  if (uppercase) charset += uppercaseChars;
-  if (numbers) charset += numberChars;
-  if (symbols) charset += symbolChars;
-
-  if (charset.length === 0) {
-    charset = lowercaseChars + uppercaseChars + numberChars + symbolChars;
+  // Exclude ambiguous characters if requested
+  if (excludeAmbiguous) {
+    lowercaseChars = lowercaseChars.replace(/[ilo]/g, ''); // Remove i, l, o
+    uppercaseChars = uppercaseChars.replace(/[IO]/g, ''); // Remove I, O
+    numberChars = numberChars.replace(/[01]/g, ''); // Remove 0, 1
+    symbolChars = symbolChars.replace(/[|]/g, ''); // Remove pipe
   }
 
+  // Build character set based on options
+  let charset = '';
+  const charGroups: string[] = [];
+
+  if (lowercase && lowercaseChars.length > 0) {
+    charset += lowercaseChars;
+    charGroups.push(lowercaseChars);
+  }
+  if (uppercase && uppercaseChars.length > 0) {
+    charset += uppercaseChars;
+    charGroups.push(uppercaseChars);
+  }
+  if (numbers && numberChars.length > 0) {
+    charset += numberChars;
+    charGroups.push(numberChars);
+  }
+  if (symbols && symbolChars.length > 0) {
+    charset += symbolChars;
+    charGroups.push(symbolChars);
+  }
+
+  // Fallback if no options selected
+  if (charset.length === 0) {
+    charset = lowercaseChars + uppercaseChars + numberChars + symbolChars;
+    charGroups.push(lowercaseChars, uppercaseChars, numberChars, symbolChars);
+  }
+
+  // Generate password
   const randomBytes = new Uint8Array(length);
   crypto.getRandomValues(randomBytes);
 
@@ -227,6 +256,23 @@ export function generateSecurePassword(
     const char = charset[randomIndex];
     if (char !== undefined) {
       password += char;
+    }
+  }
+
+  // Ensure at least one character from each selected type
+  // Replace random positions if any type is missing
+  for (let i = 0; i < charGroups.length; i++) {
+    const group = charGroups[i];
+    if (!group) continue;
+
+    const hasCharFromGroup = password.split('').some((char) => group.includes(char));
+    if (!hasCharFromGroup && password.length > 0) {
+      // Replace a random position with a character from this group
+      const replaceIndex = Math.floor(Math.random() * password.length);
+      const groupRandomBytes = new Uint8Array(1);
+      crypto.getRandomValues(groupRandomBytes);
+      const charIndex = (groupRandomBytes[0] as number) % group.length;
+      password = password.substring(0, replaceIndex) + group[charIndex] + password.substring(replaceIndex + 1);
     }
   }
 
