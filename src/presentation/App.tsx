@@ -14,39 +14,20 @@ import DashboardPage from './pages/DashboardPage';
 import AddCredentialPage from './pages/AddCredentialPage';
 import EditCredentialPage from './pages/EditCredentialPage';
 import SettingsPage from './pages/SettingsPage';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
 import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
 import ClipboardNotification from './components/ClipboardNotification';
 
-// Protected route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLocked } = useAuthStore();
-  
-  if (!isAuthenticated || isLocked) {
-    return <Navigate to="/signin" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
-// Public route wrapper (redirects to dashboard if already authenticated)
-function PublicRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated } = useAuthStore();
-  
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
-  
-  return <>{children}</>;
-}
-
 function AppRoutes() {
-  const { user } = useAuthStore();
+  const { user, isAuthenticated, isLocked } = useAuthStore();
 
   // Setup auto-lock with user's security settings (must be inside BrowserRouter)
-  const autoLockConfig = getDefaultAutoLockConfig(user?.securitySettings?.sessionTimeoutMinutes);
+  const autoLockConfig = useMemo(
+    () => getDefaultAutoLockConfig(user?.securitySettings?.sessionTimeoutMinutes),
+    [user?.securitySettings?.sessionTimeoutMinutes]
+  );
   useAutoLock(autoLockConfig);
 
   return (
@@ -55,30 +36,24 @@ function AppRoutes() {
         {/* Signin route */}
         <Route
           path="/signin"
-          element={
-            <PublicRoute>
-              <SigninPage />
-            </PublicRoute>
-          }
+          element={!isAuthenticated ? <SigninPage /> : <Navigate to="/dashboard" replace />}
         />
 
         {/* Signup route */}
         <Route
           path="/signup"
-          element={
-            <PublicRoute>
-              <SignupPage />
-            </PublicRoute>
-          }
+          element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" replace />}
         />
 
         {/* Dashboard route */}
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+            isAuthenticated && !isLocked ? (
               <DashboardPage />
-            </ProtectedRoute>
+            ) : (
+              <Navigate to="/signin" replace />
+            )
           }
         />
 
@@ -86,9 +61,11 @@ function AppRoutes() {
         <Route
           path="/credentials/add"
           element={
-            <ProtectedRoute>
+            isAuthenticated && !isLocked ? (
               <AddCredentialPage />
-            </ProtectedRoute>
+            ) : (
+              <Navigate to="/signin" replace />
+            )
           }
         />
 
@@ -96,9 +73,11 @@ function AppRoutes() {
         <Route
           path="/credentials/:id/edit"
           element={
-            <ProtectedRoute>
+            isAuthenticated && !isLocked ? (
               <EditCredentialPage />
-            </ProtectedRoute>
+            ) : (
+              <Navigate to="/signin" replace />
+            )
           }
         />
 
@@ -106,9 +85,11 @@ function AppRoutes() {
         <Route
           path="/settings"
           element={
-            <ProtectedRoute>
+            isAuthenticated && !isLocked ? (
               <SettingsPage />
-            </ProtectedRoute>
+            ) : (
+              <Navigate to="/signin" replace />
+            )
           }
         />
 
@@ -116,7 +97,7 @@ function AppRoutes() {
         <Route path="/login" element={<Navigate to="/signin" replace />} />
 
         {/* Root redirect */}
-        <Route path="/" element={<Navigate to="/signin" replace />} />
+        <Route path="/" element={<Navigate to={isAuthenticated ? "/dashboard" : "/signin"} replace />} />
 
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/signin" replace />} />
