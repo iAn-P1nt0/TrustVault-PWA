@@ -189,6 +189,8 @@ export default function SettingsPage() {
         <ClipboardSettings
           clipboardClearSeconds={clipboardClearSeconds}
           onSave={(seconds) => setClipboardClearSeconds(seconds)}
+        />
+
         {/* Biometric Authentication */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>
@@ -218,8 +220,6 @@ export default function SettingsPage() {
           >
             Manage Biometric Devices
           </Button>
-        </Paper>etric authentication will be available in a future update.
-          </Alert>
         </Paper>
 
         <Divider sx={{ my: 4 }} />
@@ -388,24 +388,18 @@ export default function SettingsPage() {
 
       {/* Change Master Password Dialog */}
       <ChangeMasterPasswordDialog
-      {/* Import Dialog */}
-      <ImportDialog
-        open={importDialogOpen}
-        onClose={() => setImportDialogOpen(false)}
-        onSuccess={(count) => {
-          setSaveMessage(`Successfully imported ${count} credentials!`);
-          setImportDialogOpen(false);
+        open={changePasswordDialogOpen}
+        onClose={() => setChangePasswordDialogOpen(false)}
+        onSuccess={() => {
+          setSaveMessage('Master password changed successfully!');
+          setChangePasswordDialogOpen(false);
         }}
       />
 
-      {/* Biometric Setup Dialog */}
-      <BiometricSetupDialog
-        open={biometricDialogOpen}
-        onClose={() => setBiometricDialogOpen(false)}
-      />
-    </Box>
-  );
-}       onClose={() => setExportDialogOpen(false)}
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
         onSuccess={() => {
           setSaveMessage('Vault exported successfully!');
           setExportDialogOpen(false);
@@ -420,6 +414,12 @@ export default function SettingsPage() {
           setSaveMessage(`Successfully imported ${count} credentials!`);
           setImportDialogOpen(false);
         }}
+      />
+
+      {/* Biometric Setup Dialog */}
+      <BiometricSetupDialog
+        open={biometricDialogOpen}
+        onClose={() => setBiometricDialogOpen(false)}
       />
     </Box>
   );

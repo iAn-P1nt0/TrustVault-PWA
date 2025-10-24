@@ -101,7 +101,21 @@ export async function registerBiometric(
     return response;
   } catch (error) {
     console.error('Biometric registration failed:', error);
-    throw new Error('Failed to register biometric credential');
+    
+    // Provide user-friendly error messages
+    if (error instanceof Error) {
+      if (error.name === 'NotAllowedError') {
+        throw new Error('Biometric registration was cancelled or not allowed. Please ensure you\'re using HTTPS or localhost and try again.');
+      }
+      if (error.name === 'NotSupportedError') {
+        throw new Error('Your device does not support biometric authentication.');
+      }
+      if (error.name === 'InvalidStateError') {
+        throw new Error('This biometric credential is already registered.');
+      }
+    }
+    
+    throw new Error('Failed to register biometric credential. Please try again.');
   }
 }
 

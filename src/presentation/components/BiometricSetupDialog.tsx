@@ -158,8 +158,16 @@ export default function BiometricSetupDialog({ open, onClose }: BiometricSetupDi
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>
+    <Dialog 
+      open={open} 
+      onClose={onClose} 
+      maxWidth="sm" 
+      fullWidth
+      disablePortal={false}
+      keepMounted={false}
+      aria-labelledby="biometric-dialog-title"
+    >
+      <DialogTitle id="biometric-dialog-title">
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <Security color="primary" />
           <Typography variant="h6">Biometric Authentication</Typography>
@@ -215,6 +223,17 @@ export default function BiometricSetupDialog({ open, onClose }: BiometricSetupDi
               )}
             </Stack>
           </Box>
+        )}
+
+        {window.location.protocol !== 'https:' && window.location.hostname !== 'localhost' && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            <Typography variant="body2" fontWeight={600}>
+              HTTPS Required
+            </Typography>
+            <Typography variant="caption">
+              Biometric authentication requires a secure connection. Please use <code>npm run dev:https</code> or access via <code>https://localhost:3000</code>
+            </Typography>
+          </Alert>
         )}
 
         <Typography variant="body2" color="text.secondary" paragraph>

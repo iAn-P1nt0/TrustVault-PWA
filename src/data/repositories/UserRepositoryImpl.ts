@@ -149,9 +149,15 @@ export class UserRepositoryImpl implements IUserRepository {
 
     // Perform WebAuthn authentication
     const { authenticateBiometric } = await import('@/core/auth/webauthn');
+    
+    // Use 'localhost' for local dev, otherwise use hostname
+    const rpId = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'localhost'
+      : window.location.hostname;
+    
     const authResponse = await authenticateBiometric(
       credentialId,
-      window.location.hostname
+      rpId
     );
 
     // Verify the signature (simplified - in production, verify the full authenticatorData)
@@ -250,9 +256,15 @@ export class UserRepositoryImpl implements IUserRepository {
 
     // Register with WebAuthn
     const { registerBiometric } = await import('@/core/auth/webauthn');
+    
+    // Use 'localhost' for local dev, otherwise use hostname
+    const rpId = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'localhost'
+      : window.location.hostname;
+    
     const registrationResponse = await registerBiometric({
       rpName: 'TrustVault',
-      rpId: window.location.hostname,
+      rpId,
       userId: user.id,
       userName: user.email,
       userDisplayName: user.displayName || user.email,
