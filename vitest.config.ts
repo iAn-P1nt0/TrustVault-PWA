@@ -10,16 +10,25 @@ export default defineConfig({
     setupFiles: './src/test/setup.ts',
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
+      reporter: ['text', 'json', 'html', 'lcov'],
       exclude: [
         'node_modules/',
         'src/test/',
         '**/*.d.ts',
         '**/*.config.*',
         '**/mockData.ts',
-        'dist/'
-      ]
-    }
+        'dist/',
+        'dev-dist/',
+      ],
+      thresholds: {
+        lines: 85,
+        functions: 85,
+        branches: 80,
+        statements: 85,
+      },
+    },
+    include: ['**/*.{test,spec}.{ts,tsx}'],
+    exclude: ['node_modules', 'dist', 'dev-dist', '.idea', '.git', '.cache'],
   },
   resolve: {
     alias: {

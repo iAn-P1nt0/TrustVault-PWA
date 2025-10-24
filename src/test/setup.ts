@@ -3,94 +3,54 @@
  * Configures test environment and global mocks
  */
 
-import { afterEach, vi } from 'vitest';
+import { afterEach, beforeAll, vi } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+import 'fake-indexeddb/auto';
 
 // Cleanup after each test
 afterEach(() => {
   cleanup();
 });
 
-// Use Node.js WebCrypto API
-import { webcrypto } from 'crypto';
-
-Object.defineProperty(global, 'crypto', {
-  value: webcrypto,
-  writable: true
-});
-
-// Mock IndexedDB
-class MockIDBDatabase {
-  name: string;
-  version: number;
-  objectStoreNames: string[] = [];
-
-  constructor(name: string, version: number) {
-    this.name = name;
-    this.version = version;
+// Setup before all tests
+beforeAll(() => {
+  // Use Node.js WebCrypto API
+  const { webcrypto } = require('crypto');
+  
+  if (!globalThis.crypto) {
+    Object.defineProperty(globalThis, 'crypto', {
+      value: webcrypto,
+      writable: true,
+      configurable: true,
+    });
   }
 
-  transaction() {
-    return new MockIDBTransaction();
-  }
+  // Mock window.matchMedia for responsive design tests
+  Object.defineProperty(window, 'matchMedia', {
+    writable: true,
+    value: vi.fn().mockImplementation((query: string) => ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+      dispatchEvent: vi.fn(),
+    })),
+  });
 
-  close() {}
-}
-
-class MockIDBTransaction {
-  objectStore() {
-    return new MockIDBObjectStore();
-  }
-}
-
-class MockIDBObjectStore {
-  put() {
-    return new MockIDBRequest();
-  }
-
-  get() {
-    return new MockIDBRequest();
-  }
-
-  getAll() {
-    return new MockIDBRequest();
-  }
-
-  delete() {
-    return new MockIDBRequest();
-  }
-}
-
-class MockIDBRequest {
-  onsuccess: ((event: any) => void) | null = null;
-  onerror: ((event: any) => void) | null = null;
-  result: any = null;
-
-  constructor() {
-    setTimeout(() => {
-      if (this.onsuccess) {
-        this.onsuccess({ target: { result: this.result } });
-      }
-    }, 0);
-  }
-}
-
-class MockIDBFactory {
-  open(name: string, version: number) {
-    const request = new MockIDBRequest();
-    request.result = new MockIDBDatabase(name, version);
-    return request;
-  }
-
-  deleteDatabase() {
-    return new MockIDBRequest();
-  }
-}
-
-Object.defineProperty(global, 'indexedDB', {
-  value: new MockIDBFactory(),
-  writable: true
+  // Mock IntersectionObserver
+  globalThis.IntersectionObserver = class IntersectionObserver {
+    constructor() {}
+    disconnect() {}
+    observe() {}
+    takeRecords() {
+      return [];
+    }
+    unobserve() {}
+  } as any;
 });
 
 // Mock navigator.clipboard
