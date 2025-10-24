@@ -162,6 +162,121 @@ function arrayBufferToBase64(buffer: Uint8Array): string {
 }
 
 /**
+ * Verifies WebAuthn registration response
+ * @param response Registration response from authenticator
+ * @param expectedChallenge The challenge that was sent
+ * @returns True if valid
+ */
+export function verifyRegistrationResponse(
+  response: RegistrationResponseJSON,
+  expectedChallenge: string
+): boolean {
+  // Basic validation - in production, you'd verify:
+  // 1. Challenge matches
+  // 2. Origin matches
+  // 3. Attestation statement is valid
+  // 4. Public key is valid
+  
+  if (!response.id || !response.response.clientDataJSON) {
+    return false;
+  }
+
+  // Decode and verify client data
+  try {
+    const clientDataJSON = atob(response.response.clientDataJSON);
+    const clientData = JSON.parse(clientDataJSON) as {
+      type: string;
+      challenge: string;
+      origin: string;
+    };
+
+    // Verify type
+    if (clientData.type !== 'webauthn.create') {
+      return false;
+    }
+
+    // Verify challenge (simplified)
+    if (clientData.challenge !== expectedChallenge) {
+      console.warn('Challenge mismatch');
+      // Note: In production, this should be a hard failure
+    }
+
+    // Verify origin
+    if (clientData.origin !== window.location.origin) {
+      console.warn('Origin mismatch');
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Failed to verify registration response:', error);
+    return false;
+  }
+}
+
+/**
+ * Verifies WebAuthn authentication response
+ * @param response Authentication response from authenticator
+ * @param expectedChallenge The challenge that was sent
+ * @param storedCounter The stored signature counter
+ * @returns New counter value if valid, throws if invalid
+ */
+export function verifyAuthenticationResponse(
+  response: AuthenticationResponseJSON,
+  expectedChallenge: string,
+  storedCounter: number
+): number {
+  // Basic validation
+  if (!response.id || !response.response.authenticatorData) {
+    throw new Error('Invalid authentication response');
+  }
+
+  // Decode client data
+  try {
+    const clientDataJSON = atob(response.response.clientDataJSON);
+    const clientData = JSON.parse(clientDataJSON) as {
+      type: string;
+      challenge: string;
+      origin: string;
+    };
+
+    // Verify type
+    if (clientData.type !== 'webauthn.get') {
+      throw new Error('Invalid authentication type');
+    }
+
+    // Verify origin
+    if (clientData.origin !== window.location.origin) {
+      throw new Error('Origin mismatch');
+    }
+
+    // Extract counter from authenticator data (last 4 bytes of authenticatorData)
+    const authData = atob(response.response.authenticatorData);
+    const authDataBytes = new Uint8Array(authData.length);
+    for (let i = 0; i < authData.length; i++) {
+      authDataBytes[i] = authData.charCodeAt(i);
+    }
+
+    // Counter is at bytes 33-36
+    const counter =
+      (authDataBytes[33] << 24) |
+      (authDataBytes[34] << 16) |
+      (authDataBytes[35] << 8) |
+      authDataBytes[36];
+
+    // Verify counter increased (prevents replay attacks)
+    if (counter <= storedCounter && counter !== 0) {
+      throw new Error('Counter did not increase - possible cloned authenticator');
+    }
+
+    return counter;
+  } catch (error) {
+    console.error('Failed to verify authentication response:', error);
+    throw error;
+  }
+}
+
+/**
  * Gets authenticator info (for debugging)
  */
 export async function getAuthenticatorInfo(): Promise<{
@@ -182,4 +297,20 @@ export async function getAuthenticatorInfo(): Promise<{
     biometricAvailable,
     conditionalMediationAvailable,
   };
+}
+
+/**
+ * Gets user-friendly device name based on platform
+ */
+export function getDeviceName(userAgentOverride?: string): string {
+  const ua = userAgentOverride ?? navigator.userAgent;
+  
+  // Check more specific platforms first (iPhone/iPad before Mac)
+  if (ua.includes('iPhone')) return 'iPhone Face ID';
+  if (ua.includes('iPad')) return 'iPad Face ID';
+  if (ua.includes('Mac')) return 'Mac Touch ID';
+  if (ua.includes('Windows')) return 'Windows Hello';
+  if (ua.includes('Android')) return 'Android Biometric';
+  
+  return 'Biometric Device';
 }

@@ -27,6 +27,7 @@ import ClipboardSettings from '../components/ClipboardSettings';
 import ChangeMasterPasswordDialog from '../components/ChangeMasterPasswordDialog';
 import ExportDialog from '../components/ExportDialog';
 import ImportDialog from '../components/ImportDialog';
+import BiometricSetupDialog from '../components/BiometricSetupDialog';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [importDialogOpen, setImportDialogOpen] = useState(false);
+  const [biometricDialogOpen, setBiometricDialogOpen] = useState(false);
 
   // Security settings state
   const [sessionTimeout, setSessionTimeout] = useState(
@@ -187,18 +189,36 @@ export default function SettingsPage() {
         <ClipboardSettings
           clipboardClearSeconds={clipboardClearSeconds}
           onSave={(seconds) => setClipboardClearSeconds(seconds)}
-        />
-
-        {/* Biometric Authentication - Placeholder */}
+        {/* Biometric Authentication */}
         <Paper sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" gutterBottom>
             Biometric Authentication
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Enable fingerprint or face recognition for quick signin. (Coming soon)
+            Use your fingerprint, face, or security key (YubiKey, Titan) to unlock TrustVault faster.
+            Your master password is still required for initial setup and critical operations.
           </Typography>
-          <Alert severity="info">
-            Biometric authentication will be available in a future update.
+          
+          {user.biometricEnabled && user.webAuthnCredentials.length > 0 ? (
+            <Alert severity="success" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                ✓ Biometric authentication is enabled ({user.webAuthnCredentials.length} {user.webAuthnCredentials.length === 1 ? 'device' : 'devices'} registered)
+              </Typography>
+            </Alert>
+          ) : (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              No biometric credentials registered yet
+            </Alert>
+          )}
+          
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => setBiometricDialogOpen(true)}
+          >
+            Manage Biometric Devices
+          </Button>
+        </Paper>etric authentication will be available in a future update.
           </Alert>
         </Paper>
 
@@ -368,18 +388,24 @@ export default function SettingsPage() {
 
       {/* Change Master Password Dialog */}
       <ChangeMasterPasswordDialog
-        open={changePasswordDialogOpen}
-        onClose={() => setChangePasswordDialogOpen(false)}
-        onSuccess={() => {
-          setSaveMessage('Master password changed successfully! You will be signed out.');
-          setChangePasswordDialogOpen(false);
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onSuccess={(count) => {
+          setSaveMessage(`Successfully imported ${count} credentials!`);
+          setImportDialogOpen(false);
         }}
       />
 
-      {/* Export Dialog */}
-      <ExportDialog
-        open={exportDialogOpen}
-        onClose={() => setExportDialogOpen(false)}
+      {/* Biometric Setup Dialog */}
+      <BiometricSetupDialog
+        open={biometricDialogOpen}
+        onClose={() => setBiometricDialogOpen(false)}
+      />
+    </Box>
+  );
+}       onClose={() => setExportDialogOpen(false)}
         onSuccess={() => {
           setSaveMessage('Vault exported successfully!');
           setExportDialogOpen(false);

@@ -127,15 +127,33 @@ export default function LoginPage() {
     }
   };
 
-  const handleBiometricLogin = (): void => {
+  const handleBiometricLogin = async (): Promise<void> => {
+    if (!user) {
+      setError('Please enter your email to identify your account');
+      return;
+    }
+
     setError(null);
     setIsLoading(true);
 
     try {
-      // Implement biometric authentication
-      setError('Biometric authentication not yet implemented');
+      // Find user by email
+      const targetUser = await userRepository.findByEmail(email);
+      if (!targetUser) {
+        throw new Error('User not found. Please sign in with your password first.');
+      }
+
+      // Check if biometric is enabled
+      if (!targetUser.biometricEnabled || targetUser.webAuthnCredentials.length === 0) {
+        throw new Error('Biometric authentication is not set up for this account. Please sign in with your password first.');
+      }
+
+      // For now, prompt user to use password first
+      // In a production app, you'd perform full WebAuthn authentication
+      // and decrypt the vault key using biometric-specific encryption
+      setError('Biometric quick unlock requires password authentication first. Please sign in with your password, then register biometric in Settings.');
     } catch (err) {
-      setError('Biometric authentication failed');
+      setError(err instanceof Error ? err.message : 'Biometric authentication failed');
       console.error('Biometric login failed:', err);
     } finally {
       setIsLoading(false);
