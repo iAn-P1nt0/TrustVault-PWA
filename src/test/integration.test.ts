@@ -17,7 +17,6 @@ describe('Integration Tests: Authentication Flow', () => {
       // This test validates the complete critical path
       
       // 1. SIGNUP (Phase 0)
-      const email = 'test@example.com';
       const masterPassword = 'SecurePassword123!';
       
       // Mock user repository signup
@@ -75,7 +74,6 @@ describe('Integration Tests: Authentication Flow', () => {
       // Phase 0.1 & 0.2 critical bug fixes validation
       
       const plainPassword = 'MyPassword123!';
-      const mockVaultKey = {} as CryptoKey;
       
       // 1. Encrypt password before saving
       const encryptedData = {
@@ -96,9 +94,6 @@ describe('Integration Tests: Authentication Flow', () => {
       
       expect(savedCredential.encryptedPassword).not.toBe(plainPassword);
       
-      // 3. Read from database
-      const retrieved = savedCredential;
-      
       // 4. Decrypt password
       const decryptedPassword = plainPassword; // After decryption
       
@@ -106,13 +101,6 @@ describe('Integration Tests: Authentication Flow', () => {
     });
 
     it('should fail to decrypt with wrong key', async () => {
-      const encryptedData = {
-        ciphertext: 'encrypted',
-        iv: 'iv_data',
-      };
-      
-      const wrongKey = {} as CryptoKey;
-      
       // Should throw error with wrong key
       expect(() => {
         // Attempt to decrypt with wrong key
@@ -125,7 +113,6 @@ describe('Integration Tests: Authentication Flow', () => {
     it('should derive vault key on login and clear on lock', async () => {
       // Phase 0.1 validation
       
-      const masterPassword = 'SecurePassword123!';
       const salt = new Uint8Array(32);
       crypto.getRandomValues(salt);
       
@@ -156,7 +143,6 @@ describe('Integration Tests: Authentication Flow', () => {
       // Phase 2.2 validation
       
       const totpSecret = 'JBSWY3DPEHPK3PXP';
-      const mockVaultKey = {} as CryptoKey;
       
       // 1. Encrypt TOTP secret
       const encryptedSecret = {
@@ -175,9 +161,6 @@ describe('Integration Tests: Authentication Flow', () => {
       };
       
       expect(credential.encryptedTotpSecret).not.toBe(totpSecret);
-      
-      // 3. Read and decrypt
-      const decryptedSecret = totpSecret;
       
       // 4. Generate TOTP code
       const totpCode = '123456';
@@ -274,13 +257,13 @@ describe('Integration Tests: Authentication Flow', () => {
       expect(searchByUsername.length).toBe(1); // AWS
       
       // 3. Search by tag
-      const searchByTag = credentials.filter(c =>
-        c.tags.some(tag => tag.includes('cloud'))
+      const searchByTag = credentials.filter(_c =>
+        _c.tags.some(tag => tag.includes('cloud'))
       );
       expect(searchByTag.length).toBe(1); // AWS
       
       // 4. Filter by category
-      const loginCredentials = credentials.filter(c => true); // All are logins
+      const loginCredentials = credentials.filter(() => true); // All are logins
       expect(loginCredentials.length).toBe(3);
     });
   });
@@ -351,7 +334,6 @@ describe('Security Validation Tests', () => {
     });
 
     it('should use secure password hashing (Scrypt)', async () => {
-      const password = 'TestPassword123!';
       const hash = 'scrypt$32768$8$1$base64salt$base64hash';
       
       expect(hash.startsWith('scrypt$')).toBe(true);
@@ -387,9 +369,6 @@ describe('Security Validation Tests', () => {
     });
 
     it('should encrypt vault key with password-derived key', () => {
-      const vaultKey = {} as CryptoKey;
-      const derivedKey = {} as CryptoKey;
-      
       // Vault key should be encrypted before storage
       const encryptedVaultKey = { ciphertext: 'encrypted', iv: 'iv' };
       
@@ -397,8 +376,6 @@ describe('Security Validation Tests', () => {
     });
 
     it('should never persist vault key in storage', () => {
-      const vaultKey = {} as CryptoKey;
-      
       // Check localStorage
       const storedKey = localStorage.getItem('vaultKey');
       expect(storedKey).toBeNull();
@@ -409,7 +386,6 @@ describe('Security Validation Tests', () => {
     });
   });
 
-  describe('Memory Security', () => {
   describe('Memory Security', () => {
     it('should clear vault key from memory on lock', () => {
       let vaultKey: CryptoKey | null = {} as CryptoKey;
@@ -440,3 +416,4 @@ describe('Security Validation Tests', () => {
       expect(navigator.clipboard.writeText).toBeDefined();
     });
   });
+});

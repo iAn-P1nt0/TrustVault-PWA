@@ -242,7 +242,7 @@ describe('Encryption Core', () => {
       const password = 'SecurePassword123!';
       
       const encrypted = await encryptWithPassword(plaintext, password);
-      const noSalt = { ...encrypted, salt: undefined };
+      const noSalt: { ciphertext: string; iv: string; authTag?: string | undefined; salt?: string | undefined } = { ...encrypted, salt: undefined };
       
       await expect(decryptWithPassword(noSalt, password)).rejects.toThrow('Salt is required');
     });

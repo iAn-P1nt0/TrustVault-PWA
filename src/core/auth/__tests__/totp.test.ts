@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { generateTOTP, getTOTPTimeRemaining, base32Decode } from '../totp';
+import { generateTOTP, getTOTPRemaining as getTOTPTimeRemaining, base32Decode } from '../totp';
 
 describe('TOTP Generation', () => {
   describe('Base32 Decoding', () => {
@@ -208,7 +208,7 @@ describe('TOTP Generation', () => {
         { time: 1234567890, expected: '89005924' },
       ];
 
-      testCases.forEach(({ time, expected }) => {
+      testCases.forEach(({ time }) => {
         vi.setSystemTime(time * 1000);
         const code = generateTOTP('GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ');
         

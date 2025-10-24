@@ -261,8 +261,6 @@ describe('usePasswordGenerator', () => {
         expect(result.current.strength).toBeTruthy();
       });
       
-      const initialStrength = result.current.strength?.score;
-      
       act(() => {
         result.current.generatePassword();
       });

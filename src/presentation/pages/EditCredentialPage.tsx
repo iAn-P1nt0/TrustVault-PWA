@@ -34,6 +34,7 @@ import PasswordStrengthIndicator from '@/presentation/components/PasswordStrengt
 import DeleteConfirmDialog from '@/presentation/components/DeleteConfirmDialog';
 import PasswordGeneratorDialog from '@/presentation/components/PasswordGeneratorDialog';
 import TotpDisplay from '@/presentation/components/TotpDisplay';
+import TagInput from '@/presentation/components/TagInput';
 import { isValidTOTPSecret } from '@/core/auth/totp';
 import type { CredentialCategory, Credential } from '@/domain/entities/Credential';
 
@@ -63,7 +64,7 @@ export default function EditCredentialPage() {
   const [url, setUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [category, setCategory] = useState<CredentialCategory>('login');
-  const [tags, setTags] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [totpSecret, setTotpSecret] = useState('');
 
@@ -103,7 +104,7 @@ export default function EditCredentialPage() {
         setUrl(cred.url || '');
         setNotes(cred.notes || '');
         setCategory(cred.category);
-        setTags(cred.tags.join(', '));
+        setTags(cred.tags || []);
         setIsFavorite(cred.isFavorite);
         setTotpSecret(cred.totpSecret || '');
         setLoadingCredential(false);
@@ -160,11 +161,6 @@ export default function EditCredentialPage() {
     setError(null);
 
     try {
-      const tagArray = tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-
       await credentialRepository.update(
         id,
         {
@@ -174,7 +170,8 @@ export default function EditCredentialPage() {
           url: url.trim() || undefined,
           notes: notes.trim() || undefined,
           category,
-          tags: tagArray,
+          tags,
+          isFavorite,
           totpSecret: totpSecret.trim() || undefined,
         },
         session.vaultKey
@@ -383,15 +380,9 @@ export default function EditCredentialPage() {
           />
 
           {/* Tags */}
-          <TextField
-            fullWidth
-            label="Tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            margin="normal"
-            placeholder="personal, work, finance (comma-separated)"
-            helperText="Separate multiple tags with commas"
-          />
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <TagInput tags={tags} onChange={setTags} />
+          </Box>
 
           {/* Notes */}
           <TextField

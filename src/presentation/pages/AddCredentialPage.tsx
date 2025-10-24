@@ -31,6 +31,7 @@ import { useAuthStore } from '@/presentation/store/authStore';
 import PasswordStrengthIndicator from '@/presentation/components/PasswordStrengthIndicator';
 import PasswordGeneratorDialog from '@/presentation/components/PasswordGeneratorDialog';
 import TotpDisplay from '@/presentation/components/TotpDisplay';
+import TagInput from '@/presentation/components/TagInput';
 import { isValidTOTPSecret } from '@/core/auth/totp';
 import type { CredentialCategory } from '@/domain/entities/Credential';
 
@@ -55,7 +56,7 @@ export default function AddCredentialPage() {
   const [url, setUrl] = useState('');
   const [notes, setNotes] = useState('');
   const [category, setCategory] = useState<CredentialCategory>('login');
-  const [tags, setTags] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
   const [isFavorite, setIsFavorite] = useState(false);
   const [totpSecret, setTotpSecret] = useState('');
 
@@ -111,12 +112,7 @@ export default function AddCredentialPage() {
     setError(null);
 
     try {
-      const tagArray = tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t.length > 0);
-
-      await credentialRepository.create(
+      const credential = await credentialRepository.create(
         {
           title: title.trim(),
           username: username.trim(),
@@ -124,11 +120,16 @@ export default function AddCredentialPage() {
           url: url.trim() || undefined,
           notes: notes.trim() || undefined,
           category,
-          tags: tagArray,
+          tags,
           totpSecret: totpSecret.trim() || undefined,
         },
         session.vaultKey
       );
+      
+      // Update favorite status after creation if needed
+      if (isFavorite) {
+        await credentialRepository.update(credential.id, { isFavorite: true }, session.vaultKey);
+      }
 
       // Navigate back to dashboard
       navigate('/dashboard');
@@ -277,15 +278,9 @@ export default function AddCredentialPage() {
           />
 
           {/* Tags */}
-          <TextField
-            fullWidth
-            label="Tags"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            margin="normal"
-            placeholder="personal, work, finance (comma-separated)"
-            helperText="Separate multiple tags with commas"
-          />
+          <Box sx={{ mt: 2, mb: 1 }}>
+            <TagInput tags={tags} onChange={setTags} />
+          </Box>
 
           {/* Notes */}
           <TextField

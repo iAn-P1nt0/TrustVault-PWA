@@ -18,21 +18,27 @@ import {
   Toolbar,
   IconButton,
 } from '@mui/material';
-import { ArrowBack, Save } from '@mui/icons-material';
+import { ArrowBack } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { useCredentialStore } from '../store/credentialStore';
 import { userRepository } from '@/data/repositories/UserRepositoryImpl';
 import AutoLockSettings from '../components/AutoLockSettings';
 import ClipboardSettings from '../components/ClipboardSettings';
+import ChangeMasterPasswordDialog from '../components/ChangeMasterPasswordDialog';
+import ExportDialog from '../components/ExportDialog';
+import ImportDialog from '../components/ImportDialog';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
-  const { user, updateUser } = useAuthStore();
+  const { user, setUser } = useAuthStore();
   const { clearCredentials } = useCredentialStore();
 
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [changePasswordDialogOpen, setChangePasswordDialogOpen] = useState(false);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   // Security settings state
   const [sessionTimeout, setSessionTimeout] = useState(
@@ -41,24 +47,6 @@ export default function SettingsPage() {
   const [clipboardClearSeconds, setClipboardClearSeconds] = useState(
     user?.securitySettings?.clipboardClearSeconds ?? 30
   );
-  const [requirePasswordOnWake, setRequirePasswordOnWake] = useState(
-    user?.securitySettings?.requirePasswordOnWake ?? true
-  );
-  const [biometricEnabled, setBiometricEnabled] = useState(
-    user?.securitySettings?.biometricEnabled ?? false
-  );
-
-  // Display settings state
-  const [showPasswordStrength, setShowPasswordStrength] = useState(true);
-  const [cardDensity, setCardDensity] = useState<'comfortable' | 'compact'>('comfortable');
-
-  // Password generator defaults state
-  const [defaultLength, setDefaultLength] = useState(20);
-  const [includeUppercase, setIncludeUppercase] = useState(true);
-  const [includeLowercase, setIncludeLowercase] = useState(true);
-  const [includeNumbers, setIncludeNumbers] = useState(true);
-  const [includeSymbols, setIncludeSymbols] = useState(true);
-  const [excludeAmbiguous, setExcludeAmbiguous] = useState(false);
 
   // Save settings to database
   const saveSettings = async () => {
@@ -73,22 +61,19 @@ export default function SettingsPage() {
       await userRepository.updateSecuritySettings(user.id, {
         sessionTimeoutMinutes: sessionTimeout,
         clipboardClearSeconds: clipboardClearSeconds,
-        requirePasswordOnWake: requirePasswordOnWake,
-        biometricEnabled: biometricEnabled,
       });
 
       // Update user in store
       const updatedUser = {
         ...user,
         securitySettings: {
+          ...user.securitySettings,
           sessionTimeoutMinutes: sessionTimeout,
           clipboardClearSeconds: clipboardClearSeconds,
-          requirePasswordOnWake: requirePasswordOnWake,
-          biometricEnabled: biometricEnabled,
         },
       };
 
-      updateUser(updatedUser);
+      setUser(updatedUser);
 
       setSaveMessage('Settings saved successfully');
       setTimeout(() => setSaveMessage(null), 3000);
@@ -109,12 +94,7 @@ export default function SettingsPage() {
     }, 500); // Debounce 500ms
 
     return () => clearTimeout(timer);
-  }, [
-    sessionTimeout,
-    clipboardClearSeconds,
-    requirePasswordOnWake,
-    biometricEnabled,
-  ]);
+  }, [sessionTimeout, clipboardClearSeconds]);
 
   const handleClearAllData = async () => {
     const firstConfirm = window.confirm(
@@ -198,10 +178,9 @@ export default function SettingsPage() {
 
         <AutoLockSettings
           sessionTimeoutMinutes={sessionTimeout}
-          lockOnTabHidden={requirePasswordOnWake}
-          onSave={(timeout, lockOnHidden) => {
-            setSessionTimeout(timeout);
-            setRequirePasswordOnWake(lockOnHidden);
+          lockOnTabHidden={false}
+          onSave={(settings: { sessionTimeoutMinutes: number; lockOnTabHidden: boolean }) => {
+            setSessionTimeout(settings.sessionTimeoutMinutes);
           }}
         />
 
@@ -271,21 +250,25 @@ export default function SettingsPage() {
             Export & Import
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Backup your vault or import credentials from another device. (Coming soon)
+            Backup your vault with encryption or import credentials from another device.
           </Typography>
 
-          <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-            <Button variant="outlined" disabled>
+          <Box sx={{ display: 'flex', gap: 2 }}>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setExportDialogOpen(true)}
+            >
               Export Vault
             </Button>
-            <Button variant="outlined" disabled>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setImportDialogOpen(true)}
+            >
               Import Vault
             </Button>
           </Box>
-
-          <Alert severity="info">
-            Import/Export functionality will be available in a future update.
-          </Alert>
         </Paper>
 
         <Paper sx={{ p: 3, mb: 3 }}>
@@ -324,9 +307,13 @@ export default function SettingsPage() {
             Master Password
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Change your master password. This will re-encrypt all credentials. (Coming soon)
+            Change your master password. This will re-encrypt all credentials with the new password.
           </Typography>
-          <Button variant="outlined" disabled>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => setChangePasswordDialogOpen(true)}
+          >
             Change Master Password
           </Button>
         </Paper>
@@ -378,6 +365,36 @@ export default function SettingsPage() {
           </Box>
         </Paper>
       </Container>
+
+      {/* Change Master Password Dialog */}
+      <ChangeMasterPasswordDialog
+        open={changePasswordDialogOpen}
+        onClose={() => setChangePasswordDialogOpen(false)}
+        onSuccess={() => {
+          setSaveMessage('Master password changed successfully! You will be signed out.');
+          setChangePasswordDialogOpen(false);
+        }}
+      />
+
+      {/* Export Dialog */}
+      <ExportDialog
+        open={exportDialogOpen}
+        onClose={() => setExportDialogOpen(false)}
+        onSuccess={() => {
+          setSaveMessage('Vault exported successfully!');
+          setExportDialogOpen(false);
+        }}
+      />
+
+      {/* Import Dialog */}
+      <ImportDialog
+        open={importDialogOpen}
+        onClose={() => setImportDialogOpen(false)}
+        onSuccess={(count) => {
+          setSaveMessage(`Successfully imported ${count} credentials!`);
+          setImportDialogOpen(false);
+        }}
+      />
     </Box>
   );
 }

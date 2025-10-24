@@ -26,6 +26,8 @@ import {
   Snackbar,
   Alert,
   CircularProgress,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
 import Grid from '@mui/material/Grid2';
 import {
@@ -37,19 +39,26 @@ import {
   Dashboard as DashboardIcon,
   Favorite as FavoriteIcon,
   Security as SecurityIcon,
+  AccessTime,
+  Star as StarIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
 import CredentialCard from '@/presentation/components/CredentialCard';
+import SwipeableCredentialCard from '@/presentation/components/SwipeableCredentialCard';
+import CredentialDetailsDialog from '@/presentation/components/CredentialDetailsDialog';
+import CredentialSection from '@/presentation/components/CredentialSection';
 import DeleteConfirmDialog from '@/presentation/components/DeleteConfirmDialog';
 import SearchBar from '@/presentation/components/SearchBar';
 import FilterChips from '@/presentation/components/FilterChips';
 import SortDropdown, { type SortOption } from '@/presentation/components/SortDropdown';
 import type { Credential, CredentialCategory } from '@/domain/entities/Credential';
-
+import { clipboardManager } from '@/presentation/utils/clipboard';
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout, session } = useAuthStore();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   // UI state
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -58,9 +67,14 @@ export default function DashboardPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
+  // Mobile details dialog state
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [selectedCredential, setSelectedCredential] = useState<Credential | null>(null);
+
   // Filter and sort state
   const [selectedCategory, setSelectedCategory] = useState<CredentialCategory | 'all'>('all');
   const [favoritesOnly, setFavoritesOnly] = useState(false);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<SortOption>('updated-desc');
 
   // Credentials state
@@ -164,6 +178,68 @@ export default function DashboardPage() {
     setSnackbarOpen(true);
   };
 
+  const getCredentialToDelete = () => {
+    return credentials.find((c) => c.id === credentialToDelete);
+  };
+
+  // Mobile-specific handlers
+  const handleCredentialTap = (id: string) => {
+    if (isMobile) {
+      const credential = credentials.find((c) => c.id === id);
+      if (credential) {
+        setSelectedCredential(credential);
+        setDetailsDialogOpen(true);
+      }
+    }
+  };
+
+  const handleCopyUsername = async () => {
+    if (!selectedCredential) return;
+    await credentialRepository.updateAccessTime(selectedCredential.id);
+    const success = await clipboardManager.copy(selectedCredential.username, false, 0);
+    if (success) {
+      showSnackbar(`Username copied: ${selectedCredential.username}`);
+    } else {
+      showSnackbar('Failed to copy username');
+    }
+  };
+
+  const handleCopyPassword = async () => {
+    if (!selectedCredential) return;
+    await credentialRepository.updateAccessTime(selectedCredential.id);
+    const success = await clipboardManager.copy(selectedCredential.password, true, 30);
+    if (success) {
+      showSnackbar('Password copied! Auto-clearing in 30 seconds');
+    } else {
+      showSnackbar('Failed to copy password');
+    }
+  };
+
+  const handleDetailsEdit = () => {
+    if (selectedCredential) {
+      setDetailsDialogOpen(false);
+      handleEdit(selectedCredential.id);
+    }
+  };
+
+  const handleDetailsDelete = () => {
+    if (selectedCredential) {
+      setDetailsDialogOpen(false);
+      handleDeleteRequest(selectedCredential.id);
+    }
+  };
+
+  const handleDetailsToggleFavorite = () => {
+    if (selectedCredential) {
+      handleToggleFavorite(selectedCredential.id);
+      // Update selected credential
+      setSelectedCredential({
+        ...selectedCredential,
+        isFavorite: !selectedCredential.isFavorite,
+      });
+    }
+  };
+
   // Filter and sort credentials with useMemo for performance
   const filteredAndSortedCredentials = useMemo(() => {
     let filtered = [...credentials];
@@ -188,6 +264,13 @@ export default function DashboardPage() {
     // Apply favorites filter
     if (favoritesOnly) {
       filtered = filtered.filter((credential) => credential.isFavorite);
+    }
+
+    // Apply tag filter
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter((credential) =>
+        selectedTags.every((tag) => credential.tags.includes(tag))
+      );
     }
 
     // Apply sorting
@@ -215,7 +298,35 @@ export default function DashboardPage() {
     }
 
     return filtered;
-  }, [credentials, searchQuery, selectedCategory, favoritesOnly, sortBy]);
+  }, [credentials, searchQuery, selectedCategory, favoritesOnly, selectedTags, sortBy]);
+
+  // Separate credentials into sections
+  const favoriteCredentials = useMemo(() => {
+    return credentials
+      .filter((c) => c.isFavorite)
+      .sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+      .slice(0, 6); // Show max 6 favorites
+  }, [credentials]);
+
+  const recentlyUsedCredentials = useMemo(() => {
+    return credentials
+      .filter((c) => c.lastAccessedAt)
+      .sort((a, b) => {
+        const timeA = a.lastAccessedAt?.getTime() || 0;
+        const timeB = b.lastAccessedAt?.getTime() || 0;
+        return timeB - timeA;
+      })
+      .slice(0, 6); // Show max 6 recently used
+  }, [credentials]);
+
+  // Get all unique tags from credentials
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    credentials.forEach((credential) => {
+      credential.tags.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [credentials]);
 
   // Calculate stats
   const totalCredentials = credentials.length;
@@ -224,10 +335,6 @@ export default function DashboardPage() {
   const averageScore = totalCredentials > 0
     ? Math.round(credentials.reduce((sum, c) => sum + (c.securityScore || 0), 0) / totalCredentials)
     : 0;
-
-  const getCredentialToDelete = () => {
-    return credentials.find((c) => c.id === credentialToDelete);
-  };
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh' }}>
@@ -351,6 +458,9 @@ export default function DashboardPage() {
             onCategoryChange={setSelectedCategory}
             favoritesOnly={favoritesOnly}
             onFavoritesToggle={() => setFavoritesOnly(!favoritesOnly)}
+            selectedTags={selectedTags}
+            onTagsChange={setSelectedTags}
+            availableTags={allTags}
           />
         </Box>
 
@@ -471,6 +581,7 @@ export default function DashboardPage() {
                   setSearchQuery('');
                   setSelectedCategory('all');
                   setFavoritesOnly(false);
+                  setSelectedTags([]);
                 }}
               >
                 Clear All Filters
@@ -479,8 +590,42 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Credentials Grid */}
-        {!loading && !error && filteredAndSortedCredentials.length > 0 && (
+        {/* Favorites Section - Show when no filters active */}
+        {!loading && !error && credentials.length > 0 && favoriteCredentials.length > 0 && 
+         !searchQuery && selectedCategory === 'all' && !favoritesOnly && selectedTags.length === 0 && (
+          <Box sx={{ mb: 4 }}>
+            <CredentialSection
+              title="Favorites"
+              subtitle="Your starred credentials"
+              icon={<StarIcon />}
+              credentials={favoriteCredentials}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+              onToggleFavorite={handleToggleFavorite}
+              onCopySuccess={showSnackbar}
+            />
+          </Box>
+        )}
+
+        {/* Recently Used Section - Show when no filters active */}
+        {!loading && !error && credentials.length > 0 && recentlyUsedCredentials.length > 0 && 
+         !searchQuery && selectedCategory === 'all' && !favoritesOnly && selectedTags.length === 0 && (
+          <Box sx={{ mb: 4 }}>
+            <CredentialSection
+              title="Recently Used"
+              subtitle="Your most recently accessed credentials"
+              icon={<AccessTime />}
+              credentials={recentlyUsedCredentials}
+              onEdit={handleEdit}
+              onDelete={handleDeleteRequest}
+              onToggleFavorite={handleToggleFavorite}
+              onCopySuccess={showSnackbar}
+            />
+          </Box>
+        )}
+
+        {/* Credentials Grid - Desktop & Tablet */}
+        {!loading && !error && filteredAndSortedCredentials.length > 0 && !isMobile && (
           <Grid container spacing={2}>
             {filteredAndSortedCredentials.map((credential) => (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={credential.id}>
@@ -495,21 +640,52 @@ export default function DashboardPage() {
             ))}
           </Grid>
         )}
+
+        {/* Credentials List - Mobile with Swipe */}
+        {!loading && !error && filteredAndSortedCredentials.length > 0 && isMobile && (
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {filteredAndSortedCredentials.map((credential) => (
+              <SwipeableCredentialCard
+                key={credential.id}
+                credential={credential}
+                onEdit={handleEdit}
+                onDelete={handleDeleteRequest}
+                onToggleFavorite={handleToggleFavorite}
+                onTap={handleCredentialTap}
+              />
+            ))}
+          </Box>
+        )}
       </Box>
 
-      {/* FAB */}
+      {/* FAB - Position adjusted for mobile */}
       <Fab
         color="primary"
         aria-label="add"
         onClick={() => navigate('/credentials/add')}
         sx={{
           position: 'fixed',
-          bottom: 24,
+          bottom: { xs: 80, md: 24 }, // Higher on mobile to avoid bottom nav
           right: 24,
         }}
       >
         <AddIcon />
       </Fab>
+
+      {/* Mobile Credential Details Dialog */}
+      <CredentialDetailsDialog
+        open={detailsDialogOpen}
+        credential={selectedCredential}
+        onClose={() => {
+          setDetailsDialogOpen(false);
+          setSelectedCredential(null);
+        }}
+        onCopyUsername={handleCopyUsername}
+        onCopyPassword={handleCopyPassword}
+        onEdit={handleDetailsEdit}
+        onDelete={handleDetailsDelete}
+        onToggleFavorite={handleDetailsToggleFavorite}
+      />
 
       {/* Delete Confirmation Dialog */}
       <DeleteConfirmDialog

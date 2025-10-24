@@ -129,6 +129,7 @@ describe('Clipboard Utilities', () => {
     });
   });
 
+  describe('Security Features', () => {
     it('should not leave sensitive data in clipboard indefinitely', async () => {
       const sensitive = 'MySecretPassword123!';
       const timeout = 5000;
@@ -138,7 +139,6 @@ describe('Clipboard Utilities', () => {
       // Verify timeout is configured correctly
       expect(timeout).toBe(5000);
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(sensitive);
-    });xpect(navigator.clipboard.writeText).toHaveBeenCalledWith('');
     });
 
     it('should allow configurable timeouts for different sensitivity levels', async () => {

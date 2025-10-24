@@ -48,6 +48,9 @@ export class CredentialRepository implements ICredentialRepository {
       return null;
     }
 
+    // Update last accessed timestamp
+    await this.updateAccessTime(id);
+
     return this.decryptCredential(stored, decryptionKey);
   }
 

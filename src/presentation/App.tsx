@@ -19,6 +19,7 @@ import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
 import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
 import ClipboardNotification from './components/ClipboardNotification';
+import MobileNavigation from './components/MobileNavigation';
 
 function AppRoutes() {
   const { user, isAuthenticated, isLocked } = useAuthStore();
@@ -32,6 +33,10 @@ function AppRoutes() {
 
   return (
     <>
+      {/* Global components */}
+      <ClipboardNotification />
+      <MobileNavigation />
+      
       <Routes>
         {/* Signin route */}
         <Route
@@ -50,7 +55,9 @@ function AppRoutes() {
           path="/dashboard"
           element={
             isAuthenticated && !isLocked ? (
-              <DashboardPage />
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <DashboardPage />
+              </Box>
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -62,7 +69,9 @@ function AppRoutes() {
           path="/credentials/add"
           element={
             isAuthenticated && !isLocked ? (
-              <AddCredentialPage />
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <AddCredentialPage />
+              </Box>
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -74,7 +83,9 @@ function AppRoutes() {
           path="/credentials/:id/edit"
           element={
             isAuthenticated && !isLocked ? (
-              <EditCredentialPage />
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <EditCredentialPage />
+              </Box>
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -86,7 +97,9 @@ function AppRoutes() {
           path="/settings"
           element={
             isAuthenticated && !isLocked ? (
-              <SettingsPage />
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <SettingsPage />
+              </Box>
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -102,9 +115,6 @@ function AppRoutes() {
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/signin" replace />} />
       </Routes>
-
-      {/* Global Clipboard Notification */}
-      <ClipboardNotification />
     </>
   );
 }

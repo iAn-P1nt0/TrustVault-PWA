@@ -4,7 +4,6 @@
  */
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -14,7 +13,6 @@ import {
   IconButton,
   Button,
   Chip,
-  Avatar,
   Menu,
   MenuItem,
   ListItemIcon,
@@ -28,18 +26,13 @@ import {
   Delete,
   Star,
   StarBorder,
-  Lock,
-  CreditCard,
-  Key,
-  Note,
-  AccountBalance,
-  Person,
-  Code,
 } from '@mui/icons-material';
 import type { Credential } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
+import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
 import TotpDisplay from './TotpDisplay';
+import CategoryIcon, { getCategoryColor, getCategoryName } from './CategoryIcon';
 
 interface CredentialCardProps {
   credential: Credential;
@@ -56,10 +49,12 @@ export default function CredentialCard({
   onToggleFavorite,
   onCopySuccess,
 }: CredentialCardProps) {
-  const navigate = useNavigate();
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
 
   const handleCopyUsername = async () => {
+    // Update access time
+    await credentialRepository.updateAccessTime(credential.id);
+    
     const success = await clipboardManager.copy(credential.username, false, 0);
     if (success) {
       onCopySuccess(`Username copied: ${credential.username}`);
@@ -69,73 +64,14 @@ export default function CredentialCard({
   };
 
   const handleCopyPassword = async () => {
+    // Update access time
+    await credentialRepository.updateAccessTime(credential.id);
+    
     const success = await clipboardManager.copy(credential.password, true, 30);
     if (success) {
       onCopySuccess('Password copied! Auto-clearing in 30 seconds');
     } else {
       onCopySuccess('Failed to copy password');
-    }
-  };
-
-  const getCategoryIcon = () => {
-    switch (credential.category) {
-      case 'login':
-        return <Lock fontSize="small" />;
-      case 'credit_card':
-        return <CreditCard fontSize="small" />;
-      case 'bank_account':
-        return <AccountBalance fontSize="small" />;
-      case 'identity':
-        return <Person fontSize="small" />;
-      case 'api_key':
-        return <Code fontSize="small" />;
-      case 'ssh_key':
-        return <Key fontSize="small" />;
-      case 'secure_note':
-        return <Note fontSize="small" />;
-      default:
-        return <Lock fontSize="small" />;
-    }
-  };
-
-  const getCategoryColor = () => {
-    switch (credential.category) {
-      case 'login':
-        return 'primary';
-      case 'credit_card':
-        return 'success';
-      case 'bank_account':
-        return 'info';
-      case 'identity':
-        return 'secondary';
-      case 'api_key':
-      case 'ssh_key':
-        return 'warning';
-      case 'secure_note':
-        return 'default';
-      default:
-        return 'default';
-    }
-  };
-
-  const getCategoryLabel = () => {
-    switch (credential.category) {
-      case 'login':
-        return 'Login';
-      case 'credit_card':
-        return 'Card';
-      case 'bank_account':
-        return 'Bank';
-      case 'identity':
-        return 'Identity';
-      case 'api_key':
-        return 'API Key';
-      case 'ssh_key':
-        return 'SSH Key';
-      case 'secure_note':
-        return 'Note';
-      default:
-        return 'Other';
     }
   };
 
@@ -162,16 +98,9 @@ export default function CredentialCard({
       <CardContent sx={{ flexGrow: 1, pb: 1 }}>
         {/* Header */}
         <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 2 }}>
-          <Avatar
-            sx={{
-              mr: 2,
-              bgcolor: `${getCategoryColor()}.main`,
-              width: 40,
-              height: 40,
-            }}
-          >
-            {getCategoryIcon()}
-          </Avatar>
+          <Box sx={{ mr: 2 }}>
+            <CategoryIcon category={credential.category} size="small" />
+          </Box>
           <Box sx={{ flexGrow: 1, minWidth: 0 }}>
             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
               <Typography variant="h6" noWrap sx={{ flexGrow: 1 }}>
@@ -219,17 +148,46 @@ export default function CredentialCard({
           </Box>
         )}
 
+        {/* Category and Tags */}
+        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5, mb: 1 }}>
+          <Chip
+            size="small"
+            label={getCategoryName(credential.category)}
+            sx={{
+              backgroundColor: getCategoryColor(credential.category),
+              color: 'white',
+              fontWeight: 500,
+              fontSize: '0.75rem',
+            }}
+          />
+          {credential.tags && credential.tags.length > 0 && (
+            <>
+              {credential.tags.slice(0, 3).map((tag) => (
+                <Chip
+                  key={tag}
+                  size="small"
+                  label={tag}
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem' }}
+                />
+              ))}
+              {credential.tags.length > 3 && (
+                <Chip
+                  size="small"
+                  label={`+${credential.tags.length - 3}`}
+                  variant="outlined"
+                  sx={{ fontSize: '0.7rem' }}
+                />
+              )}
+            </>
+          )}
+        </Box>
+
         {/* Metadata */}
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
-          <Chip
-            label={getCategoryLabel()}
-            size="small"
-            color={getCategoryColor()}
-            variant="outlined"
-          />
           {credential.securityScore !== undefined && (
             <Chip
-              label={`${credential.securityScore}%`}
+              label={`Security: ${credential.securityScore}%`}
               size="small"
               color={getPasswordStrengthColor(credential.securityScore)}
               variant="outlined"

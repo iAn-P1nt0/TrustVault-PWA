@@ -23,8 +23,8 @@ export const KEY_LENGTH = 32; // 256 bits for AES-256
 export interface EncryptedData {
   ciphertext: string; // Base64 encoded
   iv: string; // Base64 encoded
-  salt?: string; // Base64 encoded (for password-based encryption)
-  authTag?: string; // Base64 encoded GCM auth tag
+  salt?: string | undefined; // Base64 encoded (for password-based encryption)
+  authTag?: string | undefined; // Base64 encoded GCM auth tag
 }
 
 /**

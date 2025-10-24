@@ -68,8 +68,11 @@ export default function PasswordGeneratorDialog({
     onClose();
   };
 
-  const handleLengthChange = (_event: Event, value: number | number[]) => {
-    setLength(Array.isArray(value) ? value[0] : value);
+  const handleLengthChange = (_: Event, value: number | number[]) => {
+    const length = Array.isArray(value) ? value[0] : value;
+    if (length !== undefined) {
+      setLength(length);
+    }
   };
 
   // Check if at least one character type is selected

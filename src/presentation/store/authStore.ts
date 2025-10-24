@@ -23,6 +23,9 @@ interface AuthState {
   unlockVault: (key: CryptoKey) => void;
   lock: () => void; // Auto-lock method (clears vault key, keeps user)
   logout: () => void;
+  clearSession: () => void; // Alias for logout (used in tests)
+  signout: () => void; // Alias for logout (used in SettingsPage)
+  updateUser: (user: User) => void; // Update user in store
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -71,6 +74,25 @@ export const useAuthStore = create<AuthState>()(
         isLocked: false,
         vaultKey: null
       }),
+
+      // Aliases for logout
+      clearSession: () => set({
+        user: null,
+        session: null,
+        isAuthenticated: false,
+        isLocked: false,
+        vaultKey: null
+      }),
+
+      signout: () => set({
+        user: null,
+        session: null,
+        isAuthenticated: false,
+        isLocked: false,
+        vaultKey: null
+      }),
+
+      updateUser: (user) => set({ user, isAuthenticated: true }),
     }),
     {
       name: 'trustvault-auth',

@@ -36,5 +36,6 @@ export interface CredentialInput {
   notes?: string | undefined;
   category: CredentialCategory;
   tags?: string[];
+  isFavorite?: boolean;
   totpSecret?: string | undefined; // TOTP/2FA secret (base32-encoded) - will be encrypted before storage
 }
