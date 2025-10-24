@@ -3,7 +3,7 @@
  * Displays a single credential with actions
  */
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import {
   Card,
   CardContent,
@@ -42,7 +42,8 @@ interface CredentialCardProps {
   onCopySuccess: (message: string) => void;
 }
 
-export default function CredentialCard({
+// Memoize component to prevent unnecessary re-renders
+const CredentialCard = memo(function CredentialCard({
   credential,
   onEdit,
   onDelete,
@@ -258,4 +259,6 @@ export default function CredentialCard({
       </Menu>
     </Card>
   );
-}
+});
+
+export default CredentialCard;

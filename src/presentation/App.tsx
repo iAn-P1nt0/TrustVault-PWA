@@ -8,18 +8,38 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { theme } from './theme/theme';
 import { useAuthStore } from './store/authStore';
-import SigninPage from './pages/SigninPage';
-import SignupPage from './pages/SignupPage';
-import DashboardPage from './pages/DashboardPage';
-import AddCredentialPage from './pages/AddCredentialPage';
-import EditCredentialPage from './pages/EditCredentialPage';
-import SettingsPage from './pages/SettingsPage';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
 import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
 import ClipboardNotification from './components/ClipboardNotification';
 import MobileNavigation from './components/MobileNavigation';
+import { initPerformanceMonitoring } from './utils/performance';
+
+// Lazy load page components for code splitting
+const SigninPage = lazy(() => import('./pages/SigninPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const AddCredentialPage = lazy(() => import('./pages/AddCredentialPage'));
+const EditCredentialPage = lazy(() => import('./pages/EditCredentialPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+
+// Loading fallback component
+function PageLoader() {
+  return (
+    <Box
+      sx={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        minHeight: '100vh',
+        backgroundColor: 'background.default',
+      }}
+    >
+      <CircularProgress />
+    </Box>
+  );
+}
 
 function AppRoutes() {
   const { user, isAuthenticated, isLocked } = useAuthStore();
@@ -37,7 +57,8 @@ function AppRoutes() {
       <ClipboardNotification />
       <MobileNavigation />
       
-      <Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes>
         {/* Signin route */}
         <Route
           path="/signin"
@@ -122,6 +143,11 @@ function AppRoutes() {
 function AppContent() {
   const { isAuthenticated, isLocked } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize performance monitoring (development only)
+  useEffect(() => {
+    initPerformanceMonitoring();
+  }, []);
 
   useEffect(() => {
     console.log('App mounted, initializing database...');

@@ -3,7 +3,7 @@
  * Main credential management interface
  */
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -112,25 +112,25 @@ export default function DashboardPage() {
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = useCallback(() => {
     logout();
-  };
+  }, [logout]);
 
-  const handleLockVault = () => {
+  const handleLockVault = useCallback(() => {
     // TODO: Implement vault locking (Phase 2)
     showSnackbar('Vault locking coming soon');
-  };
+  }, [showSnackbar]);
 
-  const handleEdit = (id: string) => {
+  const handleEdit = useCallback((id: string) => {
     navigate(`/credentials/${id}/edit`);
-  };
+  }, [navigate]);
 
-  const handleDeleteRequest = (id: string) => {
+  const handleDeleteRequest = useCallback((id: string) => {
     setCredentialToDelete(id);
     setDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const handleDeleteConfirm = async () => {
+  const handleDeleteConfirm = useCallback(async () => {
     if (!credentialToDelete) return;
 
     setDeleting(true);
@@ -146,7 +146,7 @@ export default function DashboardPage() {
     } finally {
       setDeleting(false);
     }
-  };
+  }, [credentialToDelete, showSnackbar]);
 
   const handleToggleFavorite = async (id: string) => {
     if (!session?.vaultKey) return;

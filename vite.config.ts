@@ -152,14 +152,20 @@ export default defineConfig({
       // external: ['argon2-browser'], // Temporarily commented out to test
       output: {
         manualChunks: {
-          'react-vendor': ['react', 'react-dom'],
+          'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'mui-vendor': ['@mui/material', '@mui/icons-material'],
           'security-vendor': ['@simplewebauthn/browser', '@noble/hashes'],
-          'storage-vendor': ['dexie', 'dexie-encrypted']
-        }
+          'storage-vendor': ['dexie']
+        },
+        // Optimize chunk naming for better caching
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
       }
     },
-    chunkSizeWarningLimit: 1000
+    chunkSizeWarningLimit: 1000,
+    // Optimize asset inlining threshold
+    assetsInlineLimit: 4096, // 4KB
   },
   optimizeDeps: {
     include: [
