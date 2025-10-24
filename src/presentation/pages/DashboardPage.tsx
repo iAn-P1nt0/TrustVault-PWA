@@ -112,6 +112,11 @@ export default function DashboardPage() {
     }
   };
 
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
   const handleLogout = useCallback(() => {
     logout();
   }, [logout]);
@@ -171,11 +176,6 @@ export default function DashboardPage() {
       console.error('Failed to toggle favorite:', err);
       showSnackbar('Failed to update favorite');
     }
-  };
-
-  const showSnackbar = (message: string) => {
-    setSnackbarMessage(message);
-    setSnackbarOpen(true);
   };
 
   const getCredentialToDelete = () => {

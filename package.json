@@ -21,7 +21,8 @@
     "test:watch": "vitest watch",
     "security:audit": "npm audit --audit-level=moderate",
     "pwa:build": "vite build --mode production",
-    "lighthouse": "lighthouse http://localhost:4173 --view"
+    "lighthouse": "lighthouse http://localhost:4173 --view",
+    "analyze:bundle": "vite build && du -sh dist/assets/js/*.js | sort -h"
   },
   "dependencies": {
     "@emotion/react": "^11.13.5",

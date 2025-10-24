@@ -136,6 +136,7 @@ function AppRoutes() {
         {/* Catch all */}
         <Route path="*" element={<Navigate to="/signin" replace />} />
       </Routes>
+      </Suspense>
     </>
   );
 }

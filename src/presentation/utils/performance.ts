@@ -196,8 +196,12 @@ export function measureFID(): void {
   try {
     const observer = new PerformanceObserver((list) => {
       for (const entry of list.getEntries()) {
-        const fid = entry.processingStart - entry.startTime;
-        console.log(`First Input Delay: ${fid.toFixed(2)}ms`);
+        // Type assertion for first-input entry which has processingStart
+        const fidEntry = entry as PerformanceEntry & { processingStart: number };
+        if ('processingStart' in entry) {
+          const fid = fidEntry.processingStart - entry.startTime;
+          console.log(`First Input Delay: ${fid.toFixed(2)}ms`);
+        }
       }
     });
 
@@ -217,7 +221,9 @@ export function measureLCP(): void {
     const observer = new PerformanceObserver((list) => {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
-      console.log(`Largest Contentful Paint: ${lastEntry.startTime.toFixed(2)}ms`);
+      if (lastEntry) {
+        console.log(`Largest Contentful Paint: ${lastEntry.startTime.toFixed(2)}ms`);
+      }
     });
 
     observer.observe({ type: 'largest-contentful-paint', buffered: true });
