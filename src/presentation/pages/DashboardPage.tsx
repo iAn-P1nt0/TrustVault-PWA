@@ -415,7 +415,7 @@ export default function DashboardPage() {
               </ListItemIcon>
               <ListItemText primary="Favorites" />
             </ListItemButton>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/security-audit')}>
               <ListItemIcon>
                 <SecurityIcon />
               </ListItemIcon>
