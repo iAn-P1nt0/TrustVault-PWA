@@ -307,9 +307,12 @@ function AppContent() {
     );
   }
 
+  // Get base path for routing - adjust for GitHub Pages deployment
+  const basename = import.meta.env.PROD ? '/TrustVault-PWA' : '';
+
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh', flexDirection: 'column' }}>
-      <BrowserRouter>
+      <BrowserRouter basename={basename}>
         <AppRoutes />
         {/* PWA helpers */}
         <InstallPrompt />
