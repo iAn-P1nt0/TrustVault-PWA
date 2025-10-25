@@ -28,6 +28,7 @@ import ChangeMasterPasswordDialog from '../components/ChangeMasterPasswordDialog
 import ExportDialog from '../components/ExportDialog';
 import ImportDialog from '../components/ImportDialog';
 import BiometricSetupDialog from '../components/BiometricSetupDialog';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -154,7 +155,8 @@ export default function SettingsPage() {
           <Typography variant="h6" sx={{ flexGrow: 1, ml: 2 }}>
             Settings
           </Typography>
-          {saving && <CircularProgress size={24} color="inherit" />}
+          {saving && <CircularProgress size={24} color="inherit" sx={{ mr: 1 }} />}
+          <ThemeToggle />
         </Toolbar>
       </AppBar>
 

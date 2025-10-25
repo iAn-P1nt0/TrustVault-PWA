@@ -52,6 +52,7 @@ import DeleteConfirmDialog from '@/presentation/components/DeleteConfirmDialog';
 import SearchBar from '@/presentation/components/SearchBar';
 import FilterChips from '@/presentation/components/FilterChips';
 import SortDropdown, { type SortOption } from '@/presentation/components/SortDropdown';
+import ThemeToggle from '@/presentation/components/ThemeToggle';
 import type { Credential, CredentialCategory } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
 export default function DashboardPage() {
@@ -161,18 +162,20 @@ export default function DashboardPage() {
       const credential = credentials.find((c) => c.id === id);
       if (!credential) return;
 
+      const newFavoriteState = !credential.isFavorite;
+
       await credentialRepository.update(
         id,
-        { ...credential },
+        { isFavorite: newFavoriteState },
         session.vaultKey
       );
 
       // Update local state
       setCredentials((prev) =>
-        prev.map((c) => (c.id === id ? { ...c, isFavorite: !c.isFavorite } : c))
+        prev.map((c) => (c.id === id ? { ...c, isFavorite: newFavoriteState } : c))
       );
 
-      showSnackbar(credential.isFavorite ? 'Removed from favorites' : 'Added to favorites');
+      showSnackbar(newFavoriteState ? 'Added to favorites' : 'Removed from favorites');
     } catch (err) {
       console.error('Failed to toggle favorite:', err);
       showSnackbar('Failed to update favorite');
@@ -353,6 +356,7 @@ export default function DashboardPage() {
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
             TrustVault
           </Typography>
+          <ThemeToggle />
           <IconButton color="inherit" onClick={handleLockVault}>
             <LockIcon />
           </IconButton>

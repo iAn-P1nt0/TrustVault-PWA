@@ -6,8 +6,9 @@
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { theme } from './theme/theme';
+import { createAppTheme } from './theme/theme';
 import { useAuthStore } from './store/authStore';
+import { useThemeStore } from './store/themeStore';
 import { useEffect, useState, useMemo, lazy, Suspense } from 'react';
 import { initializeDatabase } from '@/data/storage/database';
 import { Box, CircularProgress } from '@mui/material';
@@ -320,6 +321,11 @@ function AppContent() {
 }
 
 function App() {
+  const { mode } = useThemeStore();
+
+  // Create theme based on current mode
+  const theme = useMemo(() => createAppTheme(mode), [mode]);
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

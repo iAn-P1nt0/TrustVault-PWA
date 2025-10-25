@@ -79,6 +79,7 @@ export class CredentialRepository implements ICredentialRepository {
     if (input.notes !== undefined) updates.notes = input.notes;
     if (input.category) updates.category = input.category;
     if (input.tags) updates.tags = input.tags;
+    if (input.isFavorite !== undefined) updates.isFavorite = input.isFavorite ? 1 : 0;
 
     if (input.password) {
       const encryptedPassword = await encrypt(input.password, encryptionKey);

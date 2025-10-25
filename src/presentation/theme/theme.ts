@@ -1,13 +1,14 @@
 /**
  * Material-UI Theme Configuration
- * Security-focused dark theme matching TrustVault Android
+ * Security-focused theme with light/dark mode support
  */
 
 import { createTheme, type ThemeOptions } from '@mui/material/styles';
+import type { ThemeMode } from '../store/themeStore';
 
-const themeOptions: ThemeOptions = {
+const getThemeOptions = (mode: ThemeMode): ThemeOptions => ({
   palette: {
-    mode: 'dark',
+    mode,
     primary: {
       main: '#4CAF50', // Trust green
       light: '#81C784',
@@ -35,15 +36,26 @@ const themeOptions: ThemeOptions = {
       light: '#81C784',
       dark: '#388E3C',
     },
-    background: {
-      default: '#121212',
-      paper: '#1E1E1E',
-    },
-    text: {
-      primary: '#FFFFFF',
-      secondary: 'rgba(255, 255, 255, 0.7)',
-      disabled: 'rgba(255, 255, 255, 0.5)',
-    },
+    background: mode === 'dark'
+      ? {
+          default: '#121212',
+          paper: '#1E1E1E',
+        }
+      : {
+          default: '#F5F5F5',
+          paper: '#FFFFFF',
+        },
+    text: mode === 'dark'
+      ? {
+          primary: '#FFFFFF',
+          secondary: 'rgba(255, 255, 255, 0.7)',
+          disabled: 'rgba(255, 255, 255, 0.5)',
+        }
+      : {
+          primary: 'rgba(0, 0, 0, 0.87)',
+          secondary: 'rgba(0, 0, 0, 0.6)',
+          disabled: 'rgba(0, 0, 0, 0.38)',
+        },
   },
   typography: {
     fontFamily: [
@@ -114,7 +126,6 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: '#1E1E1E',
           borderRadius: 12,
         },
       },
@@ -148,19 +159,21 @@ const themeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           backgroundImage: 'none',
-          backgroundColor: '#1E1E1E',
         },
       },
     },
     MuiDrawer: {
       styleOverrides: {
         paper: {
-          backgroundColor: '#1E1E1E',
-          borderRight: '1px solid rgba(255, 255, 255, 0.12)',
+          backgroundImage: 'none',
         },
       },
     },
   },
-};
+});
 
-export const theme = createTheme(themeOptions);
+// Create theme with specified mode
+export const createAppTheme = (mode: ThemeMode) => createTheme(getThemeOptions(mode));
+
+// Default dark theme for backwards compatibility
+export const theme = createAppTheme('dark');
