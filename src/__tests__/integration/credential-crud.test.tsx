@@ -6,7 +6,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
 import App from '@/presentation/App';
 import { useAuthStore } from '@/presentation/store/authStore';
 
@@ -51,9 +50,9 @@ describe('Credential CRUD Integration', () => {
     it('should create a new credential with all fields', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -97,9 +96,9 @@ describe('Credential CRUD Integration', () => {
     it('should create credential with minimal fields (title only)', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -130,9 +129,9 @@ describe('Credential CRUD Integration', () => {
     it('should reject credential without title', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -162,9 +161,9 @@ describe('Credential CRUD Integration', () => {
     it('should display all created credentials in the list', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -215,9 +214,9 @@ describe('Credential CRUD Integration', () => {
     it('should view credential details by clicking on it', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -260,9 +259,9 @@ describe('Credential CRUD Integration', () => {
     it('should update credential with new values', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -332,9 +331,9 @@ describe('Credential CRUD Integration', () => {
     it('should persist updates after signout and signin', async () => {
       const user = userEvent.setup();
       const { unmount } = render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -366,9 +365,9 @@ describe('Credential CRUD Integration', () => {
 
       // Signin again
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {
@@ -405,9 +404,9 @@ describe('Credential CRUD Integration', () => {
     it('should delete credential and remove from list', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -468,9 +467,9 @@ describe('Credential CRUD Integration', () => {
     it('should maintain other credentials after deleting one', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);
@@ -550,9 +549,9 @@ describe('Credential CRUD Integration', () => {
     it('should complete create → read → update → delete cycle', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await setupAuthenticatedUser(user);

@@ -6,7 +6,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
 import App from '@/presentation/App';
 import { useAuthStore } from '@/presentation/store/authStore';
 
@@ -25,9 +24,9 @@ describe('Authentication Flow Integration', () => {
     it('should complete signup with valid credentials', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       // Wait for app to initialize and redirect to signin
@@ -71,9 +70,9 @@ describe('Authentication Flow Integration', () => {
     it('should reject signup with weak password', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {
@@ -108,9 +107,9 @@ describe('Authentication Flow Integration', () => {
     it('should reject signup with mismatched passwords', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {
@@ -146,9 +145,9 @@ describe('Authentication Flow Integration', () => {
     it('should signin with correct credentials after signup', async () => {
       const user = userEvent.setup();
       const { unmount } = render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       // First, create an account
@@ -184,9 +183,9 @@ describe('Authentication Flow Integration', () => {
 
       // Now sign back in
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {
@@ -215,9 +214,9 @@ describe('Authentication Flow Integration', () => {
     it('should reject signin with incorrect password', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       // Create account first
@@ -275,9 +274,9 @@ describe('Authentication Flow Integration', () => {
     it('should reject signin with non-existent email', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {
@@ -304,9 +303,9 @@ describe('Authentication Flow Integration', () => {
     it('should clear session and redirect to signin on signout', async () => {
       const user = userEvent.setup();
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       // Create account and sign in
@@ -372,9 +371,9 @@ describe('Authentication Flow Integration', () => {
 
       // Render app
       const { unmount } = render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       // STEP 1: SIGNUP
@@ -410,9 +409,9 @@ describe('Authentication Flow Integration', () => {
 
       // STEP 3: SIGNIN #1
       render(
-        <BrowserRouter>
+        
           <App />
-        </BrowserRouter>
+        
       );
 
       await waitFor(() => {

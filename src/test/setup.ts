@@ -53,11 +53,12 @@ beforeAll(() => {
   } as any;
 });
 
-// Mock navigator.clipboard
+// Mock navigator.clipboard (configurable for userEvent)
 Object.defineProperty(navigator, 'clipboard', {
   value: {
     writeText: vi.fn().mockResolvedValue(undefined),
     readText: vi.fn().mockResolvedValue(''),
   },
-  writable: true
+  writable: true,
+  configurable: true,
 });
