@@ -29,6 +29,7 @@ const EditCredentialPage = lazy(() => import('./pages/EditCredentialPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const SecurityAuditPage = lazy(() => import('./pages/SecurityAuditPage'));
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
+const UnlockPage = lazy(() => import('./pages/UnlockPage'));
 
 // Loading fallback component
 function PageLoader() {
@@ -77,6 +78,20 @@ function AppRoutes() {
           element={!isAuthenticated ? <SignupPage /> : <Navigate to="/dashboard" replace />}
         />
 
+        {/* Unlock route - shown when authenticated but locked */}
+        <Route
+          path="/unlock"
+          element={
+            isAuthenticated && isLocked ? (
+              <UnlockPage />
+            ) : isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
+        />
+
         {/* Dashboard route */}
         <Route
           path="/dashboard"
@@ -85,6 +100,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <DashboardPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -99,6 +116,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <AddCredentialPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -113,6 +132,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <EditCredentialPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -127,6 +148,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <SettingsPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -141,6 +164,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <SecurityAuditPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
@@ -155,6 +180,8 @@ function AppRoutes() {
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <FavoritesPage />
               </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
             )
