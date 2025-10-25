@@ -41,31 +41,47 @@ TrustVault is a **security-first Progressive Web App (PWA)** credential manager 
 
 - ✅ **AES-256-GCM Encryption** - Authenticated encryption for all credentials
 - ✅ **PBKDF2 Key Derivation** - 600,000+ iterations (OWASP 2025 standard)
-- ✅ **Argon2id Password Hashing** - Memory-hard algorithm for master passwords
-- ✅ **WebAuthn Biometric Auth** - Platform authenticator support
-- ✅ **Auto-Lock** - Configurable session timeout
-- ✅ **Secure Password Generator** - Cryptographically secure random passwords
-- ✅ **Password Strength Analyzer** - Real-time entropy calculation
+- ✅ **Scrypt Password Hashing** - Memory-hard algorithm (N=32768, r=8, p=1)
+- ✅ **WebAuthn Biometric Auth** - Fingerprint/Face ID platform authenticator
+- ✅ **Auto-Lock** - Configurable session timeout (1-30 min or never)
+- ✅ **Secure Password Generator** - 12-32 chars, customizable character sets
+- ✅ **Password Strength Analyzer** - Real-time 5-level strength indicator
+- ✅ **Master Password Change** - Re-encryption of all credentials
+- ✅ **TOTP/2FA Support** - RFC 6238-compliant authenticator codes
 
 ### User Experience
 
-- 📱 **Progressive Web App** - Install on any device
-- 🌓 **Dark Mode** - Eye-friendly interface
-- 🔍 **Smart Search** - Instant credential filtering
-- 🏷️ **Tags & Categories** - Organize credentials efficiently
-- ⭐ **Favorites** - Quick access to frequently used items
-- 📊 **Security Dashboard** - Visual security score and recommendations
-- 💾 **Import/Export** - Encrypted backup and restore
+- 📱 **Progressive Web App** - Installable on desktop and mobile
+- 🌓 **Dark Mode** - Eye-friendly Material-UI theme
+- 🔍 **Smart Search** - Real-time search across titles, usernames, websites
+- 🏷️ **Tags & Categories** - Login, Payment, Identity, Note, Secure Note
+- ⭐ **Favorites** - Star important credentials for quick access
+- 📊 **Credential Dashboard** - Grid view with search, filter, and sort
+- 💾 **Import/Export** - Encrypted .tvault backups with separate password
+- 📋 **Secure Clipboard** - Auto-clear after 30 seconds (configurable)
+- 📱 **Mobile Optimized** - Responsive design with bottom navigation
+- 👆 **Swipe Gestures** - Touch-friendly credential management
+
+### PWA Capabilities
+
+- 🔌 **Offline-First** - Full functionality without internet
+- 📲 **Install Prompt** - Custom install banner
+- 🔄 **Auto-Update** - Background service worker updates with notifications
+- 🌐 **Offline Indicator** - Visual feedback when network unavailable
+- ⚡ **App Shortcuts** - Quick actions from launcher (Add, Dashboard, Generate)
+- 🚀 **Fast Loading** - <1.8s First Contentful Paint
+- 💾 **IndexedDB Storage** - Persistent local encrypted database
 
 ### Technical Excellence
 
-- ⚡ **React 19** - Concurrent rendering and automatic batching
-- 📘 **TypeScript 5.7** - Strict mode with advanced type safety
-- 🏗️ **Clean Architecture** - Separated presentation/domain/data layers
-- 🗄️ **IndexedDB Storage** - Efficient local database with encryption
-- 🔄 **Zustand State Management** - Lightweight and performant
-- 🎨 **Material-UI v6** - Modern component library
-- 🛠️ **Vite 6** - Lightning-fast HMR and optimized builds
+- ⚡ **React 19** - Concurrent rendering, Suspense, automatic batching
+- 📘 **TypeScript 5.7** - Strict mode with exactOptionalPropertyTypes
+- 🏗️ **Clean Architecture** - Domain/Data/Presentation/Core layers
+- 🗄️ **IndexedDB + Dexie** - Encrypted local storage with query support
+- 🔄 **Zustand State Management** - 1KB state library with persistence
+- 🎨 **Material-UI v7** - Modern component library with custom theme
+- 🛠️ **Vite 6** - Lightning-fast HMR, optimized production builds
+- 🧪 **Comprehensive Testing** - Unit, integration, and security tests (Vitest)
 
 ---
 
@@ -269,27 +285,43 @@ PWA:
 
 ## 🛣️ Roadmap
 
-### Version 1.0 (Current)
-- [x] Core encryption engine
+### Version 1.0 (✅ COMPLETE - 2025-10-25)
+- [x] Core encryption engine (AES-256-GCM, Scrypt, PBKDF2)
 - [x] Master password authentication
-- [x] Credential CRUD operations
-- [x] Password generator
-- [x] Security dashboard
-- [x] PWA support
+- [x] Credential CRUD operations with categories and tags
+- [x] Password generator with strength analyzer
+- [x] TOTP/2FA authenticator support
+- [x] WebAuthn biometric authentication
+- [x] Import/export encrypted backups
+- [x] Auto-lock and session management
+- [x] Secure clipboard with auto-clear
+- [x] PWA with offline support
+- [x] Mobile-optimized responsive design
+- [x] Comprehensive test suite (unit, integration, security)
+- [x] Production-ready deployment
 
-### Version 1.1 (Next)
-- [ ] WebAuthn biometric authentication
-- [ ] Import/export functionality
-- [ ] Password strength audit
-- [ ] Breach monitoring
-- [ ] Custom categories
+### Version 1.1 (Q1 2026 - Planned)
+- [ ] Password history tracking
+- [ ] Credential health dashboard (weak, reused, old passwords)
+- [ ] Browser extension integration
+- [ ] Dark/Light theme toggle
+- [ ] CSV import from other password managers
+- [ ] Secure notes with rich text editor
+- [ ] Attachments support (encrypted files)
 
-### Version 2.0 (Future)
-- [ ] End-to-end encrypted sync
-- [ ] Secure password sharing
-- [ ] Hardware security key support
-- [ ] Emergency access
+### Version 2.0 (Q2-Q3 2026 - Future)
+- [ ] End-to-end encrypted cloud sync
+- [ ] Password compromise detection (haveibeenpwned.com API)
+- [ ] Auto-fill browser extension
+- [ ] Emergency access (trusted contacts)
+- [ ] Multiple vaults
+- [ ] Secure credential sharing
+- [ ] Hardware security key support (YubiKey)
+- [ ] Organizational accounts (teams)
+- [ ] Advanced audit logs
 - [ ] Multi-language support
+
+**See [CHANGELOG.md](./CHANGELOG.md) for detailed version history and planned features.**
 
 ---
 
