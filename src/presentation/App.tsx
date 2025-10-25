@@ -17,6 +17,7 @@ import MobileNavigation from './components/MobileNavigation';
 import InstallPrompt from './components/InstallPrompt';
 import OfflineIndicator from './components/OfflineIndicator';
 import UpdateAvailableSnackbar from './components/UpdateAvailableSnackbar';
+import CryptoAPIError from './components/CryptoAPIError';
 import { initPerformanceMonitoring } from './utils/performance';
 
 // Lazy load page components for code splitting
@@ -147,6 +148,17 @@ function AppRoutes() {
 function AppContent() {
   const { isAuthenticated, isLocked } = useAuthStore();
   const [isInitialized, setIsInitialized] = useState(false);
+  const [cryptoAPIAvailable, setCryptoAPIAvailable] = useState<boolean | null>(null);
+
+  // Check if Web Crypto API is available (required for encryption)
+  useEffect(() => {
+    const isAvailable = typeof crypto !== 'undefined' && !!crypto.subtle;
+    setCryptoAPIAvailable(isAvailable);
+
+    if (!isAvailable) {
+      console.error('Web Crypto API not available. HTTPS or localhost required.');
+    }
+  }, []);
 
   // Initialize performance monitoring (development only)
   useEffect(() => {
@@ -192,7 +204,29 @@ function AppContent() {
     };
   }, []);
 
-  console.log('App rendering - isAuthenticated:', isAuthenticated, 'isLocked:', isLocked, 'isInitialized:', isInitialized);
+  console.log('App rendering - isAuthenticated:', isAuthenticated, 'isLocked:', isLocked, 'isInitialized:', isInitialized, 'cryptoAPIAvailable:', cryptoAPIAvailable);
+
+  // Show error if crypto API not available
+  if (cryptoAPIAvailable === false) {
+    return <CryptoAPIError currentUrl={window.location.href} />;
+  }
+
+  // Show loading while checking crypto API
+  if (cryptoAPIAvailable === null) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          minHeight: '100vh',
+          backgroundColor: '#121212',
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (!isInitialized) {
     return (

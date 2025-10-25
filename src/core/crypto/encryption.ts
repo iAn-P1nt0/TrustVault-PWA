@@ -2,7 +2,7 @@
  * Core Cryptographic Service
  * Implements AES-256-GCM encryption with PBKDF2 key derivation
  * OWASP Mobile Top 10 2025 compliant
- * 
+ *
  * Security Features:
  * - AES-256-GCM authenticated encryption
  * - PBKDF2 with 600,000+ iterations (OWASP 2025 recommendation)
@@ -13,6 +13,19 @@
 
 import { pbkdf2 } from '@noble/hashes/pbkdf2';
 import { sha256 } from '@noble/hashes/sha256';
+
+/**
+ * Validates that Web Crypto API is available
+ * Throws descriptive error if not available (requires HTTPS or localhost)
+ */
+function validateCryptoAPI(): void {
+  if (typeof crypto === 'undefined' || !crypto.subtle) {
+    throw new Error(
+      'Web Crypto API is not available. TrustVault requires HTTPS or localhost to function. ' +
+      'Current URL: ' + window.location.href
+    );
+  }
+}
 
 // OWASP 2025 compliant iteration counts
 export const PBKDF2_ITERATIONS = 600_000;
@@ -61,6 +74,9 @@ export async function deriveKeyFromPassword(
     dkLen: KEY_LENGTH,
   });
 
+  // Validate crypto API is available
+  validateCryptoAPI();
+
   // Import as WebCrypto key for AES-GCM operations
   return crypto.subtle.importKey(
     'raw',
@@ -75,6 +91,7 @@ export async function deriveKeyFromPassword(
  * Generates a new AES-256-GCM encryption key
  */
 export async function generateEncryptionKey(): Promise<CryptoKey> {
+  validateCryptoAPI();
   return crypto.subtle.generateKey(
     {
       name: 'AES-GCM',
@@ -94,6 +111,8 @@ export async function encrypt(
   key: CryptoKey
 ): Promise<EncryptedData> {
   try {
+    validateCryptoAPI();
+
     const encoder = new TextEncoder();
     const data = encoder.encode(plaintext);
     const iv = generateRandomBytes(IV_LENGTH);
@@ -125,6 +144,8 @@ export async function decrypt(
   key: CryptoKey
 ): Promise<string> {
   try {
+    validateCryptoAPI();
+
     const ciphertext = base64ToArrayBuffer(encryptedData.ciphertext);
     const iv = base64ToArrayBuffer(encryptedData.iv);
 
