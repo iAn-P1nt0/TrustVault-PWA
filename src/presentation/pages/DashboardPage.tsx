@@ -122,8 +122,9 @@ export default function DashboardPage() {
   }, [logout]);
 
   const handleLockVault = useCallback(() => {
-    // TODO: Implement vault locking (Phase 2)
-    showSnackbar('Vault locking coming soon');
+    // Lock the vault (clears vault key, keeps user authenticated)
+    useAuthStore.getState().lockVault();
+    showSnackbar('Vault locked successfully');
   }, [showSnackbar]);
 
   const handleEdit = useCallback((id: string) => {
