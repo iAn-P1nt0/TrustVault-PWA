@@ -98,7 +98,9 @@ export default function CryptoAPIError({ currentUrl }: CryptoAPIErrorProps) {
 
           <Button
             variant="outlined"
-            onClick={() => window.open('https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API', '_blank')}
+            onClick={() => {
+              window.open('https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API', '_blank');
+            }}
           >
             Learn More
           </Button>
