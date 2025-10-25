@@ -19,6 +19,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
+      manifestFilename: 'manifest.webmanifest',
       manifest: {
         name: 'TrustVault - Secure Credential Manager',
         short_name: 'TrustVault',
@@ -27,8 +28,8 @@ export default defineConfig({
         background_color: '#121212',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/TrustVault-PWA/',
-        start_url: '/TrustVault-PWA/',
+        scope: './',
+        start_url: './',
         icons: [
           {
             src: 'pwa-192x192.png',
