@@ -28,6 +28,7 @@ const AddCredentialPage = lazy(() => import('./pages/AddCredentialPage'));
 const EditCredentialPage = lazy(() => import('./pages/EditCredentialPage'));
 const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const SecurityAuditPage = lazy(() => import('./pages/SecurityAuditPage'));
+const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 
 // Loading fallback component
 function PageLoader() {
@@ -139,6 +140,20 @@ function AppRoutes() {
             isAuthenticated && !isLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <SecurityAuditPage />
+              </Box>
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
+        />
+
+        {/* Favorites route */}
+        <Route
+          path="/favorites"
+          element={
+            isAuthenticated && !isLocked ? (
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <FavoritesPage />
               </Box>
             ) : (
               <Navigate to="/signin" replace />

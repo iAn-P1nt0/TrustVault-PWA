@@ -409,7 +409,7 @@ export default function DashboardPage() {
               </ListItemIcon>
               <ListItemText primary="All Credentials" />
             </ListItemButton>
-            <ListItemButton>
+            <ListItemButton onClick={() => navigate('/favorites')}>
               <ListItemIcon>
                 <FavoriteIcon />
               </ListItemIcon>
