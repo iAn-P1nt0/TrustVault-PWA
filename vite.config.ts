@@ -7,6 +7,8 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  // Set base path for GitHub Pages deployment
+  base: '/TrustVault-PWA/',
   plugins: [
     wasm(),
     topLevelAwait(),
@@ -25,8 +27,8 @@ export default defineConfig({
         background_color: '#121212',
         display: 'standalone',
         orientation: 'portrait',
-        scope: '/',
-        start_url: '/',
+        scope: '/TrustVault-PWA/',
+        start_url: '/TrustVault-PWA/',
         icons: [
           {
             src: 'pwa-192x192.png',
