@@ -14,6 +14,9 @@ import { Box, CircularProgress } from '@mui/material';
 import { useAutoLock, getDefaultAutoLockConfig } from './hooks/useAutoLock';
 import ClipboardNotification from './components/ClipboardNotification';
 import MobileNavigation from './components/MobileNavigation';
+import InstallPrompt from './components/InstallPrompt';
+import OfflineIndicator from './components/OfflineIndicator';
+import UpdateAvailableSnackbar from './components/UpdateAvailableSnackbar';
 import { initPerformanceMonitoring } from './utils/performance';
 
 // Lazy load page components for code splitting
@@ -216,6 +219,10 @@ function AppContent() {
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh', flexDirection: 'column' }}>
       <BrowserRouter>
         <AppRoutes />
+        {/* PWA helpers */}
+        <InstallPrompt />
+        <OfflineIndicator />
+        <UpdateAvailableSnackbar />
       </BrowserRouter>
     </div>
   );

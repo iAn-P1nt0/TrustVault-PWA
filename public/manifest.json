@@ -49,4 +49,28 @@
       "form_factor": "wide"
     }
   ]
+  ,
+  "shortcuts": [
+    {
+      "name": "Add Credential",
+      "short_name": "Add",
+      "description": "Add a new credential to your vault",
+      "url": "/credentials/add",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Generate Password",
+      "short_name": "Generate",
+      "description": "Open password generator",
+      "url": "/settings#password-generator",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Open Dashboard",
+      "short_name": "Dashboard",
+      "description": "Go to your dashboard",
+      "url": "/dashboard",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
 }
