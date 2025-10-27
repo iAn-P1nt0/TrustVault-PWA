@@ -21,6 +21,19 @@ export class CredentialRepository implements ICredentialRepository {
       encryptedTotpSecret = JSON.stringify(totpSecretEncrypted);
     }
 
+    // Encrypt card-specific fields if provided
+    let encryptedCardNumber: string | undefined;
+    if (input.cardNumber) {
+      const cardNumberEncrypted = await encrypt(input.cardNumber, encryptionKey);
+      encryptedCardNumber = JSON.stringify(cardNumberEncrypted);
+    }
+
+    let encryptedCvv: string | undefined;
+    if (input.cvv) {
+      const cvvEncrypted = await encrypt(input.cvv, encryptionKey);
+      encryptedCvv = JSON.stringify(cvvEncrypted);
+    }
+
     const credential: StoredCredential = {
       id: crypto.randomUUID(),
       title: input.title,
@@ -35,6 +48,14 @@ export class CredentialRepository implements ICredentialRepository {
       updatedAt: Date.now(),
       isFavorite: false,
       securityScore: analyzePasswordStrength(input.password).score,
+      // Card-specific fields
+      encryptedCardNumber,
+      cardholderName: input.cardholderName,
+      expiryMonth: input.expiryMonth,
+      expiryYear: input.expiryYear,
+      encryptedCvv,
+      cardType: input.cardType,
+      billingAddress: input.billingAddress,
     };
 
     await db.credentials.add(credential);
@@ -79,7 +100,7 @@ export class CredentialRepository implements ICredentialRepository {
     if (input.notes !== undefined) updates.notes = input.notes;
     if (input.category) updates.category = input.category;
     if (input.tags) updates.tags = input.tags;
-    if (input.isFavorite !== undefined) updates.isFavorite = input.isFavorite ? 1 : 0;
+    if (input.isFavorite !== undefined) updates.isFavorite = input.isFavorite;
 
     if (input.password) {
       const encryptedPassword = await encrypt(input.password, encryptionKey);
@@ -96,6 +117,31 @@ export class CredentialRepository implements ICredentialRepository {
         updates.encryptedTotpSecret = undefined;
       }
     }
+
+    // Handle card-specific field updates
+    if (input.cardNumber !== undefined) {
+      if (input.cardNumber) {
+        const cardNumberEncrypted = await encrypt(input.cardNumber, encryptionKey);
+        updates.encryptedCardNumber = JSON.stringify(cardNumberEncrypted);
+      } else {
+        updates.encryptedCardNumber = undefined;
+      }
+    }
+
+    if (input.cvv !== undefined) {
+      if (input.cvv) {
+        const cvvEncrypted = await encrypt(input.cvv, encryptionKey);
+        updates.encryptedCvv = JSON.stringify(cvvEncrypted);
+      } else {
+        updates.encryptedCvv = undefined;
+      }
+    }
+
+    if (input.cardholderName !== undefined) updates.cardholderName = input.cardholderName;
+    if (input.expiryMonth !== undefined) updates.expiryMonth = input.expiryMonth;
+    if (input.expiryYear !== undefined) updates.expiryYear = input.expiryYear;
+    if (input.cardType !== undefined) updates.cardType = input.cardType;
+    if (input.billingAddress !== undefined) updates.billingAddress = input.billingAddress;
 
     await db.credentials.update(id, updates);
 
@@ -238,6 +284,27 @@ export class CredentialRepository implements ICredentialRepository {
         }
       }
 
+      // Decrypt card-specific fields if present
+      let cardNumber: string | undefined;
+      if (stored.encryptedCardNumber) {
+        try {
+          const encryptedCardData = JSON.parse(stored.encryptedCardNumber);
+          cardNumber = await decrypt(encryptedCardData, vaultKey);
+        } catch (error) {
+          console.error('Failed to decrypt card number:', error);
+        }
+      }
+
+      let cvv: string | undefined;
+      if (stored.encryptedCvv) {
+        try {
+          const encryptedCvvData = JSON.parse(stored.encryptedCvv);
+          cvv = await decrypt(encryptedCvvData, vaultKey);
+        } catch (error) {
+          console.error('Failed to decrypt CVV:', error);
+        }
+      }
+
       return {
         id: stored.id,
         title: stored.title,
@@ -253,6 +320,14 @@ export class CredentialRepository implements ICredentialRepository {
         isFavorite: stored.isFavorite,
         securityScore: stored.securityScore,
         totpSecret, // Decrypted TOTP secret
+        // Card-specific fields
+        cardNumber,
+        cardholderName: stored.cardholderName,
+        expiryMonth: stored.expiryMonth,
+        expiryYear: stored.expiryYear,
+        cvv,
+        cardType: stored.cardType,
+        billingAddress: stored.billingAddress,
       };
     } catch (error) {
       console.error('Failed to decrypt credential:', error);

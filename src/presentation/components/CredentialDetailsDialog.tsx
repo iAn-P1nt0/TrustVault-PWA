@@ -191,10 +191,73 @@ export default function CredentialDetailsDialog({
 
         {/* Credential Information */}
         <List>
-          {/* Username */}
-          <ListItem>
-            <ListItemText primary="Username" secondary={credential.username} />
-          </ListItem>
+          {/* Card-specific fields */}
+          {credential.category === 'credit_card' ? (
+            <>
+              {/* Card Number (masked) */}
+              {credential.cardNumber && (
+                <ListItem>
+                  <ListItemText
+                    primary="Card Number"
+                    secondary={`•••• •••• •••• ${credential.cardNumber.slice(-4)}`}
+                  />
+                </ListItem>
+              )}
+
+              {/* Cardholder Name */}
+              {credential.cardholderName && (
+                <ListItem>
+                  <ListItemText primary="Cardholder Name" secondary={credential.cardholderName} />
+                </ListItem>
+              )}
+
+              {/* Card Type */}
+              {credential.cardType && (
+                <ListItem>
+                  <ListItemText
+                    primary="Card Type"
+                    secondary={credential.cardType.charAt(0).toUpperCase() + credential.cardType.slice(1)}
+                  />
+                </ListItem>
+              )}
+
+              {/* Expiry Date */}
+              {credential.expiryMonth && credential.expiryYear && (
+                <ListItem>
+                  <ListItemText
+                    primary="Expiry Date"
+                    secondary={`${credential.expiryMonth}/${credential.expiryYear}`}
+                  />
+                </ListItem>
+              )}
+
+              {/* CVV (masked) */}
+              {credential.cvv && (
+                <ListItem>
+                  <ListItemText primary="CVV" secondary="•••" />
+                </ListItem>
+              )}
+
+              {/* Billing Address */}
+              {credential.billingAddress && (
+                <ListItem>
+                  <ListItemText primary="Billing Address" secondary={credential.billingAddress} />
+                </ListItem>
+              )}
+            </>
+          ) : (
+            <>
+              {/* Username */}
+              <ListItem>
+                <ListItemText primary="Username" secondary={credential.username} />
+              </ListItem>
+
+              {/* Password (masked) */}
+              <ListItem>
+                <ListItemText primary="Password" secondary="••••••••••••" />
+              </ListItem>
+            </>
+          )}
 
           {/* URL */}
           {credential.url && (
@@ -214,11 +277,6 @@ export default function CredentialDetailsDialog({
               />
             </ListItem>
           )}
-
-          {/* Password (masked) */}
-          <ListItem>
-            <ListItemText primary="Password" secondary="••••••••••••" />
-          </ListItem>
 
           {/* TOTP */}
           {credential.totpSecret && (
@@ -282,22 +340,53 @@ export default function CredentialDetailsDialog({
           gap: 1,
         }}
       >
-        <Button
-          variant="outlined"
-          startIcon={<ContentCopy />}
-          onClick={onCopyUsername}
-          fullWidth
-        >
-          Username
-        </Button>
-        <Button
-          variant="outlined"
-          startIcon={<ContentCopy />}
-          onClick={onCopyPassword}
-          fullWidth
-        >
-          Password
-        </Button>
+        {credential.category === 'credit_card' ? (
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<ContentCopy />}
+              onClick={() => {
+                if (credential.cardNumber) {
+                  navigator.clipboard.writeText(credential.cardNumber);
+                }
+              }}
+              fullWidth
+            >
+              Card #
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ContentCopy />}
+              onClick={() => {
+                if (credential.cvv) {
+                  navigator.clipboard.writeText(credential.cvv);
+                }
+              }}
+              fullWidth
+            >
+              CVV
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outlined"
+              startIcon={<ContentCopy />}
+              onClick={onCopyUsername}
+              fullWidth
+            >
+              Username
+            </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ContentCopy />}
+              onClick={onCopyPassword}
+              fullWidth
+            >
+              Password
+            </Button>
+          </>
+        )}
         <Button variant="outlined" startIcon={<Edit />} onClick={onEdit} fullWidth>
           Edit
         </Button>

@@ -60,6 +60,15 @@ export default function AddCredentialPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [totpSecret, setTotpSecret] = useState('');
 
+  // Card-specific state
+  const [cardNumber, setCardNumber] = useState('');
+  const [cardholderName, setCardholderName] = useState('');
+  const [expiryMonth, setExpiryMonth] = useState('');
+  const [expiryYear, setExpiryYear] = useState('');
+  const [cvv, setCvv] = useState('');
+  const [cardType, setCardType] = useState<'visa' | 'mastercard' | 'amex' | 'discover' | 'other'>('visa');
+  const [billingAddress, setBillingAddress] = useState('');
+
   // UI state
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -76,14 +85,38 @@ export default function AddCredentialPage() {
       newErrors.title = 'Title is required';
     }
 
-    if (!username.trim()) {
-      newErrors.username = 'Username is required';
-    }
+    // For credit cards, validate card-specific fields instead of username/password
+    if (category === 'credit_card') {
+      if (!cardNumber.trim()) {
+        newErrors.cardNumber = 'Card number is required';
+      } else if (!/^\d{13,19}$/.test(cardNumber.replace(/\s/g, ''))) {
+        newErrors.cardNumber = 'Invalid card number format';
+      }
 
-    if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 4) {
-      newErrors.password = 'Password must be at least 4 characters';
+      if (!cardholderName.trim()) {
+        newErrors.cardholderName = 'Cardholder name is required';
+      }
+
+      if (!expiryMonth || !expiryYear) {
+        newErrors.expiry = 'Expiration date is required';
+      }
+
+      if (!cvv.trim()) {
+        newErrors.cvv = 'CVV is required';
+      } else if (!/^\d{3,4}$/.test(cvv)) {
+        newErrors.cvv = 'Invalid CVV format';
+      }
+    } else {
+      // Standard validation for non-card credentials
+      if (!username.trim()) {
+        newErrors.username = 'Username is required';
+      }
+
+      if (!password) {
+        newErrors.password = 'Password is required';
+      } else if (password.length < 4) {
+        newErrors.password = 'Password must be at least 4 characters';
+      }
     }
 
     setErrors(newErrors);
@@ -112,20 +145,34 @@ export default function AddCredentialPage() {
     setError(null);
 
     try {
-      const credential = await credentialRepository.create(
-        {
-          title: title.trim(),
-          username: username.trim(),
-          password,
-          url: url.trim() || undefined,
-          notes: notes.trim() || undefined,
-          category,
-          tags,
-          totpSecret: totpSecret.trim() || undefined,
-        },
-        session.vaultKey
-      );
-      
+      const inputData: any = {
+        title: title.trim(),
+        category,
+        tags,
+        url: url.trim() || undefined,
+        notes: notes.trim() || undefined,
+      };
+
+      // Add card-specific fields for credit cards
+      if (category === 'credit_card') {
+        inputData.username = cardholderName.trim(); // Store cardholder name as username
+        inputData.password = 'N/A'; // Placeholder for required field
+        inputData.cardNumber = cardNumber.replace(/\s/g, '');
+        inputData.cardholderName = cardholderName.trim();
+        inputData.expiryMonth = expiryMonth;
+        inputData.expiryYear = expiryYear;
+        inputData.cvv = cvv;
+        inputData.cardType = cardType;
+        inputData.billingAddress = billingAddress.trim() || undefined;
+      } else {
+        // Standard credential fields
+        inputData.username = username.trim();
+        inputData.password = password;
+        inputData.totpSecret = totpSecret.trim() || undefined;
+      }
+
+      const credential = await credentialRepository.create(inputData, session.vaultKey);
+
       // Update favorite status after creation if needed
       if (isFavorite) {
         await credentialRepository.update(credential.id, { isFavorite: true }, session.vaultKey);
@@ -192,78 +239,214 @@ export default function AddCredentialPage() {
             ))}
           </TextField>
 
-          {/* Username */}
-          <TextField
-            fullWidth
-            label="Username / Email"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            error={!!errors.username}
-            helperText={errors.username}
-            margin="normal"
-            required
-            placeholder="user@example.com"
-          />
+          {/* Conditional Fields based on Category */}
+          {category === 'credit_card' ? (
+            <>
+              {/* Card Number */}
+              <TextField
+                fullWidth
+                label="Card Number"
+                value={cardNumber}
+                onChange={(e) => setCardNumber(e.target.value)}
+                error={!!errors.cardNumber}
+                helperText={errors.cardNumber}
+                margin="normal"
+                required
+                placeholder="1234 5678 9012 3456"
+                inputProps={{ maxLength: 19 }}
+              />
 
-          {/* Password */}
-          <TextField
-            fullWidth
-            label="Password"
-            type={showPassword ? 'text' : 'password'}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            error={!!errors.password}
-            helperText={errors.password}
-            margin="normal"
-            required
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={handleGeneratePassword}
-                    edge="end"
-                    title="Generate password"
-                    sx={{ mr: 1 }}
-                  >
-                    <AutoAwesome />
-                  </IconButton>
-                  <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                    title={showPassword ? 'Hide password' : 'Show password'}
-                  >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+              {/* Cardholder Name */}
+              <TextField
+                fullWidth
+                label="Cardholder Name"
+                value={cardholderName}
+                onChange={(e) => setCardholderName(e.target.value)}
+                error={!!errors.cardholderName}
+                helperText={errors.cardholderName}
+                margin="normal"
+                required
+                placeholder="JOHN DOE"
+              />
 
-          {/* Password Strength Indicator */}
-          <PasswordStrengthIndicator password={password} showFeedback />
+              {/* Card Type */}
+              <TextField
+                fullWidth
+                select
+                label="Card Type"
+                value={cardType}
+                onChange={(e) => setCardType(e.target.value as typeof cardType)}
+                margin="normal"
+              >
+                <MenuItem value="visa">Visa</MenuItem>
+                <MenuItem value="mastercard">Mastercard</MenuItem>
+                <MenuItem value="amex">American Express</MenuItem>
+                <MenuItem value="discover">Discover</MenuItem>
+                <MenuItem value="other">Other</MenuItem>
+              </TextField>
 
-          {/* TOTP Secret (2FA) */}
-          <TextField
-            fullWidth
-            label="TOTP Secret (Optional)"
-            value={totpSecret}
-            onChange={(e) => setTotpSecret(e.target.value)}
-            margin="normal"
-            placeholder="Base32-encoded secret (e.g., from Google Authenticator)"
-            helperText="Enter the base32-encoded secret key for 2FA/TOTP authentication"
-          />
+              {/* Expiry Date */}
+              <Box sx={{ display: 'flex', gap: 2, mt: 2 }}>
+                <TextField
+                  select
+                  label="Expiry Month"
+                  value={expiryMonth}
+                  onChange={(e) => setExpiryMonth(e.target.value)}
+                  error={!!errors.expiry}
+                  required
+                  sx={{ flex: 1 }}
+                >
+                  {Array.from({ length: 12 }, (_, i) => {
+                    const month = String(i + 1).padStart(2, '0');
+                    return (
+                      <MenuItem key={month} value={month}>
+                        {month}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
 
-          {/* TOTP Preview */}
-          {totpSecret.trim() && isValidTOTPSecret(totpSecret.trim()) && (
-            <Box sx={{ mt: 2 }}>
-              <TotpDisplay totpSecret={totpSecret.trim()} />
-            </Box>
-          )}
+                <TextField
+                  select
+                  label="Expiry Year"
+                  value={expiryYear}
+                  onChange={(e) => setExpiryYear(e.target.value)}
+                  error={!!errors.expiry}
+                  required
+                  sx={{ flex: 1 }}
+                >
+                  {Array.from({ length: 15 }, (_, i) => {
+                    const year = String(new Date().getFullYear() + i);
+                    return (
+                      <MenuItem key={year} value={year}>
+                        {year}
+                      </MenuItem>
+                    );
+                  })}
+                </TextField>
+              </Box>
+              {errors.expiry && (
+                <Typography color="error" variant="caption" sx={{ mt: 1, ml: 2 }}>
+                  {errors.expiry}
+                </Typography>
+              )}
 
-          {totpSecret.trim() && !isValidTOTPSecret(totpSecret.trim()) && (
-            <Alert severity="warning" sx={{ mt: 2 }}>
-              Invalid TOTP secret format. Please enter a valid base32-encoded secret.
-            </Alert>
+              {/* CVV */}
+              <TextField
+                fullWidth
+                label="CVV / Security Code"
+                type={showPassword ? 'text' : 'password'}
+                value={cvv}
+                onChange={(e) => setCvv(e.target.value)}
+                error={!!errors.cvv}
+                helperText={errors.cvv}
+                margin="normal"
+                required
+                placeholder="123"
+                inputProps={{ maxLength: 4 }}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        title={showPassword ? 'Hide CVV' : 'Show CVV'}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Billing Address */}
+              <TextField
+                fullWidth
+                label="Billing Address (Optional)"
+                value={billingAddress}
+                onChange={(e) => setBillingAddress(e.target.value)}
+                margin="normal"
+                multiline
+                rows={2}
+                placeholder="123 Main St, City, State ZIP"
+              />
+            </>
+          ) : (
+            <>
+              {/* Username */}
+              <TextField
+                fullWidth
+                label="Username / Email"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                error={!!errors.username}
+                helperText={errors.username}
+                margin="normal"
+                required
+                placeholder="user@example.com"
+              />
+
+              {/* Password */}
+              <TextField
+                fullWidth
+                label="Password"
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                error={!!errors.password}
+                helperText={errors.password}
+                margin="normal"
+                required
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={handleGeneratePassword}
+                        edge="end"
+                        title="Generate password"
+                        sx={{ mr: 1 }}
+                      >
+                        <AutoAwesome />
+                      </IconButton>
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                        title={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+
+              {/* Password Strength Indicator */}
+              <PasswordStrengthIndicator password={password} showFeedback />
+
+              {/* TOTP Secret (2FA) */}
+              <TextField
+                fullWidth
+                label="TOTP Secret (Optional)"
+                value={totpSecret}
+                onChange={(e) => setTotpSecret(e.target.value)}
+                margin="normal"
+                placeholder="Base32-encoded secret (e.g., from Google Authenticator)"
+                helperText="Enter the base32-encoded secret key for 2FA/TOTP authentication"
+              />
+
+              {/* TOTP Preview */}
+              {totpSecret.trim() && isValidTOTPSecret(totpSecret.trim()) && (
+                <Box sx={{ mt: 2 }}>
+                  <TotpDisplay totpSecret={totpSecret.trim()} />
+                </Box>
+              )}
+
+              {totpSecret.trim() && !isValidTOTPSecret(totpSecret.trim()) && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  Invalid TOTP secret format. Please enter a valid base32-encoded secret.
+                </Alert>
+              )}
+            </>
           )}
 
           {/* URL */}

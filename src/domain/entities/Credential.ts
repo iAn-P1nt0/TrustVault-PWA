@@ -17,6 +17,15 @@ export interface Credential {
   isFavorite: boolean;
   securityScore?: number | undefined; // 0-100 based on password strength
   totpSecret?: string | undefined; // TOTP/2FA secret (base32-encoded, decrypted in memory)
+
+  // Card-specific fields (for credit_card category)
+  cardNumber?: string | undefined; // Full card number (decrypted in memory)
+  cardholderName?: string | undefined;
+  expiryMonth?: string | undefined; // MM format
+  expiryYear?: string | undefined; // YYYY format
+  cvv?: string | undefined; // Security code (decrypted in memory)
+  cardType?: 'visa' | 'mastercard' | 'amex' | 'discover' | 'other' | undefined;
+  billingAddress?: string | undefined;
 }
 
 export type CredentialCategory = 
@@ -38,4 +47,13 @@ export interface CredentialInput {
   tags?: string[];
   isFavorite?: boolean;
   totpSecret?: string | undefined; // TOTP/2FA secret (base32-encoded) - will be encrypted before storage
+
+  // Card-specific fields (for credit_card category)
+  cardNumber?: string | undefined;
+  cardholderName?: string | undefined;
+  expiryMonth?: string | undefined;
+  expiryYear?: string | undefined;
+  cvv?: string | undefined;
+  cardType?: 'visa' | 'mastercard' | 'amex' | 'discover' | 'other' | undefined;
+  billingAddress?: string | undefined;
 }

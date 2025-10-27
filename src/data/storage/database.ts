@@ -30,6 +30,15 @@ export interface StoredCredential {
   lastAccessedAt?: number | undefined;
   isFavorite: boolean;
   securityScore?: number | undefined;
+
+  // Card-specific fields (encrypted)
+  encryptedCardNumber?: string | undefined;
+  cardholderName?: string | undefined;
+  expiryMonth?: string | undefined;
+  expiryYear?: string | undefined;
+  encryptedCvv?: string | undefined;
+  cardType?: 'visa' | 'mastercard' | 'amex' | 'discover' | 'other' | undefined;
+  billingAddress?: string | undefined;
 }
 
 export interface StoredUser extends Omit<User, 'createdAt' | 'lastLoginAt'> {
