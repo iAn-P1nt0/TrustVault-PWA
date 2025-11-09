@@ -433,7 +433,7 @@ export class UserRepositoryImpl implements IUserRepository {
    * Get all users with biometric authentication enabled
    */
   async getUsersWithBiometric(): Promise<User[]> {
-    const users = await db.users.where('biometricEnabled').equals(1).toArray();
+    const users = await db.users.where('biometricEnabled').equals(true).toArray();
     return users.map(this.mapStoredUserToUser);
   }
 

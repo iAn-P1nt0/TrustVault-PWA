@@ -82,21 +82,49 @@ export class TrustVaultDB extends Dexie {
   constructor() {
     super('TrustVaultDB');
 
+    const credentialStoreSchema =
+      'id, title, username, category, isFavorite, *tags, createdAt, updatedAt';
+    const userStoreSchema = 'id, email, createdAt, biometricEnabled';
+    const sessionStoreSchema = 'id, userId, expiresAt, isLocked';
+    const breachStoreSchema =
+      'id, credentialId, checkType, breached, severity, checkedAt, expiresAt';
+
     // Define database schema - version 1
     this.version(1).stores({
-      credentials: 'id, title, username, category, isFavorite, *tags, createdAt, updatedAt',
+      credentials: credentialStoreSchema,
       users: 'id, email, createdAt',
-      sessions: 'id, userId, expiresAt, isLocked',
+      sessions: sessionStoreSchema,
       settings: 'id',
     });
 
     // Version 2 - Add breach results table
     this.version(2).stores({
-      credentials: 'id, title, username, category, isFavorite, *tags, createdAt, updatedAt',
+      credentials: credentialStoreSchema,
       users: 'id, email, createdAt',
-      sessions: 'id, userId, expiresAt, isLocked',
+      sessions: sessionStoreSchema,
       settings: 'id',
-      breachResults: 'id, credentialId, checkType, breached, severity, checkedAt, expiresAt',
+      breachResults: breachStoreSchema,
+    });
+
+    // Version 3 - Index biometricEnabled flag for fast lookups
+    this.version(3)
+      .stores({
+        credentials: credentialStoreSchema,
+        users: userStoreSchema,
+        sessions: sessionStoreSchema,
+        settings: 'id',
+        breachResults: breachStoreSchema,
+      })
+      .upgrade(async (tx) => {
+        // Ensure legacy entries have a boolean flag defined so the new index is populated
+        await tx
+          .table<StoredUser>('users')
+          .toCollection()
+          .modify((user) => {
+            if (typeof user.biometricEnabled !== 'boolean') {
+              user.biometricEnabled = Boolean(user.biometricEnabled);
+            }
+          });
     });
   }
 
