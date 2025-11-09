@@ -6,6 +6,9 @@
 
 import { scrypt } from '@noble/hashes/scrypt';
 import { randomBytes } from '@noble/hashes/utils';
+import { analyzePasswordStrength as advancedAnalyzer } from '@/features/vault/generator/strengthAnalyzer';
+import { generatePassword } from '@/features/vault/generator/passwordGenerator';
+import { generatePassphrase as advancedPassphraseGenerator } from '@/features/vault/generator/passphraseGenerator';
 
 // Scrypt parameters (OWASP recommended for password hashing)
 const SCRYPT_CONFIG = {
@@ -100,9 +103,6 @@ export function analyzePasswordStrength(password: string): {
   feedback: string[];
   strength: 'very_weak' | 'weak' | 'fair' | 'strong' | 'very_strong';
 } {
-  // Import the advanced analyzer
-  const { analyzePasswordStrength: advancedAnalyzer } = require('@/features/vault/generator/strengthAnalyzer');
-
   const result = advancedAnalyzer(password);
 
   // Map the new strength format to the old format for backward compatibility
@@ -143,9 +143,6 @@ export function generateSecurePassword(
     excludeAmbiguous?: boolean;
   } = {}
 ): string {
-  // Import the advanced generator
-  const { generatePassword } = require('@/features/vault/generator/passwordGenerator');
-
   const {
     lowercase = true,
     uppercase = true,
@@ -171,14 +168,11 @@ export function generateSecurePassword(
  * Generates a memorable passphrase using diceware method
  */
 export function generatePassphrase(wordCount: number = 6): string {
-  // Import the advanced passphrase generator
-  const { generatePassphrase: advancedGenerator } = require('@/features/vault/generator/passphraseGenerator');
-
   // Clamp word count to valid range (4-8)
   const validWordCount = Math.max(4, Math.min(8, wordCount));
 
   // Use the advanced generator with default options
-  const result = advancedGenerator({
+  const result = advancedPassphraseGenerator({
     wordCount: validWordCount,
     separator: 'dash',
     capitalize: 'first',

@@ -4,7 +4,7 @@
  */
 
 import { Box, LinearProgress, Typography, Chip } from '@mui/material';
-import { analyzePasswordStrength } from '@/core/crypto/password';
+import { analyzePasswordStrength } from '@/features/vault/generator/strengthAnalyzer';
 import { useMemo } from 'react';
 
 interface PasswordStrengthIndicatorProps {
@@ -16,12 +16,40 @@ export default function PasswordStrengthIndicator({
   password,
   showFeedback = true,
 }: PasswordStrengthIndicatorProps) {
-  const analysis = useMemo(() => {
+  const analysisResult = useMemo(() => {
     if (!password) {
-      return { score: 0, strength: 'very_weak' as const, feedback: [] };
+      return {
+        score: 0,
+        strength: 'weak' as const,
+        feedback: { warning: '', suggestions: [] },
+        weaknesses: []
+      };
     }
     return analyzePasswordStrength(password);
   }, [password]);
+
+  // Convert to old format for compatibility
+  const analysis = useMemo(() => {
+    const strengthMap: Record<string, 'very_weak' | 'weak' | 'fair' | 'strong' | 'very_strong'> = {
+      'weak': 'weak',
+      'medium': 'fair',
+      'strong': 'strong',
+      'very-strong': 'very_strong',
+    };
+
+    const feedback: string[] = [];
+    if (analysisResult.feedback.warning) {
+      feedback.push(analysisResult.feedback.warning);
+    }
+    feedback.push(...analysisResult.feedback.suggestions);
+    feedback.push(...analysisResult.weaknesses);
+
+    return {
+      score: analysisResult.score,
+      strength: strengthMap[analysisResult.strength] || 'weak',
+      feedback,
+    };
+  }, [analysisResult]);
 
   const getStrengthColor = () => {
     switch (analysis.strength) {
