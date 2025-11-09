@@ -41,6 +41,7 @@ import {
   Security as SecurityIcon,
   AccessTime,
   Star as StarIcon,
+  VpnKey as VpnKeyIcon,
 } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
@@ -419,6 +420,12 @@ export default function DashboardPage() {
                 <FavoriteIcon />
               </ListItemIcon>
               <ListItemText primary="Favorites" />
+            </ListItemButton>
+            <ListItemButton onClick={() => navigate('/password-generator')}>
+              <ListItemIcon>
+                <VpnKeyIcon />
+              </ListItemIcon>
+              <ListItemText primary="Password Generator" />
             </ListItemButton>
             <ListItemButton onClick={() => navigate('/security-audit')}>
               <ListItemIcon>

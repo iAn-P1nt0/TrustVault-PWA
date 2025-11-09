@@ -92,7 +92,7 @@ export async function verifyPassword(
 }
 
 /**
- * Analyzes password strength
+ * Analyzes password strength using comprehensive zxcvbn-based analysis
  * Returns a score from 0 to 100
  */
 export function analyzePasswordStrength(password: string): {
@@ -100,92 +100,38 @@ export function analyzePasswordStrength(password: string): {
   feedback: string[];
   strength: 'very_weak' | 'weak' | 'fair' | 'strong' | 'very_strong';
 } {
-  let score = 0;
+  // Import the advanced analyzer
+  const { analyzePasswordStrength: advancedAnalyzer } = require('@/features/vault/generator/strengthAnalyzer');
+
+  const result = advancedAnalyzer(password);
+
+  // Map the new strength format to the old format for backward compatibility
+  const strengthMap: Record<string, 'very_weak' | 'weak' | 'fair' | 'strong' | 'very_strong'> = {
+    'weak': 'weak',
+    'medium': 'fair',
+    'strong': 'strong',
+    'very-strong': 'very_strong',
+  };
+
+  // Build feedback array from new format
   const feedback: string[] = [];
-
-  // Length check
-  if (password.length < 8) {
-    feedback.push('Password should be at least 8 characters long');
-  } else if (password.length >= 8) {
-    score += 20;
+  if (result.feedback.warning) {
+    feedback.push(result.feedback.warning);
   }
-  
-  if (password.length >= 12) {
-    score += 10;
-  }
-  
-  if (password.length >= 16) {
-    score += 10;
-  }
+  feedback.push(...result.feedback.suggestions);
 
-  // Complexity checks
-  if (/[a-z]/.test(password)) {
-    score += 15;
-  } else {
-    feedback.push('Add lowercase letters');
-  }
+  // Add weaknesses to feedback
+  feedback.push(...result.weaknesses);
 
-  if (/[A-Z]/.test(password)) {
-    score += 15;
-  } else {
-    feedback.push('Add uppercase letters');
-  }
-
-  if (/[0-9]/.test(password)) {
-    score += 15;
-  } else {
-    feedback.push('Add numbers');
-  }
-
-  if (/[^a-zA-Z0-9]/.test(password)) {
-    score += 15;
-  } else {
-    feedback.push('Add special characters');
-  }
-
-  // Common patterns check (basic)
-  const commonPatterns = [
-    /12345/,
-    /qwerty/i,
-    /password/i,
-    /admin/i,
-    /letmein/i,
-    /abc123/i,
-  ];
-
-  if (commonPatterns.some((pattern) => pattern.test(password))) {
-    score -= 30;
-    feedback.push('Avoid common patterns and words');
-  }
-
-  // Sequential characters
-  if (/(.)\1{2,}/.test(password)) {
-    score -= 10;
-    feedback.push('Avoid repeating characters');
-  }
-
-  // Ensure score is within bounds
-  score = Math.max(0, Math.min(100, score));
-
-  // Determine strength level
-  let strength: 'very_weak' | 'weak' | 'fair' | 'strong' | 'very_strong';
-  if (score < 20) {
-    strength = 'very_weak';
-  } else if (score < 40) {
-    strength = 'weak';
-  } else if (score < 60) {
-    strength = 'fair';
-  } else if (score < 80) {
-    strength = 'strong';
-  } else {
-    strength = 'very_strong';
-  }
-
-  return { score, feedback, strength };
+  return {
+    score: result.score,
+    feedback,
+    strength: strengthMap[result.strength] || 'weak',
+  };
 }
 
 /**
- * Generates a cryptographically secure random password
+ * Generates a cryptographically secure random password using advanced generator
  */
 export function generateSecurePassword(
   length: number = 20,
@@ -197,6 +143,9 @@ export function generateSecurePassword(
     excludeAmbiguous?: boolean;
   } = {}
 ): string {
+  // Import the advanced generator
+  const { generatePassword } = require('@/features/vault/generator/passwordGenerator');
+
   const {
     lowercase = true,
     uppercase = true,
@@ -205,100 +154,36 @@ export function generateSecurePassword(
     excludeAmbiguous = false,
   } = options;
 
-  // Character sets
-  let lowercaseChars = 'abcdefghijklmnopqrstuvwxyz';
-  let uppercaseChars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  let numberChars = '0123456789';
-  let symbolChars = '!@#$%^&*()_+-=[]{}|;:,.<>?';
+  // Use the advanced generator with the provided options
+  const result = generatePassword({
+    length,
+    includeUppercase: uppercase,
+    includeLowercase: lowercase,
+    includeNumbers: numbers,
+    includeSymbols: symbols,
+    excludeAmbiguous,
+  });
 
-  // Exclude ambiguous characters if requested
-  if (excludeAmbiguous) {
-    lowercaseChars = lowercaseChars.replace(/[ilo]/g, ''); // Remove i, l, o
-    uppercaseChars = uppercaseChars.replace(/[IO]/g, ''); // Remove I, O
-    numberChars = numberChars.replace(/[01]/g, ''); // Remove 0, 1
-    symbolChars = symbolChars.replace(/[|]/g, ''); // Remove pipe
-  }
-
-  // Build character set based on options
-  let charset = '';
-  const charGroups: string[] = [];
-
-  if (lowercase && lowercaseChars.length > 0) {
-    charset += lowercaseChars;
-    charGroups.push(lowercaseChars);
-  }
-  if (uppercase && uppercaseChars.length > 0) {
-    charset += uppercaseChars;
-    charGroups.push(uppercaseChars);
-  }
-  if (numbers && numberChars.length > 0) {
-    charset += numberChars;
-    charGroups.push(numberChars);
-  }
-  if (symbols && symbolChars.length > 0) {
-    charset += symbolChars;
-    charGroups.push(symbolChars);
-  }
-
-  // Fallback if no options selected
-  if (charset.length === 0) {
-    charset = lowercaseChars + uppercaseChars + numberChars + symbolChars;
-    charGroups.push(lowercaseChars, uppercaseChars, numberChars, symbolChars);
-  }
-
-  // Generate password
-  const randomBytes = new Uint8Array(length);
-  crypto.getRandomValues(randomBytes);
-
-  let password = '';
-  for (let i = 0; i < length; i++) {
-    const randomIndex = (randomBytes[i] as number) % charset.length;
-    const char = charset[randomIndex];
-    if (char !== undefined) {
-      password += char;
-    }
-  }
-
-  // Ensure at least one character from each selected type
-  // Replace random positions if any type is missing
-  for (let i = 0; i < charGroups.length; i++) {
-    const group = charGroups[i];
-    if (!group) continue;
-
-    const hasCharFromGroup = password.split('').some((char) => group.includes(char));
-    if (!hasCharFromGroup && password.length > 0) {
-      // Replace a random position with a character from this group
-      const replaceIndex = Math.floor(Math.random() * password.length);
-      const groupRandomBytes = new Uint8Array(1);
-      crypto.getRandomValues(groupRandomBytes);
-      const charIndex = (groupRandomBytes[0] as number) % group.length;
-      password = password.substring(0, replaceIndex) + group[charIndex] + password.substring(replaceIndex + 1);
-    }
-  }
-
-  return password;
+  return result.password;
 }
 
 /**
- * Generates a memorable passphrase
+ * Generates a memorable passphrase using diceware method
  */
 export function generatePassphrase(wordCount: number = 6): string {
-  // Basic word list (in production, use a comprehensive word list)
-  const words = [
-    'correct', 'horse', 'battery', 'staple', 'monkey', 'dragon',
-    'wizard', 'castle', 'rainbow', 'thunder', 'phoenix', 'crystal',
-    'mountain', 'ocean', 'forest', 'river', 'galaxy', 'planet',
-    'rocket', 'satellite', 'comet', 'nebula', 'aurora', 'eclipse',
-  ];
+  // Import the advanced passphrase generator
+  const { generatePassphrase: advancedGenerator } = require('@/features/vault/generator/passphraseGenerator');
 
-  const randomBytes = new Uint8Array(wordCount);
-  crypto.getRandomValues(randomBytes);
+  // Clamp word count to valid range (4-8)
+  const validWordCount = Math.max(4, Math.min(8, wordCount));
 
-  const selectedWords: string[] = [];
-  for (let i = 0; i < wordCount; i++) {
-    const randomIndex = (randomBytes[i] as number) % words.length;
-    selectedWords.push(words[randomIndex] as string);
-  }
+  // Use the advanced generator with default options
+  const result = advancedGenerator({
+    wordCount: validWordCount,
+    separator: 'dash',
+    capitalize: 'first',
+    includeNumbers: true,
+  });
 
-  return selectedWords.join('-');
+  return result.password;
 }

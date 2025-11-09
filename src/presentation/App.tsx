@@ -31,6 +31,7 @@ const SettingsPage = lazy(() => import('./pages/SettingsPage'));
 const SecurityAuditPage = lazy(() => import('./pages/SecurityAuditPage'));
 const FavoritesPage = lazy(() => import('./pages/FavoritesPage'));
 const UnlockPage = lazy(() => import('./pages/UnlockPage'));
+const PasswordGeneratorPage = lazy(() => import('./pages/PasswordGeneratorPage'));
 
 // Loading fallback component
 function PageLoader() {
@@ -180,6 +181,22 @@ function AppRoutes() {
             isAuthenticated && !isLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <FavoritesPage />
+              </Box>
+            ) : isAuthenticated && isLocked ? (
+              <Navigate to="/unlock" replace />
+            ) : (
+              <Navigate to="/signin" replace />
+            )
+          }
+        />
+
+        {/* Password Generator route */}
+        <Route
+          path="/password-generator"
+          element={
+            isAuthenticated && !isLocked ? (
+              <Box sx={{ pb: { xs: 8, md: 0 } }}>
+                <PasswordGeneratorPage />
               </Box>
             ) : isAuthenticated && isLocked ? (
               <Navigate to="/unlock" replace />
