@@ -128,7 +128,7 @@ export default function LoginPage() {
   };
 
   const handleBiometricLogin = async (): Promise<void> => {
-    if (!user) {
+    if (!email) {
       setError('Please enter your email to identify your account');
       return;
     }

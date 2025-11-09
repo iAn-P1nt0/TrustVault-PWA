@@ -237,7 +237,7 @@ export function verifyRegistrationResponse(
  */
 export function verifyAuthenticationResponse(
   response: AuthenticationResponseJSON,
-  expectedChallenge: string,
+  _expectedChallenge: string,
   storedCounter: number
 ): number {
   // Basic validation
@@ -273,10 +273,10 @@ export function verifyAuthenticationResponse(
 
     // Counter is at bytes 33-36
     const counter =
-      (authDataBytes[33] << 24) |
-      (authDataBytes[34] << 16) |
-      (authDataBytes[35] << 8) |
-      authDataBytes[36];
+      ((authDataBytes[33] ?? 0) << 24) |
+      ((authDataBytes[34] ?? 0) << 16) |
+      ((authDataBytes[35] ?? 0) << 8) |
+      (authDataBytes[36] ?? 0);
 
     // Verify counter increased (prevents replay attacks)
     if (counter <= storedCounter && counter !== 0) {

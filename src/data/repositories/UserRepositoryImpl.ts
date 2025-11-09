@@ -137,15 +137,9 @@ export class UserRepositoryImpl implements IUserRepository {
       throw new Error('Biometric credential not found');
     }
 
-    // Import the stored public key for verification
-    const publicKeyBytes = Uint8Array.from(atob(credential.publicKey), c => c.charCodeAt(0));
-    const publicKey = await crypto.subtle.importKey(
-      'spki',
-      publicKeyBytes,
-      { name: 'ECDSA', namedCurve: 'P-256' },
-      true,
-      ['verify']
-    );
+    // Import the stored public key for verification (for future use)
+    // const publicKeyBytes = Uint8Array.from(atob(credential.publicKey), c => c.charCodeAt(0));
+    // const publicKey = await crypto.subtle.importKey('spki', publicKeyBytes, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);
 
     // Perform WebAuthn authentication
     const { authenticateBiometric } = await import('@/core/auth/webauthn');
@@ -179,9 +173,10 @@ export class UserRepositoryImpl implements IUserRepository {
     });
 
     // Decrypt vault key (user must have it stored encrypted)
-    const salt = Uint8Array.from(atob(user.salt), c => c.charCodeAt(0));
-    const encryptedVaultKeyData = JSON.parse(user.encryptedVaultKey);
-    
+    // For future implementation:
+    // const salt = Uint8Array.from(atob(user.salt), c => c.charCodeAt(0));
+    // const encryptedVaultKeyData = JSON.parse(user.encryptedVaultKey);
+
     // For biometric auth, we need to derive a key from stored data
     // In a real implementation, you'd prompt for password once to cache the vault key
     // or use a separate encrypted storage tied to the biometric credential
@@ -241,7 +236,7 @@ export class UserRepositoryImpl implements IUserRepository {
   /**
    * Register biometric credential
    */
-  async registerBiometric(userId: string, vaultKey: CryptoKey, deviceName?: string): Promise<void> {
+  async registerBiometric(userId: string, _vaultKey: CryptoKey, deviceName?: string): Promise<void> {
     const user = await db.users.get(userId);
     if (!user) {
       throw new Error('User not found');
@@ -284,7 +279,7 @@ export class UserRepositoryImpl implements IUserRepository {
       id: credentialId,
       publicKey: publicKeyBase64,
       counter: 0,
-      transports: registrationResponse.response.transports,
+      transports: registrationResponse.response.transports ?? [],
       createdAt: new Date(),
       deviceName: deviceName || 'Biometric Device',
     };
@@ -295,7 +290,7 @@ export class UserRepositoryImpl implements IUserRepository {
     const updatedCredentials = [...user.webAuthnCredentials, newCredential];
 
     await db.users.update(userId, {
-      webAuthnCredentials: updatedCredentials,
+      webAuthnCredentials: updatedCredentials as typeof user.webAuthnCredentials,
       biometricEnabled: true,
     });
 

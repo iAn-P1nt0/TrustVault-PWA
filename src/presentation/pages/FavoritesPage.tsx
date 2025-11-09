@@ -69,7 +69,7 @@ export default function FavoritesPage() {
       (cred) =>
         cred.title.toLowerCase().includes(query) ||
         cred.username?.toLowerCase().includes(query) ||
-        cred.website?.toLowerCase().includes(query) ||
+        cred.url?.toLowerCase().includes(query) ||
         cred.tags?.some((tag) => tag.toLowerCase().includes(query))
     );
     setFilteredCredentials(filtered);
@@ -110,13 +110,13 @@ export default function FavoritesPage() {
 
   const handleCopyUsername = async (credential: Credential) => {
     if (!credential.username) return;
-    await copyToClipboard(credential.username, 'username');
+    await copyToClipboard(credential.username, 0); // No auto-clear for usernames
     showSnackbar(`Username copied: ${credential.username}`);
   };
 
   const handleCopyPassword = async (credential: Credential) => {
     if (!credential.password) return;
-    await copyToClipboard(credential.password, 'password');
+    await copyToClipboard(credential.password, 30000); // 30 seconds in milliseconds
     showSnackbar('Password copied to clipboard (will clear in 30s)');
   };
 
@@ -349,7 +349,7 @@ export default function FavoritesPage() {
                     )}
 
                     {/* Website */}
-                    {credential.website && (
+                    {credential.url && (
                       <Box sx={{ mb: 1 }}>
                         <Typography variant="caption" color="text.secondary">
                           Website
@@ -364,14 +364,14 @@ export default function FavoritesPage() {
                               cursor: 'pointer',
                               textDecoration: 'underline',
                             }}
-                            onClick={() => handleOpenWebsite(credential.website!)}
+                            onClick={() => handleOpenWebsite(credential.url!)}
                           >
-                            {credential.website}
+                            {credential.url}
                           </Typography>
                           <Tooltip title="Open website">
                             <IconButton
                               size="small"
-                              onClick={() => handleOpenWebsite(credential.website!)}
+                              onClick={() => handleOpenWebsite(credential.url!)}
                             >
                               <OpenInNew fontSize="small" />
                             </IconButton>

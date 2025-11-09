@@ -16,7 +16,7 @@ export interface IUserRepository {
   updateSecuritySettings(userId: string, settings: Partial<SecuritySettings>): Promise<void>;
   
   // WebAuthn
-  registerBiometric(userId: string, credential: string, deviceName?: string): Promise<void>;
+  registerBiometric(userId: string, vaultKey: CryptoKey, deviceName?: string): Promise<void>;
   removeBiometric(userId: string, credentialId: string): Promise<void>;
   
   // Session management

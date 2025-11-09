@@ -84,14 +84,14 @@ export default function SecurityAuditPage() {
       // Check password strength
       const strength = analyzePasswordStrength(cred.password);
 
-      if (strength.score < 3) {
+      if (strength.score < 60) {
         foundIssues.push({
           id: `${cred.id}-weak`,
           title: 'Weak Password',
-          severity: strength.score < 2 ? 'critical' : 'high',
+          severity: strength.score < 40 ? 'critical' : 'high',
           type: 'weak',
           credentialTitle: cred.title,
-          details: `Password strength: ${strength.level}. ${strength.feedback.join(' ')}`,
+          details: `Password strength: ${strength.strength}. ${strength.feedback.join(' ')}`,
         });
       }
 
@@ -331,7 +331,7 @@ export default function SecurityAuditPage() {
             <Divider sx={{ mb: 2 }} />
 
             <List>
-              {issues.map((issue, index) => (
+              {issues.map((issue) => (
                 <ListItem
                   key={issue.id}
                   sx={{
