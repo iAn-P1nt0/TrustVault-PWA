@@ -24,6 +24,11 @@ export interface WebAuthnCredential {
   createdAt: Date;
   lastUsedAt?: Date;
   deviceName?: string;
+  // Encrypted vault key specifically for this biometric credential
+  // Encrypted using a device-specific key derived from the credential
+  encryptedVaultKey?: string;
+  // Salt used for deriving the device-specific encryption key
+  salt?: string;
 }
 
 export interface SecuritySettings {

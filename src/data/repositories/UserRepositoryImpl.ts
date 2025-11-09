@@ -137,18 +137,19 @@ export class UserRepositoryImpl implements IUserRepository {
       throw new Error('Biometric credential not found');
     }
 
-    // Import the stored public key for verification (for future use)
-    // const publicKeyBytes = Uint8Array.from(atob(credential.publicKey), c => c.charCodeAt(0));
-    // const publicKey = await crypto.subtle.importKey('spki', publicKeyBytes, { name: 'ECDSA', namedCurve: 'P-256' }, true, ['verify']);
+    // Check if vault key is stored with this credential
+    if (!credential.encryptedVaultKey || !credential.salt) {
+      throw new Error('Biometric authentication not configured. Please sign in with your password and enable biometric in Settings.');
+    }
 
     // Perform WebAuthn authentication
     const { authenticateBiometric } = await import('@/core/auth/webauthn');
-    
+
     // Use 'localhost' for local dev, otherwise use hostname
     const rpId = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'localhost'
       : window.location.hostname;
-    
+
     const authResponse = await authenticateBiometric(
       credentialId,
       rpId
@@ -159,6 +160,15 @@ export class UserRepositoryImpl implements IUserRepository {
     if (!authResponse.response.authenticatorData) {
       throw new Error('Invalid authentication response');
     }
+
+    // Decrypt vault key using biometric-specific encryption
+    const { decryptVaultKeyFromBiometric } = await import('@/core/auth/biometricVaultKey');
+    const vaultKey = await decryptVaultKeyFromBiometric(
+      credential.encryptedVaultKey,
+      credential.salt,
+      credentialId,
+      userId
+    );
 
     // Update credential counter and last used time
     const updatedCredentials = user.webAuthnCredentials.map(c =>
@@ -172,16 +182,13 @@ export class UserRepositoryImpl implements IUserRepository {
       lastLoginAt: Date.now(),
     });
 
-    // Decrypt vault key (user must have it stored encrypted)
-    // For future implementation:
-    // const salt = Uint8Array.from(atob(user.salt), c => c.charCodeAt(0));
-    // const encryptedVaultKeyData = JSON.parse(user.encryptedVaultKey);
-
-    // For biometric auth, we need to derive a key from stored data
-    // In a real implementation, you'd prompt for password once to cache the vault key
-    // or use a separate encrypted storage tied to the biometric credential
-    // For this implementation, we'll require a password unlock first
-    throw new Error('Biometric authentication requires initial password unlock. Please unlock with password first, then enable biometric.');
+    // Create session with the decrypted vault key
+    return {
+      userId: user.id,
+      vaultKey,
+      expiresAt: new Date(Date.now() + user.securitySettings.sessionTimeoutMinutes * 60 * 1000),
+      isLocked: false,
+    };
   }
 
   /**
@@ -236,7 +243,7 @@ export class UserRepositoryImpl implements IUserRepository {
   /**
    * Register biometric credential
    */
-  async registerBiometric(userId: string, _vaultKey: CryptoKey, deviceName?: string): Promise<void> {
+  async registerBiometric(userId: string, vaultKey: CryptoKey, deviceName?: string): Promise<void> {
     const user = await db.users.get(userId);
     if (!user) {
       throw new Error('User not found');
@@ -251,12 +258,12 @@ export class UserRepositoryImpl implements IUserRepository {
 
     // Register with WebAuthn
     const { registerBiometric } = await import('@/core/auth/webauthn');
-    
+
     // Use 'localhost' for local dev, otherwise use hostname
     const rpId = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
       ? 'localhost'
       : window.location.hostname;
-    
+
     const registrationResponse = await registerBiometric({
       rpName: 'TrustVault',
       rpId,
@@ -274,7 +281,15 @@ export class UserRepositoryImpl implements IUserRepository {
     );
     const publicKeyBase64 = btoa(String.fromCharCode(...publicKeyBytes));
 
-    // Create new credential record
+    // Encrypt vault key for this biometric credential
+    const { encryptVaultKeyForBiometric } = await import('@/core/auth/biometricVaultKey');
+    const { encryptedVaultKey, salt } = await encryptVaultKeyForBiometric(
+      vaultKey,
+      credentialId,
+      userId
+    );
+
+    // Create new credential record with encrypted vault key
     const newCredential = {
       id: credentialId,
       publicKey: publicKeyBase64,
@@ -282,11 +297,11 @@ export class UserRepositoryImpl implements IUserRepository {
       transports: registrationResponse.response.transports ?? [],
       createdAt: new Date(),
       deviceName: deviceName || 'Biometric Device',
+      encryptedVaultKey,
+      salt,
     };
 
-    // Store encrypted vault key with this credential
-    // In production, you'd want to encrypt the vault key specifically for biometric access
-    // For now, we'll mark biometric as enabled and require password unlock first
+    // Store updated credentials
     const updatedCredentials = [...user.webAuthnCredentials, newCredential];
 
     await db.users.update(userId, {
@@ -294,7 +309,7 @@ export class UserRepositoryImpl implements IUserRepository {
       biometricEnabled: true,
     });
 
-    console.log('Biometric credential registered successfully');
+    console.log('Biometric credential registered successfully with encrypted vault key');
   }
 
   /**
@@ -414,6 +429,25 @@ export class UserRepositoryImpl implements IUserRepository {
     }
 
     return new Date(user.lastLoginAt);
+  }
+
+  /**
+   * Get all users with biometric authentication enabled
+   */
+  async getUsersWithBiometric(): Promise<User[]> {
+    const users = await db.users.where('biometricEnabled').equals(1).toArray();
+    return users.map(this.mapStoredUserToUser);
+  }
+
+  /**
+   * Get user's first biometric credential ID (for quick auth)
+   */
+  async getFirstBiometricCredential(userId: string): Promise<string | null> {
+    const user = await db.users.get(userId);
+    if (!user || !user.biometricEnabled || user.webAuthnCredentials.length === 0) {
+      return null;
+    }
+    return user.webAuthnCredentials[0]?.id ?? null;
   }
 
   /**

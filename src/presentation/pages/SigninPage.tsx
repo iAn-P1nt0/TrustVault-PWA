@@ -83,15 +83,48 @@ export default function SigninPage() {
     }
   };
 
-  const handleBiometricLogin = (): void => {
+  const handleBiometricLogin = async (): Promise<void> => {
     setError(null);
     setIsLoading(true);
 
     try {
-      // Implement biometric authentication
-      setError('Biometric authentication not yet implemented');
+      // Get all users with biometric enabled
+      const biometricUsers = await userRepository.getUsersWithBiometric();
+
+      if (biometricUsers.length === 0) {
+        setError('No biometric credentials found. Please sign in with your password first and enable biometric in Settings.');
+        setIsLoading(false);
+        return;
+      }
+
+      // For simplicity, use the first user with biometric (in production, show a user selector)
+      const user = biometricUsers[0];
+      if (!user) {
+        throw new Error('No user found');
+      }
+
+      // Get the first biometric credential for this user
+      const credentialId = await userRepository.getFirstBiometricCredential(user.id);
+      if (!credentialId) {
+        setError('No biometric credentials found for this user.');
+        setIsLoading(false);
+        return;
+      }
+
+      // Authenticate with biometric
+      const session = await userRepository.authenticateWithBiometric(user.id, credentialId);
+
+      // Set auth state
+      setUser(user);
+      setSession(session);
+      setVaultKey(session.vaultKey);
+
+      console.log('Biometric login successful');
+
+      // Navigate to dashboard
+      navigate('/dashboard');
     } catch (err) {
-      setError('Biometric authentication failed');
+      setError(err instanceof Error ? err.message : 'Biometric authentication failed');
       console.error('Biometric login failed:', err);
     } finally {
       setIsLoading(false);
