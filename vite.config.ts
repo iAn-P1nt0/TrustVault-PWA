@@ -1,41 +1,38 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
-import wasm from 'vite-plugin-wasm';
-import topLevelAwait from 'vite-plugin-top-level-await';
 import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
   // CRITICAL: Set base to '/' for Vercel deployment
-  // If you need GitHub Pages, use:   base: process.env.VERCEL ? '/' : '/TrustVault-PWA/',
+  // If you need GitHub Pages, use: base: process.env.VERCEL ? '/' : '/TrustVault-PWA/',
+  base: '/',
+  
   plugins: [
-    wasm(),
-    topLevelAwait(),
-    react({
-      // React 19 Fast Refresh with SWC (default)
-      jsxRuntime: 'automatic'
-    }),
+    react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
-      manifestFilename: 'manifest.webmanifest',
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
-        name: 'TrustVault - Secure Credential Manager',
+        name: 'TrustVault PWA',
         short_name: 'TrustVault',
-        description: 'Enterprise-grade security-first credential manager with biometric authentication',
-        theme_color: '#121212',
-        background_color: '#121212',
+        description: 'Secure offline-first password manager',
+        theme_color: '#1976d2',
+        background_color: '#ffffff',
         display: 'standalone',
-        orientation: 'portrait',
-        scope: './',
-        start_url: './',
+        scope: '/',
+        start_url: '/',
         icons: [
           {
             src: 'pwa-192x192.png',
             sizes: '192x192',
-            type: 'image/png',
-            purpose: 'any'
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png'
           },
           {
             src: 'pwa-512x512.png',
@@ -44,36 +41,14 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: 'pwa-maskable-192x192.png',
-            sizes: '192x192',
-            type: 'image/png',
-            purpose: 'maskable'
-          },
-          {
             src: 'pwa-maskable-512x512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable'
           }
-        ],
-        categories: ['productivity', 'security', 'utilities'],
-        screenshots: [
-          {
-            src: 'screenshot-narrow.png',
-            sizes: '540x720',
-            type: 'image/png',
-            form_factor: 'narrow'
-          },
-          {
-            src: 'screenshot-wide.png',
-            sizes: '1280x720',
-            type: 'image/png',
-            form_factor: 'wide'
-          }
         ]
       },
       workbox: {
-        // Security-focused caching strategy
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2,wasm}'],
         runtimeCaching: [
           {
@@ -90,100 +65,56 @@ export default defineConfig({
               }
             }
           }
-        ],
-        // Security headers
-        cleanupOutdatedCaches: true,
-        skipWaiting: true,
-        clientsClaim: true,
-        navigationPreload: false
+        ]
       },
       devOptions: {
-        enabled: true,
-        type: 'module'
+        enabled: true
       }
     })
   ],
+  
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
-      '@/presentation': path.resolve(__dirname, './src/presentation'),
-      '@/domain': path.resolve(__dirname, './src/domain'),
-      '@/data': path.resolve(__dirname, './src/data'),
-      '@/core': path.resolve(__dirname, './src/core')
     }
   },
-  server: {
-    host: true,
-    port: 3000,
-    strictPort: false,
-    headers: {
-      // Security headers
-      'X-Content-Type-Options': 'nosniff',
-      'X-Frame-Options': 'DENY',
-      'X-XSS-Protection': '1; mode=block',
-      'Referrer-Policy': 'strict-origin-when-cross-origin',
-      'Permissions-Policy': 'geolocation=(), microphone=(), camera=()',
-      // CSP - strict for security with WASM support
-      'Content-Security-Policy': [
-        "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
-        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-        "font-src 'self' https://fonts.gstatic.com https://r2cdn.perplexity.ai",
-        "img-src 'self' data: blob:",
-        "connect-src 'self'",
-        "frame-ancestors 'none'",
-        "base-uri 'self'",
-        "form-action 'self'"
-      ].join('; ')
-    }
+  
+  optimizeDeps: {
+    exclude: ['argon2-browser']
   },
+  
   build: {
-    target: 'es2022',
+    target: 'esnext',
     outDir: 'dist',
-    sourcemap: false, // Disable in production for security
+    sourcemap: false,
     minify: 'terser',
     terserOptions: {
       compress: {
-        drop_console: true, // Remove console logs in production
+        drop_console: true,
         drop_debugger: true
-      },
-      format: {
-        comments: false // Remove comments
       }
     },
     rollupOptions: {
-      // external: ['argon2-browser'], // Temporarily commented out to test
       output: {
         manualChunks: {
           'react-vendor': ['react', 'react-dom', 'react-router-dom'],
           'mui-vendor': ['@mui/material', '@mui/icons-material'],
-          'security-vendor': ['@simplewebauthn/browser', '@noble/hashes'],
-          'storage-vendor': ['dexie']
-        },
-        // Optimize chunk naming for better caching
-        chunkFileNames: 'assets/js/[name]-[hash].js',
-        entryFileNames: 'assets/js/[name]-[hash].js',
-        assetFileNames: 'assets/[ext]/[name]-[hash].[ext]',
+          'storage-vendor': ['dexie', 'dexie-react-hooks'],
+          'security-vendor': ['@noble/hashes']
+        }
       }
-    },
-    chunkSizeWarningLimit: 1000,
-    // Optimize asset inlining threshold
-    assetsInlineLimit: 4096, // 4KB
+    }
   },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      '@mui/material',
-      '@mui/icons-material',
-      '@emotion/react',
-      '@emotion/styled',
-      'zustand'
-    ],
-    exclude: ['argon2-browser']
-  },
-  worker: {
-    format: 'es',
-    plugins: () => [wasm(), topLevelAwait()]
+  
+  server: {
+    port: 3000,
+    strictPort: false,
+    headers: {
+      'X-Content-Type-Options': 'nosniff',
+      'X-Frame-Options': 'DENY',
+      'X-XSS-Protection': '1; mode=block',
+      'Referrer-Policy': 'strict-origin-when-cross-origin',
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:;"
+    }
   }
 });
