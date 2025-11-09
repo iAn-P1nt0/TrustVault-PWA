@@ -307,8 +307,11 @@ function AppContent() {
     );
   }
 
-  // Get base path for routing - adjust for GitHub Pages deployment
-  const basename = import.meta.env.PROD ? '/TrustVault-PWA' : '';
+  // Get base path for routing
+  // Vercel uses root path '/', GitHub Pages uses '/TrustVault-PWA/'
+  // Check if we're on Vercel by looking for vercel.app domain
+  const isVercel = typeof window !== 'undefined' && window.location.hostname.includes('vercel.app');
+  const basename = import.meta.env.PROD && !isVercel ? '/TrustVault-PWA' : '';
 
   return (
     <div style={{ display: 'flex', width: '100%', minHeight: '100vh', flexDirection: 'column' }}>
