@@ -7,8 +7,8 @@ import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  // Set base path for GitHub Pages deployment
-  base: '/TrustVault-PWA/',
+  // CRITICAL: Set base to '/' for Vercel deployment
+  // If you need GitHub Pages, use:   base: process.env.VERCEL ? '/' : '/TrustVault-PWA/',
   plugins: [
     wasm(),
     topLevelAwait(),
