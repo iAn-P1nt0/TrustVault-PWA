@@ -14,8 +14,12 @@ import {
   getDeviceName,
 } from '@/core/auth/webauthn';
 import type { RegistrationResponseJSON, AuthenticationResponseJSON } from '@simplewebauthn/types';
+import { encodeUint8ArrayToBase64Url } from '@/core/utils/base64';
 
 describe('WebAuthn Core Functions', () => {
+  const toBase64Url = (value: string): string =>
+    encodeUint8ArrayToBase64Url(new TextEncoder().encode(value));
+
   beforeEach(() => {
     // Mock PublicKeyCredential
     global.window = {
@@ -134,13 +138,13 @@ describe('WebAuthn Core Functions', () => {
       id: 'credential-id-123',
       rawId: 'credential-id-123',
       response: {
-        clientDataJSON: btoa(JSON.stringify({
+        clientDataJSON: toBase64Url(JSON.stringify({
           type: 'webauthn.create',
           challenge: mockChallenge,
           origin: 'http://localhost:3000',
         })),
         attestationObject: 'mock-attestation',
-        publicKey: btoa('mock-public-key'),
+        publicKey: toBase64Url('mock-public-key'),
         transports: ['internal'],
         publicKeyAlgorithm: -7,
         authenticatorData: 'mock-auth-data',
@@ -169,7 +173,7 @@ describe('WebAuthn Core Functions', () => {
 
     it('should return false for wrong type', () => {
       const response = createMockRegistrationResponse();
-      response.response.clientDataJSON = btoa(JSON.stringify({
+      response.response.clientDataJSON = toBase64Url(JSON.stringify({
         type: 'webauthn.get', // Wrong type
         challenge: mockChallenge,
         origin: 'http://localhost:3000',
@@ -180,7 +184,7 @@ describe('WebAuthn Core Functions', () => {
 
     it('should return false for origin mismatch', () => {
       const response = createMockRegistrationResponse();
-      response.response.clientDataJSON = btoa(JSON.stringify({
+      response.response.clientDataJSON = toBase64Url(JSON.stringify({
         type: 'webauthn.create',
         challenge: mockChallenge,
         origin: 'http://evil.com', // Wrong origin
@@ -198,19 +202,19 @@ describe('WebAuthn Core Functions', () => {
       id: 'credential-id-123',
       rawId: 'credential-id-123',
       response: {
-        clientDataJSON: btoa(JSON.stringify({
+        clientDataJSON: toBase64Url(JSON.stringify({
           type: 'webauthn.get',
           challenge: mockChallenge,
           origin: 'http://localhost:3000',
         })),
-        authenticatorData: btoa(String.fromCharCode(
+        authenticatorData: encodeUint8ArrayToBase64Url(new Uint8Array([
           // 32 bytes RP ID hash + 1 byte flags + 4 bytes counter
           ...Array(33).fill(0),
           (counter >> 24) & 0xff,
           (counter >> 16) & 0xff,
           (counter >> 8) & 0xff,
-          counter & 0xff
-        )),
+          counter & 0xff,
+        ])),
         signature: 'mock-signature',
         userHandle: 'user-123',
       },
@@ -250,7 +254,7 @@ describe('WebAuthn Core Functions', () => {
 
     it('should throw error for wrong type', () => {
       const response = createMockAuthenticationResponse();
-      response.response.clientDataJSON = btoa(JSON.stringify({
+      response.response.clientDataJSON = toBase64Url(JSON.stringify({
         type: 'webauthn.create', // Wrong type
         challenge: mockChallenge,
         origin: 'http://localhost:3000',
@@ -263,7 +267,7 @@ describe('WebAuthn Core Functions', () => {
 
     it('should throw error for origin mismatch', () => {
       const response = createMockAuthenticationResponse();
-      response.response.clientDataJSON = btoa(JSON.stringify({
+      response.response.clientDataJSON = toBase64Url(JSON.stringify({
         type: 'webauthn.get',
         challenge: mockChallenge,
         origin: 'http://evil.com', // Wrong origin

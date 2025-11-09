@@ -55,6 +55,19 @@ export interface StoredSession {
   createdAt: number;
 }
 
+export interface StoredBreachResult {
+  id: string;
+  credentialId: string;
+  checkType: 'password' | 'email';
+  breached: boolean;
+  breachCount: number;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'safe';
+  breachNames: string[];
+  breachData: string; // JSON stringified BreachData[] (empty string if no data)
+  checkedAt: number;
+  expiresAt: number;
+}
+
 /**
  * TrustVault Database
  * Manages all local storage with encryption
@@ -64,16 +77,26 @@ export class TrustVaultDB extends Dexie {
   users!: Table<StoredUser, string>;
   sessions!: Table<StoredSession, string>;
   settings!: Table<{ id: string; data: SecuritySettings }, string>;
+  breachResults!: Table<StoredBreachResult, string>;
 
   constructor() {
     super('TrustVaultDB');
 
-    // Define database schema
+    // Define database schema - version 1
     this.version(1).stores({
       credentials: 'id, title, username, category, isFavorite, *tags, createdAt, updatedAt',
       users: 'id, email, createdAt',
       sessions: 'id, userId, expiresAt, isLocked',
       settings: 'id',
+    });
+
+    // Version 2 - Add breach results table
+    this.version(2).stores({
+      credentials: 'id, title, username, category, isFavorite, *tags, createdAt, updatedAt',
+      users: 'id, email, createdAt',
+      sessions: 'id, userId, expiresAt, isLocked',
+      settings: 'id',
+      breachResults: 'id, credentialId, checkType, breached, severity, checkedAt, expiresAt',
     });
   }
 
@@ -83,6 +106,7 @@ export class TrustVaultDB extends Dexie {
   async clearAll(): Promise<void> {
     await this.credentials.clear();
     await this.sessions.clear();
+    await this.breachResults.clear();
     // Keep users table for re-login
   }
 
@@ -136,11 +160,13 @@ export class TrustVaultDB extends Dexie {
     credentials: number;
     users: number;
     sessions: number;
+    breachResults: number;
   }> {
     return {
       credentials: await this.credentials.count(),
       users: await this.users.count(),
       sessions: await this.sessions.count(),
+      breachResults: await this.breachResults.count(),
     };
   }
 }

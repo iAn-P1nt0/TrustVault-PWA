@@ -56,6 +56,8 @@ import SortDropdown, { type SortOption } from '@/presentation/components/SortDro
 import ThemeToggle from '@/presentation/components/ThemeToggle';
 import type { Credential, CredentialCategory } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
+import BreachAlertBanner from '@/presentation/components/BreachAlertBanner';
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout, session } = useAuthStore();
@@ -453,6 +455,9 @@ export default function DashboardPage() {
           bgcolor: 'background.default',
         }}
       >
+        {/* Breach Alert Banner */}
+        <BreachAlertBanner />
+
         {/* Search Bar */}
         <Box sx={{ mb: 3 }}>
           <SearchBar

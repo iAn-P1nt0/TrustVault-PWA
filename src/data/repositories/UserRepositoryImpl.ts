@@ -5,6 +5,7 @@
 
 import { hashPassword, verifyPassword } from '@/core/crypto/password';
 import { deriveKeyFromPassword, encrypt, decrypt } from '@/core/crypto/encryption';
+import { decodeBase64ToUint8Array, encodeUint8ArrayToBase64 } from '@/core/utils/base64';
 import { db, type StoredUser } from '../storage/database';
 import type { User, AuthSession, SecuritySettings } from '@/domain/entities/User';
 import type { IUserRepository } from '@/domain/repositories/IUserRepository';
@@ -274,12 +275,9 @@ export class UserRepositoryImpl implements IUserRepository {
 
     // Extract credential data
     const credentialId = registrationResponse.id;
-    const publicKeyBytes = new Uint8Array(
-      atob(registrationResponse.response.publicKey || '')
-        .split('')
-        .map(c => c.charCodeAt(0))
-    );
-    const publicKeyBase64 = btoa(String.fromCharCode(...publicKeyBytes));
+    const rawPublicKey = registrationResponse.response.publicKey ?? '';
+    const publicKeyBytes = decodeBase64ToUint8Array(rawPublicKey);
+    const publicKeyBase64 = encodeUint8ArrayToBase64(publicKeyBytes);
 
     // Encrypt vault key for this biometric credential
     const { encryptVaultKeyForBiometric } = await import('@/core/auth/biometricVaultKey');

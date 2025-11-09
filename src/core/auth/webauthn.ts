@@ -13,6 +13,11 @@ import type {
   AuthenticationResponseJSON,
   PublicKeyCredentialCreationOptionsJSON,
 } from '@simplewebauthn/types';
+import {
+  decodeBase64ToString,
+  decodeBase64ToUint8Array,
+  encodeUint8ArrayToBase64Url,
+} from '@/core/utils/base64';
 
 export interface BiometricCredential {
   id: string;
@@ -161,18 +166,7 @@ export async function authenticateBiometric(
 function generateChallenge(): string {
   const challenge = new Uint8Array(32);
   crypto.getRandomValues(challenge);
-  return arrayBufferToBase64(challenge);
-}
-
-/**
- * Converts ArrayBuffer to Base64
- */
-function arrayBufferToBase64(buffer: Uint8Array): string {
-  let binary = '';
-  for (let i = 0; i < buffer.byteLength; i++) {
-    binary += String.fromCharCode(buffer[i] as number);
-  }
-  return btoa(binary);
+  return encodeUint8ArrayToBase64Url(challenge);
 }
 
 /**
@@ -197,7 +191,7 @@ export function verifyRegistrationResponse(
 
   // Decode and verify client data
   try {
-    const clientDataJSON = atob(response.response.clientDataJSON);
+    const clientDataJSON = decodeBase64ToString(response.response.clientDataJSON);
     const clientData = JSON.parse(clientDataJSON) as {
       type: string;
       challenge: string;
@@ -247,7 +241,7 @@ export function verifyAuthenticationResponse(
 
   // Decode client data
   try {
-    const clientDataJSON = atob(response.response.clientDataJSON);
+    const clientDataJSON = decodeBase64ToString(response.response.clientDataJSON);
     const clientData = JSON.parse(clientDataJSON) as {
       type: string;
       challenge: string;
@@ -265,11 +259,7 @@ export function verifyAuthenticationResponse(
     }
 
     // Extract counter from authenticator data (last 4 bytes of authenticatorData)
-    const authData = atob(response.response.authenticatorData);
-    const authDataBytes = new Uint8Array(authData.length);
-    for (let i = 0; i < authData.length; i++) {
-      authDataBytes[i] = authData.charCodeAt(i);
-    }
+    const authDataBytes = decodeBase64ToUint8Array(response.response.authenticatorData);
 
     // Counter is at bytes 33-36
     const counter =
