@@ -47,7 +47,7 @@ const CATEGORIES: { value: CredentialCategory; label: string }[] = [
 
 export default function AddCredentialPage() {
   const navigate = useNavigate();
-  const { session } = useAuthStore();
+  const { vaultKey } = useAuthStore();
 
   // Form state
   const [title, setTitle] = useState('');
@@ -136,7 +136,7 @@ export default function AddCredentialPage() {
       return;
     }
 
-    if (!session?.vaultKey) {
+    if (!vaultKey) {
       setError('Session expired. Please sign in again.');
       return;
     }
@@ -171,11 +171,11 @@ export default function AddCredentialPage() {
         inputData.totpSecret = totpSecret.trim() || undefined;
       }
 
-      const credential = await credentialRepository.create(inputData, session.vaultKey);
+      const credential = await credentialRepository.create(inputData, vaultKey);
 
       // Update favorite status after creation if needed
       if (isFavorite) {
-        await credentialRepository.update(credential.id, { isFavorite: true }, session.vaultKey);
+        await credentialRepository.update(credential.id, { isFavorite: true }, vaultKey);
       }
 
       // Navigate back to dashboard

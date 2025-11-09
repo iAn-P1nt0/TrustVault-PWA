@@ -42,7 +42,7 @@ import { copyToClipboard } from '../utils/clipboard';
 
 export default function FavoritesPage() {
   const navigate = useNavigate();
-  const { session } = useAuthStore();
+  const { vaultKey } = useAuthStore();
 
   const [credentials, setCredentials] = useState<Credential[]>([]);
   const [filteredCredentials, setFilteredCredentials] = useState<Credential[]>([]);
@@ -55,7 +55,7 @@ export default function FavoritesPage() {
   // Load favorite credentials
   useEffect(() => {
     loadFavorites();
-  }, [session?.vaultKey]);
+  }, [vaultKey]);
 
   // Filter credentials based on search
   useEffect(() => {
@@ -76,7 +76,7 @@ export default function FavoritesPage() {
   }, [searchQuery, credentials]);
 
   const loadFavorites = async () => {
-    if (!session?.vaultKey) {
+    if (!vaultKey) {
       setError('No vault key available');
       setLoading(false);
       return;
@@ -86,7 +86,7 @@ export default function FavoritesPage() {
       setLoading(true);
       setError(null);
 
-      const allCredentials = await credentialRepository.findAll(session.vaultKey);
+      const allCredentials = await credentialRepository.findAll(vaultKey);
 
       // Filter only favorites
       const favorites = allCredentials.filter((cred) => cred.isFavorite);

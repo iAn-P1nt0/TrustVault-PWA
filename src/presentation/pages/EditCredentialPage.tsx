@@ -51,7 +51,7 @@ const CATEGORIES: { value: CredentialCategory; label: string }[] = [
 export default function EditCredentialPage() {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-  const { session } = useAuthStore();
+  const { vaultKey } = useAuthStore();
 
   // Loading state
   const [loadingCredential, setLoadingCredential] = useState(true);
@@ -91,14 +91,14 @@ export default function EditCredentialPage() {
   // Load credential on mount
   useEffect(() => {
     const loadCredential = async () => {
-      if (!id || !session?.vaultKey) {
+      if (!id || !vaultKey) {
         setError('Invalid credential or session expired');
         setLoadingCredential(false);
         return;
       }
 
       try {
-        const cred = await credentialRepository.findById(id, session.vaultKey);
+        const cred = await credentialRepository.findById(id, vaultKey);
         if (!cred) {
           setError('Credential not found');
           setLoadingCredential(false);
@@ -137,7 +137,7 @@ export default function EditCredentialPage() {
     };
 
     loadCredential();
-  }, [id, session?.vaultKey]);
+  }, [id, vaultKey]);
 
   const validateForm = (): boolean => {
     const newErrors: Record<string, string> = {};
@@ -197,7 +197,7 @@ export default function EditCredentialPage() {
       return;
     }
 
-    if (!session?.vaultKey || !id) {
+    if (!vaultKey || !id) {
       setError('Session expired. Please sign in again.');
       return;
     }
@@ -233,7 +233,7 @@ export default function EditCredentialPage() {
         updateData.totpSecret = totpSecret.trim() || undefined;
       }
 
-      await credentialRepository.update(id, updateData, session.vaultKey);
+      await credentialRepository.update(id, updateData, vaultKey);
 
       // Navigate back to dashboard
       navigate('/dashboard');

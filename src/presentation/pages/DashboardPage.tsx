@@ -60,7 +60,7 @@ import BreachAlertBanner from '@/presentation/components/BreachAlertBanner';
 
 export default function DashboardPage() {
   const navigate = useNavigate();
-  const { user, logout, session } = useAuthStore();
+  const { user, logout, vaultKey } = useAuthStore();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -94,10 +94,10 @@ export default function DashboardPage() {
   // Load credentials on mount
   useEffect(() => {
     loadCredentials();
-  }, [session?.vaultKey]);
+  }, [vaultKey]);
 
   const loadCredentials = async () => {
-    if (!session?.vaultKey) {
+    if (!vaultKey) {
       setError('No vault key available');
       setLoading(false);
       return;
@@ -106,7 +106,7 @@ export default function DashboardPage() {
     try {
       setLoading(true);
       setError(null);
-      const creds = await credentialRepository.findAll(session.vaultKey);
+      const creds = await credentialRepository.findAll(vaultKey);
       setCredentials(creds);
     } catch (err) {
       console.error('Failed to load credentials:', err);
@@ -159,7 +159,7 @@ export default function DashboardPage() {
   }, [credentialToDelete, showSnackbar]);
 
   const handleToggleFavorite = async (id: string) => {
-    if (!session?.vaultKey) return;
+    if (!vaultKey) return;
 
     try {
       const credential = credentials.find((c) => c.id === id);
@@ -170,7 +170,7 @@ export default function DashboardPage() {
       await credentialRepository.update(
         id,
         { isFavorite: newFavoriteState },
-        session.vaultKey
+        vaultKey
       );
 
       // Update local state
