@@ -17,7 +17,7 @@ import ClipboardNotification from './components/ClipboardNotification';
 import MobileNavigation from './components/MobileNavigation';
 import InstallPrompt from './components/InstallPrompt';
 import OfflineIndicator from './components/OfflineIndicator';
-import UpdateAvailableSnackbar from './components/UpdateAvailableSnackbar';
+import UpdateNotification from './components/UpdateNotification';
 import CryptoAPIError from './components/CryptoAPIError';
 import { initPerformanceMonitoring } from './utils/performance';
 
@@ -320,7 +320,7 @@ function AppContent() {
         {/* PWA helpers */}
         <InstallPrompt />
         <OfflineIndicator />
-        <UpdateAvailableSnackbar />
+        <UpdateNotification />
       </BrowserRouter>
     </div>
   );

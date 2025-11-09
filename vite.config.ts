@@ -3,16 +3,19 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
+// Version constant for service worker
+const APP_VERSION = `v${process.env.npm_package_version || '1.0.0'}-${Date.now()}`;
+
 // https://vitejs.dev/config/
 export default defineConfig({
   // CRITICAL: Set base to '/' for Vercel deployment
   // If you need GitHub Pages, use: base: process.env.VERCEL ? '/' : '/TrustVault-PWA/',
   base: '/',
-  
+
   plugins: [
     react(),
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt', // Changed from 'autoUpdate' to give user control
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'pwa-192x192.png', 'pwa-512x512.png'],
       manifest: {
         name: 'TrustVault PWA',
@@ -65,8 +68,15 @@ export default defineConfig({
               }
             }
           }
-        ]
+        ],
+        skipWaiting: false, // Don't auto-skip waiting - let user control it
+        clientsClaim: false, // Don't auto-claim clients
+        // Inject custom code for version and message handling
+        navigateFallback: null,
+        additionalManifestEntries: undefined,
       },
+      // Inject version constant into generated SW
+      useCredentials: false,
       devOptions: {
         enabled: true
       }

@@ -10,19 +10,8 @@ if (import.meta.env.DEV) {
 
 console.log('=== TrustVault App Loading ===');
 
-// Register Service Worker
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js')
-      .then((registration) => {
-        console.log('SW registered: ', registration);
-      })
-      .catch((registrationError: unknown) => {
-        console.log('SW registration failed: ', registrationError);
-      });
-  });
-}
+// Note: Service Worker is registered by vite-plugin-pwa automatically
+// The generated registerSW.js handles registration and update detection
 
 console.log('Looking for root element...');
 const rootElement = document.getElementById('root');

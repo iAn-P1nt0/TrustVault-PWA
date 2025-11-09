@@ -18,7 +18,7 @@ import {
   Toolbar,
   IconButton,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, SystemUpdate, CheckCircle, Refresh } from '@mui/icons-material';
 import { useAuthStore } from '../store/authStore';
 import { useCredentialStore } from '../store/credentialStore';
 import { userRepository } from '@/data/repositories/UserRepositoryImpl';
@@ -29,6 +29,7 @@ import ExportDialog from '../components/ExportDialog';
 import ImportDialog from '../components/ImportDialog';
 import BiometricSetupDialog from '../components/BiometricSetupDialog';
 import ThemeToggle from '../components/ThemeToggle';
+import { useServiceWorkerUpdate } from '../hooks/useServiceWorkerUpdate';
 
 export default function SettingsPage() {
   const navigate = useNavigate();
@@ -50,6 +51,16 @@ export default function SettingsPage() {
   const [clipboardClearSeconds, setClipboardClearSeconds] = useState(
     user?.securitySettings?.clipboardClearSeconds ?? 30
   );
+
+  // Service Worker update management
+  const {
+    updateAvailable,
+    updateChecking,
+    currentVersion,
+    availableVersion,
+    checkForUpdate,
+    error: updateError,
+  } = useServiceWorkerUpdate();
 
   // Save settings to database
   const saveSettings = async () => {
@@ -241,6 +252,73 @@ export default function SettingsPage() {
           <Alert severity="info">
             Light theme and system theme will be available in a future update.
           </Alert>
+        </Paper>
+
+        {/* App Updates */}
+        <Paper sx={{ p: 3, mb: 3 }}>
+          <Typography variant="h6" gutterBottom sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            <SystemUpdate />
+            App Updates
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            Check for and install updates to TrustVault PWA. Updates include new features,
+            security improvements, and bug fixes.
+          </Typography>
+
+          {updateError && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => {}}>
+              {updateError}
+            </Alert>
+          )}
+
+          {updateAvailable && (
+            <Alert
+              severity="success"
+              icon={<CheckCircle />}
+              sx={{ mb: 2 }}
+            >
+              <Typography variant="body2" fontWeight={600}>
+                Update Available
+              </Typography>
+              <Typography variant="caption">
+                {currentVersion && `Current: ${currentVersion}`}
+                {availableVersion && ` → New: ${availableVersion}`}
+              </Typography>
+              <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
+                Click the notification at the bottom of the screen to install.
+              </Typography>
+            </Alert>
+          )}
+
+          {!updateAvailable && !updateError && !updateChecking && currentVersion && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              <Typography variant="body2">
+                You're running the latest version ({currentVersion})
+              </Typography>
+            </Alert>
+          )}
+
+          <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+            <Button
+              variant="outlined"
+              startIcon={updateChecking ? <CircularProgress size={16} /> : <Refresh />}
+              onClick={() => void checkForUpdate()}
+              disabled={updateChecking}
+            >
+              {updateChecking ? 'Checking...' : 'Check for Updates'}
+            </Button>
+
+            {currentVersion && !updateChecking && (
+              <Typography variant="caption" color="text.secondary">
+                Current: {currentVersion}
+              </Typography>
+            )}
+          </Box>
+
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mt: 2 }}>
+            💡 Updates are automatically checked in the background. You'll see a notification
+            when a new version is available.
+          </Typography>
         </Paper>
 
         <Divider sx={{ my: 4 }} />
