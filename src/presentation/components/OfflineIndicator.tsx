@@ -25,7 +25,11 @@ export default function OfflineIndicator() {
 
   return (
     <Slide direction="down" in={!online} mountOnEnter unmountOnExit>
-      <Alert severity="warning" sx={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1400 }}>
+      <Alert
+        severity="warning"
+        sx={{ position: 'fixed', top: 80, left: '50%', transform: 'translateX(-50%)', zIndex: 1400 }}
+        data-tour="offline-indicator"
+      >
         You are offline — some features may be unavailable.
       </Alert>
     </Slide>

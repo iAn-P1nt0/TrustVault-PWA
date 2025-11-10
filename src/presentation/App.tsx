@@ -20,6 +20,8 @@ import OfflineIndicator from './components/OfflineIndicator';
 import UpdateNotification from './components/UpdateNotification';
 import CryptoAPIError from './components/CryptoAPIError';
 import { initPerformanceMonitoring } from './utils/performance';
+import OnboardingTour from '@/components/OnboardingTour';
+import '@/styles/driver-custom.css';
 
 // Lazy load page components for code splitting
 const SigninPage = lazy(() => import('./pages/SigninPage'));
@@ -65,6 +67,9 @@ function AppRoutes() {
       {/* Global components */}
       <ClipboardNotification />
       <MobileNavigation />
+
+      {/* Onboarding tour - only for authenticated users */}
+      {isAuthenticated && !isLocked && <OnboardingTour autoStart delay={1500} />}
       
       <Suspense fallback={<PageLoader />}>
         <Routes>

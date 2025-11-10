@@ -41,7 +41,16 @@ export default function InstallPrompt() {
     <Snackbar
       open={open}
       message="Install TrustVault for quick access"
-      action={<Button color="inherit" size="small" onClick={handleInstall}>Install</Button>}
+      action={
+        <Button
+          color="inherit"
+          size="small"
+          onClick={handleInstall}
+          data-tour="install-button"
+        >
+          Install
+        </Button>
+      }
       onClose={() => setOpen(false)}
     />
   );

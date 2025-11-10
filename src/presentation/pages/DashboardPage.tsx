@@ -54,6 +54,7 @@ import SearchBar from '@/presentation/components/SearchBar';
 import FilterChips from '@/presentation/components/FilterChips';
 import SortDropdown, { type SortOption } from '@/presentation/components/SortDropdown';
 import ThemeToggle from '@/presentation/components/ThemeToggle';
+import TourHelpButton from '@/components/TourHelpButton';
 import type { Credential, CredentialCategory } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
 import BreachAlertBanner from '@/presentation/components/BreachAlertBanner';
@@ -356,9 +357,10 @@ export default function DashboardPage() {
           >
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }} data-tour="dashboard">
             TrustVault
           </Typography>
+          <TourHelpButton />
           <ThemeToggle />
           <IconButton color="inherit" onClick={handleLockVault}>
             <LockIcon />
@@ -429,13 +431,13 @@ export default function DashboardPage() {
               </ListItemIcon>
               <ListItemText primary="Password Generator" />
             </ListItemButton>
-            <ListItemButton onClick={() => navigate('/security-audit')}>
+            <ListItemButton onClick={() => navigate('/security-audit')} data-tour="security-audit">
               <ListItemIcon>
                 <SecurityIcon />
               </ListItemIcon>
               <ListItemText primary="Security Audit" />
             </ListItemButton>
-            <ListItemButton onClick={() => navigate('/settings')}>
+            <ListItemButton onClick={() => navigate('/settings')} data-tour="settings">
               <ListItemIcon>
                 <SettingsIcon />
               </ListItemIcon>
@@ -459,7 +461,7 @@ export default function DashboardPage() {
         <BreachAlertBanner />
 
         {/* Search Bar */}
-        <Box sx={{ mb: 3 }}>
+        <Box sx={{ mb: 3 }} data-tour="search">
           <SearchBar
             value={searchQuery}
             onChange={setSearchQuery}
@@ -575,6 +577,7 @@ export default function DashboardPage() {
                 variant="contained"
                 startIcon={<AddIcon />}
                 onClick={() => navigate('/credentials/add')}
+                data-tour="add-credential"
               >
                 Add Credential
               </Button>
@@ -680,6 +683,7 @@ export default function DashboardPage() {
         color="primary"
         aria-label="add"
         onClick={() => navigate('/credentials/add')}
+        data-tour="add-credential"
         sx={{
           position: 'fixed',
           bottom: { xs: 80, md: 24 }, // Higher on mobile to avoid bottom nav
