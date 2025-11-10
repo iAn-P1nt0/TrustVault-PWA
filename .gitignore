@@ -187,7 +187,6 @@ $RECYCLE.BIN/
 # Package Managers
 # ============================================================
 # npm
-package-lock.json
 npm-debug.log*
 .npm
 
