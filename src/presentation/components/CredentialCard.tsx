@@ -3,7 +3,7 @@
  * Displays a single credential with actions
  */
 
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import {
   Card,
   CardContent,
@@ -18,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
+  Badge,
 } from '@mui/material';
 import {
   MoreVert,
@@ -26,13 +27,18 @@ import {
   Delete,
   Star,
   StarBorder,
+  Warning,
+  Security,
+  GppBad,
 } from '@mui/icons-material';
 import type { Credential } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
 import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
+import { getBreachResultForCredential } from '@/data/repositories/breachResultsRepository';
 import TotpDisplay from './TotpDisplay';
 import CategoryIcon, { getCategoryColor, getCategoryName } from './CategoryIcon';
+import type { BreachSeverity } from '@/core/breach/breachTypes';
 
 interface CredentialCardProps {
   credential: Credential;
@@ -40,6 +46,7 @@ interface CredentialCardProps {
   onDelete: (id: string) => void;
   onToggleFavorite: (id: string) => void;
   onCopySuccess: (message: string) => void;
+  showBreachStatus?: boolean;
 }
 
 // Memoize component to prevent unnecessary re-renders
@@ -49,8 +56,37 @@ const CredentialCard = memo(function CredentialCard({
   onDelete,
   onToggleFavorite,
   onCopySuccess,
+  showBreachStatus = true,
 }: CredentialCardProps) {
   const [menuAnchor, setMenuAnchor] = useState<null | HTMLElement>(null);
+  const [breachStatus, setBreachStatus] = useState<{
+    breached: boolean;
+    severity: BreachSeverity;
+    breachCount?: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (showBreachStatus) {
+      loadBreachStatus();
+    }
+  }, [credential.id, showBreachStatus]);
+
+  const loadBreachStatus = async () => {
+    try {
+      const result = await getBreachResultForCredential(credential.id, 'password');
+      if (result && result.breached) {
+        setBreachStatus({
+          breached: true,
+          severity: result.severity,
+          breachCount: result.breachCount,
+        });
+      } else {
+        setBreachStatus(null);
+      }
+    } catch (error) {
+      console.error('Failed to load breach status:', error);
+    }
+  };
 
   const handleCopyUsername = async () => {
     // Update access time
@@ -186,6 +222,19 @@ const CredentialCard = memo(function CredentialCard({
 
         {/* Metadata */}
         <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap', mb: 1 }}>
+          {breachStatus && breachStatus.breached && (
+            <Tooltip
+              title={`Password found in ${breachStatus.breachCount?.toLocaleString() || 'multiple'} data breach${breachStatus.breachCount === 1 ? '' : 'es'}! Change immediately.`}
+            >
+              <Chip
+                icon={<GppBad />}
+                label={`Breached ${breachStatus.breachCount ? `(${breachStatus.breachCount.toLocaleString()}x)` : ''}`}
+                size="small"
+                color={breachStatus.severity === 'critical' || breachStatus.severity === 'high' ? 'error' : 'warning'}
+                sx={{ fontWeight: 600 }}
+              />
+            </Tooltip>
+          )}
           {credential.securityScore !== undefined && (
             <Chip
               label={`Security: ${credential.securityScore}%`}

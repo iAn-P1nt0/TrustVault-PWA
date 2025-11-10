@@ -3,7 +3,7 @@
  * Full-screen dialog for viewing credential details on mobile
  */
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   AppBar,
@@ -19,6 +19,9 @@ import {
   ListItem,
   ListItemText,
   Slide,
+  Alert,
+  AlertTitle,
+  CircularProgress,
 } from '@mui/material';
 import { TransitionProps } from '@mui/material/transitions';
 import {
@@ -35,10 +38,18 @@ import {
   AccountBalance,
   Person,
   Code,
+  Shield,
+  GppBad,
+  CheckCircle,
+  Security,
 } from '@mui/icons-material';
 import type { Credential } from '@/domain/entities/Credential';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
+import { checkPasswordBreach, isHibpEnabled } from '@/core/breach/hibpService';
+import { getBreachResultForCredential, saveBreachResult } from '@/data/repositories/breachResultsRepository';
+import type { BreachCheckResult } from '@/core/breach/breachTypes';
 import TotpDisplay from './TotpDisplay';
+import BreachDetailsModal from './BreachDetailsModal';
 
 interface CredentialDetailsDialogProps {
   open: boolean;
@@ -80,7 +91,67 @@ export default function CredentialDetailsDialog({
   onDelete,
   onToggleFavorite,
 }: CredentialDetailsDialogProps) {
+  const [breachChecking, setBreachChecking] = useState(false);
+  const [breachResult, setBreachResult] = useState<BreachCheckResult | null>(null);
+  const [breachDetailsOpen, setBreachDetailsOpen] = useState(false);
+
+  useEffect(() => {
+    if (open && credential) {
+      loadExistingBreachData();
+    }
+  }, [open, credential]);
+
+  const loadExistingBreachData = async () => {
+    if (!credential) return;
+
+    try {
+      const result = await getBreachResultForCredential(credential.id, 'password');
+      setBreachResult(result);
+    } catch (error) {
+      console.error('Failed to load breach data:', error);
+    }
+  };
+
+  const handleCheckBreach = async () => {
+    if (!credential || !isHibpEnabled()) {
+      alert('Breach detection is not enabled. Set VITE_HIBP_API_ENABLED=true in your environment configuration.');
+      return;
+    }
+
+    setBreachChecking(true);
+
+    try {
+      const result = await checkPasswordBreach(credential.password);
+      await saveBreachResult(credential.id, 'password', result);
+      setBreachResult(result);
+    } catch (error) {
+      console.error('Breach check failed:', error);
+      alert('Failed to check for breaches. Please try again later.');
+    } finally {
+      setBreachChecking(false);
+    }
+  };
+
   if (!credential) return null;
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical':
+      case 'high':
+        return 'error';
+      case 'medium':
+        return 'warning';
+      case 'low':
+        return 'info';
+      default:
+        return 'success';
+    }
+  };
+
+  const isBreached = breachResult?.breached ?? false;
+  const lastChecked = breachResult?.checkedAt
+    ? formatRelativeTime(new Date(breachResult.checkedAt))
+    : null;
 
   const getCategoryIcon = () => {
     switch (credential.category) {
@@ -314,8 +385,80 @@ export default function CredentialDetailsDialog({
               <ListItemText primary="Notes" secondary={credential.notes} />
             </ListItem>
           )}
+        </List>
 
-          {/* Last Updated */}
+        <Divider sx={{ my: 2 }} />
+
+        {/* Breach Detection Section */}
+        {credential.category !== 'credit_card' && credential.category !== 'secure_note' && (
+          <Box sx={{ px: 2, mb: 3 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+              <Security fontSize="small" color="primary" />
+              <Typography variant="subtitle2" fontWeight="600">
+                Breach Detection
+              </Typography>
+            </Box>
+
+            {!isHibpEnabled() ? (
+              <Alert severity="info" sx={{ mb: 2 }}>
+                Breach detection is not enabled.
+              </Alert>
+            ) : isBreached ? (
+              <Alert
+                severity={getSeverityColor(breachResult?.severity || 'medium')}
+                sx={{ mb: 2 }}
+                action={
+                  <Button
+                    size="small"
+                    color="inherit"
+                    onClick={() => setBreachDetailsOpen(true)}
+                  >
+                    Details
+                  </Button>
+                }
+              >
+                <AlertTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <GppBad />
+                  Password Compromised
+                </AlertTitle>
+                This password has been seen{' '}
+                <strong>{breachResult?.breachCount?.toLocaleString()}</strong> time
+                {breachResult?.breachCount === 1 ? '' : 's'} in data breaches.
+                {lastChecked && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Last checked {lastChecked}
+                  </Typography>
+                )}
+              </Alert>
+            ) : breachResult ? (
+              <Alert severity="success" sx={{ mb: 2 }} icon={<CheckCircle />}>
+                <AlertTitle>Password Secure</AlertTitle>
+                Not found in known data breaches.
+                {lastChecked && (
+                  <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                    Last checked {lastChecked}
+                  </Typography>
+                )}
+              </Alert>
+            ) : null}
+
+            <Button
+              variant="outlined"
+              size="small"
+              fullWidth
+              startIcon={breachChecking ? <CircularProgress size={16} /> : <Shield />}
+              onClick={handleCheckBreach}
+              disabled={breachChecking}
+            >
+              {breachChecking ? 'Checking...' : lastChecked ? 'Re-check for Breaches' : 'Check for Breaches'}
+            </Button>
+          </Box>
+        )}
+
+        <Divider sx={{ my: 2 }} />
+
+        {/* Metadata */}
+        <List>
           <ListItem>
             <ListItemText
               primary="Last Updated"
@@ -401,5 +544,23 @@ export default function CredentialDetailsDialog({
         </Button>
       </Box>
     </Dialog>
+
+    {/* Breach Details Modal */}
+    {breachResult && isBreached && (
+      <BreachDetailsModal
+        open={breachDetailsOpen}
+        onClose={() => setBreachDetailsOpen(false)}
+        breaches={breachResult.breaches}
+        credentialTitle={credential.title}
+        severity={breachResult.severity}
+        breachCount={breachResult.breachCount}
+        onChangePassword={() => {
+          setBreachDetailsOpen(false);
+          onEdit();
+          onClose();
+        }}
+      />
+    )}
+  </>
   );
 }
