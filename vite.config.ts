@@ -6,11 +6,14 @@ import path from 'path';
 // Version constant for service worker
 const APP_VERSION = `v${process.env.npm_package_version || '1.0.0'}-${Date.now()}`;
 
+// Determine base path based on deployment target
+const BASE_PATH = process.env.VERCEL ? '/' : '/TrustVault-PWA/';
+
 // https://vitejs.dev/config/
 export default defineConfig({
-  // CRITICAL: Set base to '/' for Vercel deployment
-  // If you need GitHub Pages, use: base: process.env.VERCEL ? '/' : '/TrustVault-PWA/',
-  base: '/',
+  // CRITICAL: Set base to '/' for Vercel deployment, '/TrustVault-PWA/' for GitHub Pages
+  // Use VERCEL environment variable to detect Vercel deployment
+  base: BASE_PATH,
 
   plugins: [
     react(),
@@ -24,8 +27,8 @@ export default defineConfig({
         theme_color: '#1976d2',
         background_color: '#ffffff',
         display: 'standalone',
-        scope: '/',
-        start_url: '/',
+        scope: BASE_PATH,
+        start_url: BASE_PATH,
         icons: [
           {
             src: 'pwa-192x192.png',
