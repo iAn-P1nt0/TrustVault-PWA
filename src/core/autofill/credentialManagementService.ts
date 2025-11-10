@@ -169,8 +169,16 @@ export async function storeCredentialInBrowser(
   }
 
   try {
-    // Create PasswordCredential object
-    const passwordCredential = new PasswordCredential({
+    // Create PasswordCredential object using the constructor available in supported browsers
+    // Note: TypeScript doesn't have built-in types for Credential Management API
+    const PasswordCredentialConstructor = (window as any).PasswordCredential;
+
+    if (!PasswordCredentialConstructor) {
+      console.warn('PasswordCredential constructor not available');
+      return false;
+    }
+
+    const passwordCredential = new PasswordCredentialConstructor({
       id: credential.id,
       password: credential.password,
       name: credential.name,
@@ -179,7 +187,6 @@ export async function storeCredentialInBrowser(
 
     // Store in browser
     await navigator.credentials.store(passwordCredential);
-    console.log('Credential stored in browser for origin:', credential.origin);
 
     return true;
   } catch (error) {
@@ -201,15 +208,15 @@ export async function getCredentialFromBrowser(): Promise<{
   }
 
   try {
+    // Request password credential with optional mediation
     const credential = await navigator.credentials.get({
-      password: true,
       mediation: 'optional', // Don't show UI if user dismissed before
-    });
+    } as CredentialRequestOptions);
 
     if (credential && credential.type === 'password') {
-      const passwordCred = credential as PasswordCredential;
+      const passwordCred = credential as any;
       return {
-        id: passwordCred.id,
+        id: passwordCred.id || '',
         password: passwordCred.password || '',
       };
     }
@@ -234,15 +241,15 @@ export async function getCredentialWithUI(): Promise<{
   }
 
   try {
+    // Request password credential with required mediation
     const credential = await navigator.credentials.get({
-      password: true,
       mediation: 'required', // Always show credential picker
-    });
+    } as CredentialRequestOptions);
 
     if (credential && credential.type === 'password') {
-      const passwordCred = credential as PasswordCredential;
+      const passwordCred = credential as any;
       return {
-        id: passwordCred.id,
+        id: passwordCred.id || '',
         password: passwordCred.password || '',
       };
     }
@@ -265,7 +272,6 @@ export async function preventSilentAccess(): Promise<void> {
 
   try {
     await navigator.credentials.preventSilentAccess();
-    console.log('Silent credential access prevented');
   } catch (error) {
     console.error('Failed to prevent silent access:', error);
   }
@@ -275,8 +281,7 @@ export async function preventSilentAccess(): Promise<void> {
  * Convert TrustVault credential to browser credential format
  */
 export function toBrowserCredential(
-  credential: Credential,
-  currentOrigin: string
+  credential: Credential
 ): BrowserCredential | null {
   if (!credential.url) {
     return null;
@@ -311,7 +316,7 @@ export async function batchStoreCredentials(
       continue;
     }
 
-    const browserCred = toBrowserCredential(credential, window.location.origin);
+    const browserCred = toBrowserCredential(credential);
     if (!browserCred) {
       failed++;
       continue;

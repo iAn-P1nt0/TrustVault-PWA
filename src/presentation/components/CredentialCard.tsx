@@ -18,7 +18,6 @@ import {
   ListItemIcon,
   ListItemText,
   Tooltip,
-  Badge,
 } from '@mui/material';
 import {
   MoreVert,
@@ -27,15 +26,13 @@ import {
   Delete,
   Star,
   StarBorder,
-  Warning,
-  Security,
   GppBad,
 } from '@mui/icons-material';
 import type { Credential } from '@/domain/entities/Credential';
 import { clipboardManager } from '@/presentation/utils/clipboard';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
 import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
-import { getBreachResultForCredential } from '@/data/repositories/breachResultsRepository';
+import { getBreachResult } from '@/data/repositories/breachResultsRepository';
 import TotpDisplay from './TotpDisplay';
 import CategoryIcon, { getCategoryColor, getCategoryName } from './CategoryIcon';
 import type { BreachSeverity } from '@/core/breach/breachTypes';
@@ -73,13 +70,16 @@ const CredentialCard = memo(function CredentialCard({
 
   const loadBreachStatus = async () => {
     try {
-      const result = await getBreachResultForCredential(credential.id, 'password');
+      const result = await getBreachResult(credential.id, 'password');
       if (result && result.breached) {
-        setBreachStatus({
+        const status: { breached: boolean; severity: BreachSeverity; breachCount?: number } = {
           breached: true,
           severity: result.severity,
-          breachCount: result.breachCount,
-        });
+        };
+        if (result.breachCount !== undefined) {
+          status.breachCount = result.breachCount;
+        }
+        setBreachStatus(status);
       } else {
         setBreachStatus(null);
       }

@@ -37,6 +37,11 @@ import TotpDisplay from '@/presentation/components/TotpDisplay';
 import TagInput from '@/presentation/components/TagInput';
 import { isValidTOTPSecret } from '@/core/auth/totp';
 import type { CredentialCategory, Credential } from '@/domain/entities/Credential';
+import {
+  storeCredentialInBrowser,
+  toBrowserCredential,
+  isCredentialManagementSupported,
+} from '@/core/autofill/credentialManagementService';
 
 const CATEGORIES: { value: CredentialCategory; label: string }[] = [
   { value: 'login', label: 'Login' },
@@ -233,7 +238,24 @@ export default function EditCredentialPage() {
         updateData.totpSecret = totpSecret.trim() || undefined;
       }
 
-      await credentialRepository.update(id, updateData, vaultKey);
+      const updatedCredential = await credentialRepository.update(id, updateData, vaultKey);
+
+      // Store credential in browser for autofill (if supported and applicable)
+      if (
+        updatedCredential.category === 'login' &&
+        updatedCredential.url &&
+        isCredentialManagementSupported()
+      ) {
+        try {
+          const browserCred = toBrowserCredential(updatedCredential);
+          if (browserCred) {
+            await storeCredentialInBrowser(browserCred);
+          }
+        } catch (err) {
+          // Non-critical: autofill storage failed, but credential was updated
+          console.warn('Failed to store credential in browser for autofill:', err);
+        }
+      }
 
       // Navigate back to dashboard
       navigate('/dashboard');

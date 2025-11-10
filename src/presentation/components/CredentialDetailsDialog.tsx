@@ -46,7 +46,7 @@ import {
 import type { Credential } from '@/domain/entities/Credential';
 import { formatRelativeTime } from '@/presentation/utils/timeFormat';
 import { checkPasswordBreach, isHibpEnabled } from '@/core/breach/hibpService';
-import { getBreachResultForCredential, saveBreachResult } from '@/data/repositories/breachResultsRepository';
+import { getBreachResult, saveBreachResult } from '@/data/repositories/breachResultsRepository';
 import type { BreachCheckResult } from '@/core/breach/breachTypes';
 import TotpDisplay from './TotpDisplay';
 import BreachDetailsModal from './BreachDetailsModal';
@@ -105,7 +105,7 @@ export default function CredentialDetailsDialog({
     if (!credential) return;
 
     try {
-      const result = await getBreachResultForCredential(credential.id, 'password');
+      const result = await getBreachResult(credential.id, 'password');
       setBreachResult(result);
     } catch (error) {
       console.error('Failed to load breach data:', error);
@@ -216,6 +216,7 @@ export default function CredentialDetailsDialog({
   };
 
   return (
+    <>
     <Dialog fullScreen open={open} onClose={onClose} TransitionComponent={Transition}>
       {/* App Bar */}
       <AppBar sx={{ position: 'relative' }}>
@@ -553,7 +554,7 @@ export default function CredentialDetailsDialog({
         breaches={breachResult.breaches}
         credentialTitle={credential.title}
         severity={breachResult.severity}
-        breachCount={breachResult.breachCount}
+        {...(breachResult.breachCount !== undefined && { breachCount: breachResult.breachCount })}
         onChangePassword={() => {
           setBreachDetailsOpen(false);
           onEdit();
@@ -561,6 +562,6 @@ export default function CredentialDetailsDialog({
         }}
       />
     )}
-  </>
+    </>
   );
 }
