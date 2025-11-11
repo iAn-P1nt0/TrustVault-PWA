@@ -17,7 +17,7 @@ function getTourState(): TourState {
   try {
     const stored = localStorage.getItem(TOUR_STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      return JSON.parse(stored) as TourState;
     }
   } catch (error) {
     console.error('Failed to load tour state:', error);
@@ -114,17 +114,17 @@ export function useDriverTour() {
       doneBtnText: 'Get Started',
       allowClose: true,
       ...config,
-      onDestroyStarted: () => {
-        // Save completion state
+      onDestroyed: () => {
+        // Save completion state when tour is destroyed
         markTourCompleted(tourType);
 
-        // Call custom onDestroyStarted if provided
-        if (config.onDestroyStarted) {
-          config.onDestroyStarted();
-        }
-      },
-      onDestroyed: () => {
+        // Clear the driver reference
         driverRef.current = null;
+
+        // Call custom onDestroyed if provided
+        if (config.onDestroyed) {
+          config.onDestroyed();
+        }
       },
     });
 
