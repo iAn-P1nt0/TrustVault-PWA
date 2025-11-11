@@ -103,16 +103,20 @@ export function useDriverTour() {
       driverRef.current.destroy();
     }
 
-    // Create new driver instance
+    // Create new driver instance with proper overlay configuration
     driverRef.current = driver({
       showProgress: true,
       animate: true,
       overlayOpacity: 0.75,
+      stagePadding: 8,
+      stageRadius: 8,
       popoverClass: 'trustvault-tour',
       nextBtnText: 'Next →',
       prevBtnText: '← Back',
       doneBtnText: 'Get Started',
       allowClose: true,
+      smoothScroll: true,
+      disableActiveInteraction: false,
       ...config,
       onDestroyed: () => {
         // Save completion state when tour is destroyed
