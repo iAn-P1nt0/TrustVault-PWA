@@ -3,7 +3,7 @@
  * Shows only favorite/starred credentials for quick access
  */
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
@@ -52,30 +52,8 @@ export default function FavoritesPage() {
   const [visiblePasswords, setVisiblePasswords] = useState<Set<string>>(new Set());
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  // Load favorite credentials
-  useEffect(() => {
-    loadFavorites();
-  }, [vaultKey]);
-
-  // Filter credentials based on search
-  useEffect(() => {
-    if (!searchQuery.trim()) {
-      setFilteredCredentials(credentials);
-      return;
-    }
-
-    const query = searchQuery.toLowerCase();
-    const filtered = credentials.filter(
-      (cred) =>
-        cred.title.toLowerCase().includes(query) ||
-        cred.username?.toLowerCase().includes(query) ||
-        cred.url?.toLowerCase().includes(query) ||
-        cred.tags?.some((tag) => tag.toLowerCase().includes(query))
-    );
-    setFilteredCredentials(filtered);
-  }, [searchQuery, credentials]);
-
-  const loadFavorites = async () => {
+  // Load favorite credentials function
+  const loadFavorites = useCallback(async () => {
     if (!vaultKey) {
       setError('No vault key available');
       setLoading(false);
@@ -106,7 +84,30 @@ export default function FavoritesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vaultKey]);
+
+  // Load favorite credentials on mount and when vaultKey changes
+  useEffect(() => {
+    loadFavorites();
+  }, [loadFavorites]);
+
+  // Filter credentials based on search
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setFilteredCredentials(credentials);
+      return;
+    }
+
+    const query = searchQuery.toLowerCase();
+    const filtered = credentials.filter(
+      (cred) =>
+        cred.title.toLowerCase().includes(query) ||
+        cred.username?.toLowerCase().includes(query) ||
+        cred.url?.toLowerCase().includes(query) ||
+        cred.tags?.some((tag) => tag.toLowerCase().includes(query))
+    );
+    setFilteredCredentials(filtered);
+  }, [searchQuery, credentials]);
 
   const handleCopyUsername = async (credential: Credential) => {
     if (!credential.username) return;
