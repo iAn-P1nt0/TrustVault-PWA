@@ -92,12 +92,8 @@ export default function DashboardPage() {
   const [credentialToDelete, setCredentialToDelete] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
 
-  // Load credentials on mount
-  useEffect(() => {
-    loadCredentials();
-  }, [vaultKey]);
-
-  const loadCredentials = async () => {
+  // Load credentials function
+  const loadCredentials = useCallback(async () => {
     if (!vaultKey) {
       setError('No vault key available');
       setLoading(false);
@@ -115,7 +111,12 @@ export default function DashboardPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [vaultKey]);
+
+  // Load credentials on mount and when vaultKey changes
+  useEffect(() => {
+    loadCredentials();
+  }, [loadCredentials]);
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
