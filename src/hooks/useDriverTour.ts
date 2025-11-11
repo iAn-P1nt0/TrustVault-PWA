@@ -107,8 +107,8 @@ export function useDriverTour() {
     driverRef.current = driver({
       showProgress: true,
       animate: true,
-      overlayOpacity: 0.75,
-      stagePadding: 8,
+      overlayOpacity: 0.5,
+      stagePadding: 10,
       stageRadius: 8,
       popoverClass: 'trustvault-tour',
       nextBtnText: 'Next →',
@@ -118,11 +118,22 @@ export function useDriverTour() {
       smoothScroll: true,
       disableActiveInteraction: false,
       ...config,
-      onDestroyed: () => {
-        // Save completion state when tour is destroyed
+      onDestroyStarted: (element, step, options) => {
+        // Save completion state before destruction starts
         markTourCompleted(tourType);
 
-        // Clear the driver reference
+        // Call custom onDestroyStarted if provided
+        if (config.onDestroyStarted) {
+          config.onDestroyStarted(element, step, options);
+        }
+
+        // Properly destroy the driver
+        if (driverRef.current) {
+          driverRef.current.destroy();
+        }
+      },
+      onDestroyed: () => {
+        // Clear the driver reference after destruction
         driverRef.current = null;
 
         // Call custom onDestroyed if provided

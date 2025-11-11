@@ -59,14 +59,19 @@
 }
 
 .trustvault-tour .driver-popover-next-btn {
-  background: #1976d2;
-  color: #ffffff;
+  background: #1976d2 !important;
+  color: #ffffff !important;
+  cursor: pointer !important;
 }
 
 .trustvault-tour .driver-popover-next-btn:hover {
-  background: #1565c0;
+  background: #1565c0 !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4);
+  box-shadow: 0 4px 12px rgba(25, 118, 210, 0.4) !important;
+}
+
+.trustvault-tour .driver-popover-next-btn:active {
+  transform: translateY(0);
 }
 
 .trustvault-tour .driver-popover-prev-btn {
@@ -80,27 +85,36 @@
 }
 
 .trustvault-tour .driver-popover-close-btn {
-  color: #ffffff;
-  background: transparent;
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  transition: all 0.2s;
+  color: #ffffff !important;
+  background: transparent !important;
+  width: 32px !important;
+  height: 32px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 50% !important;
+  transition: all 0.2s !important;
+  cursor: pointer !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
 .trustvault-tour .driver-popover-close-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.15) !important;
+  transform: scale(1.1);
+}
+
+.trustvault-tour .driver-popover-close-btn:active {
+  transform: scale(0.95);
 }
 
 /* Overlay - driver.js creates this automatically */
 .driver-overlay {
-  background-color: rgba(0, 0, 0, 0.75) !important;
+  background-color: rgba(0, 0, 0, 0.5) !important;
   animation: fadeIn 0.3s ease-in;
   z-index: 999999998 !important;
   pointer-events: auto !important;
+  backdrop-filter: blur(2px);
 }
 
 /* Stage (the highlighted cutout area) */
@@ -108,8 +122,8 @@
   border-radius: 8px !important;
   z-index: 999999999 !important;
   /* Add a subtle glow effect to the cutout */
-  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.3),
-              0 0 20px rgba(25, 118, 210, 0.4) !important;
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.4),
+              0 0 20px rgba(25, 118, 210, 0.5) !important;
 }
 
 /* Highlighted element styling */
