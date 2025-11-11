@@ -27,7 +27,7 @@ export interface TourConfig extends Partial<Config> {
   overlayOpacity?: number;
   popoverClass?: string;
   steps: TourStep[];
-  onDestroyStarted?: () => void;
+  onDestroyed?: () => void;
   nextBtnText?: string;
   prevBtnText?: string;
   doneBtnText?: string;
