@@ -11,6 +11,7 @@
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   max-width: 400px;
   border: 2px solid #1976d2;
+  z-index: 1000000000 !important;
 }
 
 .trustvault-tour .driver-popover-title {
@@ -94,19 +95,30 @@
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* Highlighted element styling */
-.driver-active-element {
-  outline: 3px solid #1976d2 !important;
-  outline-offset: 4px;
-  border-radius: 8px;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.75),
-              0 0 20px rgba(25, 118, 210, 0.5) !important;
+/* Overlay - driver.js creates this automatically */
+.driver-overlay {
+  background-color: rgba(0, 0, 0, 0.75) !important;
+  animation: fadeIn 0.3s ease-in;
+  z-index: 999999998 !important;
+  pointer-events: auto !important;
 }
 
-/* Overlay */
-.driver-overlay {
-  background-color: rgba(0, 0, 0, 0.75);
-  animation: fadeIn 0.3s ease-in;
+/* Stage (the highlighted cutout area) */
+.driver-stage {
+  border-radius: 8px !important;
+  z-index: 999999999 !important;
+  /* Add a subtle glow effect to the cutout */
+  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.3),
+              0 0 20px rgba(25, 118, 210, 0.4) !important;
+}
+
+/* Highlighted element styling */
+.driver-active-element {
+  position: relative !important;
+  z-index: 999999999 !important;
+  background-color: inherit !important;
+  pointer-events: auto !important;
+  border-radius: 8px !important;
 }
 
 @keyframes fadeIn {
