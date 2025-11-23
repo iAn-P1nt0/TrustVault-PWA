@@ -84,15 +84,14 @@ describe('useAutoLock Hook', () => {
       // Verify not locked initially
       expect(useAuthStore.getState().isLocked).toBe(false);
 
-      // Fast-forward time by 1 minute
-      act(() => {
+      // Fast-forward time by 1 minute and wait for state updates
+      await act(async () => {
         vi.advanceTimersByTime(60 * 1000);
+        await vi.runAllTimersAsync();
       });
 
-      // Wait for lock to trigger
-      await waitFor(() => {
-        expect(useAuthStore.getState().isLocked).toBe(true);
-      });
+      // Verify vault is locked
+      expect(useAuthStore.getState().isLocked).toBe(true);
 
       // Verify vault key cleared
       expect(useAuthStore.getState().vaultKey).toBeNull();
@@ -161,14 +160,13 @@ describe('useAutoLock Hook', () => {
       expect(useAuthStore.getState().isLocked).toBe(false);
 
       // Fast-forward another 30 seconds (total 90s, 60s since reset)
-      act(() => {
+      await act(async () => {
         vi.advanceTimersByTime(30 * 1000);
+        await vi.runAllTimersAsync();
       });
 
       // NOW should be locked
-      await waitFor(() => {
-        expect(useAuthStore.getState().isLocked).toBe(true);
-      });
+      expect(useAuthStore.getState().isLocked).toBe(true);
     });
 
     it('should not lock when timeout is 0 (never)', async () => {
@@ -270,15 +268,13 @@ describe('useAutoLock Hook', () => {
         value: 'hidden',
       });
 
-      act(() => {
+      await act(async () => {
         document.dispatchEvent(new Event('visibilitychange'));
+        await vi.runAllTimersAsync();
       });
 
       // Should lock immediately
-      await waitFor(() => {
-        expect(useAuthStore.getState().isLocked).toBe(true);
-      });
-
+      expect(useAuthStore.getState().isLocked).toBe(true);
       expect(mockNavigate).toHaveBeenCalled();
     });
 
@@ -473,14 +469,13 @@ describe('useAutoLock Hook', () => {
       expect(useCredentialStore.getState().credentials.length).toBe(1);
 
       // Fast-forward to trigger lock
-      act(() => {
+      await act(async () => {
         vi.advanceTimersByTime(60 * 1000);
+        await vi.runAllTimersAsync();
       });
 
-      // Wait for lock
-      await waitFor(() => {
-        expect(useAuthStore.getState().isLocked).toBe(true);
-      });
+      // Verify locked
+      expect(useAuthStore.getState().isLocked).toBe(true);
 
       // Credentials should be cleared
       expect(useCredentialStore.getState().credentials.length).toBe(0);
@@ -530,15 +525,13 @@ describe('useAutoLock Hook', () => {
       expect(useAuthStore.getState().isLocked).toBe(false);
 
       // Manually trigger lock
-      act(() => {
+      await act(async () => {
         result.current.performLock();
+        await vi.runAllTimersAsync();
       });
 
       // Should be locked
-      await waitFor(() => {
-        expect(useAuthStore.getState().isLocked).toBe(true);
-      });
-
+      expect(useAuthStore.getState().isLocked).toBe(true);
       expect(mockNavigate).toHaveBeenCalled();
     });
 
@@ -585,13 +578,12 @@ describe('useAutoLock Hook', () => {
       );
 
       // Trigger lock
-      act(() => {
+      await act(async () => {
         result.current.performLock();
+        await vi.runAllTimersAsync();
       });
 
-      await waitFor(() => {
-        expect(onLockCallback).toHaveBeenCalled();
-      });
+      expect(onLockCallback).toHaveBeenCalled();
     });
   });
 
