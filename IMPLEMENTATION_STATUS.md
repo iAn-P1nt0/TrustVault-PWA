@@ -27,9 +27,6 @@
 **File**: `src/data/repositories/UserRepositoryImpl.ts:78-107`
 
 **Problem**: 
-- Master password is verified ✅
-- Derived key is created ✅  
-- But encrypted vault key is NEVER decrypted ❌
 - Result: Credentials cannot be decrypted
 
 **Fix Required**:
@@ -47,8 +44,21 @@ const actualVaultKey = await decrypt(encryptedVaultKeyData, vaultKey);
 
 **Problem**:
 - Read operations receive `decryptionKey` parameter
-- Parameter is completely ignored (`_decryptionKey`)
 - Returns encrypted password data
+
+## High-Value Use Case Plan (Nov 24, 2025)
+
+See `ROADMAP.md` for full detail. The next implementation sprints will focus on:
+
+1. **Master Password Session Lifecycle** – Harden `UserRepositoryImpl.authenticateWithPassword`, `useAuthStore`, and `useAutoLock` so auto-lock/unlock is fully tested (`auth-flow.test.tsx`).
+2. **Secure Credential Lifecycle (Cards, TOTP, Autofill)** – Complete the UI + repository paths for multi-type credentials, TOTP display, and Credential Management API integration with expanded tests.
+3. **Biometric Enrollment & Passwordless Unlock** – Finish WebAuthn-backed flows across `SettingsPage`, `SigninPage`, and the biometric vault-key helpers (`core/auth/webauthn.ts`, `core/auth/biometricVaultKey.ts`).
+4. **Breach Detection Triage** – Activate `core/breach/hibpService.ts` + `breachResultsRepository.ts` end-to-end so dashboard alerts and the Security Audit page reflect real scan outcomes.
+5. **Encrypted Import/Export & Recovery** – Replace plaintext exports with password-protected `.tvault` bundles (`CredentialRepositoryImpl`, new `core/crypto/exportEncryption.ts`, Settings dialogs) and add round-trip tests.
+
+Each stream must land with the validation artifacts called out in the roadmap (unit, integration, and e2e coverage) before promotion to production-ready status.
+
+---
 
 **Fix Required**:
 ```typescript

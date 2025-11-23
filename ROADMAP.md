@@ -59,6 +59,22 @@ Each phase includes:
 
 ---
 
+## 🔝 High-Value Use Case Focus (Nov 24, 2025)
+
+To accelerate toward production readiness, the next roadmap cycles will prioritize five cross-cutting use cases. Each bundle ties business value to concrete code areas and validation requirements.
+
+| # | Use Case & User Story | Rationale | Key Components | Validation Plan |
+|---|-----------------------|-----------|----------------|-----------------|
+| 1 | **Master Password Session Lifecycle** — “As a vault owner I can sign in, auto-lock on inactivity/tab hide, and unlock without losing decrypted data.” | Core trust guarantee; regressions previously noted in `KEY_FINDINGS.md`. | `UserRepositoryImpl.authenticateWithPassword`, `useAuthStore`, `useAutoLock.ts`, `UnlockPage`, clipboard clearing helpers. | Extend `src/__tests__/integration/auth-flow.test.tsx` to cover lock/unlock, add hook tests for `useAutoLock` with fake timers, ensure vault keys and decrypted data purge on lock failures. |
+| 2 | **Secure Credential Lifecycle (Cards, TOTP, Autofill)** — “I can add/update/delete login, payment, and TOTP-enabled credentials and opt into browser autofill.” | Differentiates enterprise UX; ensures encryption paths match UI expectations. | `AddCredentialPage.tsx`, `EditCredentialPage.tsx`, `CredentialRepositoryImpl`, `core/autofill/credentialManagementService.ts`, `core/auth/totp.ts`, `TotpDisplay`. | Expand `credential-crud.test.tsx` to cover category branches, add repository unit tests for card/TOTP encryption, mock Credential Management API, and run UI smoke tests for autofill opt-in. |
+| 3 | **Biometric Enrollment & Passwordless Unlock** — “After enabling biometrics I can unlock with Face ID/Fingerprint via WebAuthn-backed vault keys.” | Matches Android feature parity (see `PHASE_4.1_BIOMETRIC_AUTH.md`) and reduces signin friction. | `UserRepositoryImpl.registerBiometric`/`authenticateWithBiometric`, `core/auth/webauthn.ts`, `core/auth/biometricVaultKey.ts`, `SettingsPage`, `SigninPage`, `UnlockPage`. | Add mocked WebAuthn unit tests (counter, challenge, vault-key wrapping), plus integration specs that simulate enrollment + unlock fallback states. |
+| 4 | **Breach Detection Triage & Security Audit** — “From Dashboard/Security Audit I can scan via HIBP, see alerts, and drill into breach details.” | Converts `BREACH_DETECTION_README.md` into enforced behavior; required for compliance narratives. | `core/breach/hibpService.ts`, `breachResultsRepository.ts`, `SecurityAuditPage.tsx`, `BreachAlertBanner.tsx`, `.env` feature flags. | Write service tests covering k-anonymity, caching, rate limiting; create UI integration test that mocks HIBP responses and asserts banner/modal behavior. |
+| 5 | **Encrypted Import/Export & Recovery** — “I can export my vault to a password-protected `.tvault` file and re-import/merge safely.” | Closes high-risk plaintext export gap (`ROADMAP Phase 3.3`) and enables disaster recovery. | `CredentialRepositoryImpl.exportAll/importFromJson`, forthcoming `core/crypto/exportEncryption.ts`, `ExportDialog.tsx`, `ImportDialog.tsx`, `SettingsPage`. | Implement crypto-roundtrip unit tests (correct password, wrong password, duplicate handling) and an integration spec that exports, wipes IndexedDB, and re-imports data. |
+
+> **Call to Action:** Treat these flows as the “north star” for the next roadmap slice. Each Phase below should reference which use case(s) it unblocks, and all code changes must land alongside the outlined tests.
+
+---
+
 ## 🚨 PHASE 0: Critical Bug Fixes (URGENT)
 
 **Goal:** Fix blocking bugs preventing credential access
