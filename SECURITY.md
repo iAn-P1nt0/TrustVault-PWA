@@ -123,7 +123,37 @@ form-action 'self';
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
 - `Referrer-Policy: strict-origin-when-cross-origin`
-- `Permissions-Policy: geolocation=(), microphone=(), camera=()`
+- `Permissions-Policy: camera=(self), geolocation=(), microphone=()`
+
+---
+
+## 📷 OCR Credential Capture Security
+
+### Local-Only Processing
+TrustVault's camera-based credential scan feature uses **Tesseract.js** for 100% client-side OCR:
+
+| Guarantee | Implementation |
+|-----------|----------------|
+| **No network upload** | Tesseract runs entirely in Web Workers + WASM; images never leave the device |
+| **Immediate buffer clearing** | Captured image `ArrayBuffer` is zeroed and released immediately after OCR |
+| **No persistence** | Images are never written to IndexedDB, localStorage, or disk |
+| **User confirmation** | Detected fields are shown for review before being applied to the form |
+
+### Camera Permission
+- Permission requested only when user initiates scan
+- `Permissions-Policy: camera=(self)` restricts access to first-party origin
+- Camera stream is stopped immediately after capture
+
+### Memory Hygiene
+```typescript
+// After OCR completes:
+const buffer = await blob.arrayBuffer();
+new Uint8Array(buffer).fill(0); // Overwrite image data
+// Let GC reclaim memory
+```
+
+### Privacy Notice
+The scan UI displays: "🔒 Images are processed locally and never uploaded"
 
 ---
 
