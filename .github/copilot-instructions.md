@@ -4,6 +4,19 @@
 
 ---
 
+## Current Objectives (Nov 2025)
+1. **Vault Trust Hardening** – Patch vault key decrypt/read bugs, wire `useAutoLock`, scrub decrypted state on lock, and document verification in `TEST_STATUS.md`.
+2. **CredOps Experience** – Deliver credential CRUD UX, password generator, secure clipboard manager, search/filter, responsive dashboard, and TOTP display.
+3. **Passwordless & Recovery** – Implement WebAuthn biometric unlock, change-master-password flows, and encrypted import/export with recovery copy.
+4. **Threat Intelligence & Reporting** – Integrate breach detection UX, expand Vitest/integration coverage (>85%), and keep `SECURITY_AUDIT_REPORT.md` current.
+
+When implementing new functionality:
+- Reference `ROADMAP.md` for prompts + validation, and update it if acceptance criteria evolve.
+- Touch companion docs (README/AGENTS/CLAUDE/copilot instructions) whenever developer workflows, tooling expectations, or ownership changes.
+- Record manual verification evidence in `TEST_STATUS.md` (UX) and `SECURITY_AUDIT_REPORT.md` (security) before merging.
+
+---
+
 ## Architecture Overview
 
 This is an **offline-first PWA** using Clean Architecture with three distinct layers:

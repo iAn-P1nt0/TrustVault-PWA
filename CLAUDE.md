@@ -5,6 +5,23 @@
 
 ---
 
+## Current Mission (Nov 2025)
+- **Vault Trust Hardening** – Fix vault key decrypt flow, ensure credential reads return plaintext in memory only, and wire auto-lock/session visibility guards.
+- **CredOps Experience** – Complete credential forms, dashboard/search, password generator, secure clipboard manager, TOTP components, and responsive layouts.
+- **Passwordless & Recovery** – Add WebAuthn biometric unlock, master password rotation UX, and encrypted import/export flows with recovery instructions.
+- **Threat Intelligence & Reporting** – Integrate breach detection, OWASP-aligned audits, and >85% Vitest + integration coverage.
+
+Every code change must link back to one of these pillars **and** update `ROADMAP.md`, `README.md`, or `AGENTS.md` if scope, validation, or ownership shifts.
+
+### Definition of Done
+1. Feature flagged or guarded if experimental.
+2. `npm run type-check`, `npm run lint`, and targeted `npm run test` suites run locally.
+3. Manual verification recorded in `TEST_STATUS.md` (and `SECURITY_AUDIT_REPORT.md` for security changes).
+4. Doc touchpoints refreshed (README/ROADMAP/CLAUDE/copilot instructions as needed).
+5. No sensitive data logged; CryptoKey objects stay memory-bound.
+
+---
+
 ## Quick Commands
 
 ```bash
