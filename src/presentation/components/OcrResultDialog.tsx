@@ -5,7 +5,7 @@
  * before applying them to the credential form.
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -92,34 +92,14 @@ export function OcrResultDialog({
   const [showPassword, setShowPassword] = useState(false);
 
   // Update form when result changes
-  useState(() => {
-    if (result) {
+  useEffect(() => {
+    if (result && open) {
       setUsername(sanitizeValue(result.username ?? ''));
       setPassword(sanitizeValue(result.password ?? ''));
       setUrl(sanitizeValue(result.url ?? ''));
       setNotes(sanitizeValue(result.notes ?? ''));
     }
-  });
-
-  // Reset form on open with new result
-  if (result && open) {
-    const sanitizedUsername = sanitizeValue(result.username ?? '');
-    const sanitizedPassword = sanitizeValue(result.password ?? '');
-    const sanitizedUrl = sanitizeValue(result.url ?? '');
-    const sanitizedNotes = sanitizeValue(result.notes ?? '');
-
-    if (
-      username !== sanitizedUsername &&
-      password !== sanitizedPassword &&
-      url !== sanitizedUrl &&
-      notes !== sanitizedNotes
-    ) {
-      setUsername(sanitizedUsername);
-      setPassword(sanitizedPassword);
-      setUrl(sanitizedUrl);
-      setNotes(sanitizedNotes);
-    }
-  }
+  }, [result, open]);
 
   const handleApply = () => {
     const fields: {

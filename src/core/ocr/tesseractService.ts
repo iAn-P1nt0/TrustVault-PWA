@@ -108,8 +108,12 @@ export async function prefetchTesseractAssets(): Promise<void> {
   }
   prefetchStarted = true;
 
-  // Don't prefetch if service worker isn't available or during tests
-  if (!('serviceWorker' in navigator) || typeof jest !== 'undefined') {
+  // Don't prefetch if service worker isn't available or in test environment
+  if (
+    !('serviceWorker' in navigator) ||
+    typeof process !== 'undefined' &&
+      (process.env?.NODE_ENV === 'test' || process.env?.VITEST === 'true')
+  ) {
     return;
   }
 
@@ -131,8 +135,6 @@ export async function prefetchTesseractAssets(): Promise<void> {
         // Fetch with cache-first - service worker will intercept and cache
         await fetch(url, {
           method: 'GET',
-          // @ts-expect-error - priority is a valid fetch option in modern browsers
-          priority: 'low',
           cache: 'default',
         });
       } catch {
