@@ -72,6 +72,51 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
+          },
+          // Tesseract.js WASM core and worker scripts
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/tesseract\.js@.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tesseract-core-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 30 // 30 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Tesseract.js language data (eng.traineddata ~15MB)
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/tesseract\.js-data@.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tesseract-lang-cache',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          // Tesseract.js WASM core from tessdata CDN
+          {
+            urlPattern: /^https:\/\/cdn\.jsdelivr\.net\/npm\/tesseract\.js-core@.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'tesseract-wasm-cache',
+              expiration: {
+                maxEntries: 5,
+                maxAgeSeconds: 60 * 60 * 24 * 90 // 90 days
+              },
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
           }
         ],
         skipWaiting: false, // Don't auto-skip waiting - let user control it
@@ -130,7 +175,7 @@ export default defineConfig({
       'X-XSS-Protection': '1; mode=block',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'camera=(self), microphone=(), geolocation=()',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:;"
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:;"
     }
   },
 
@@ -143,7 +188,7 @@ export default defineConfig({
       'X-XSS-Protection': '1; mode=block',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
       'Permissions-Policy': 'camera=(self), microphone=(), geolocation=()',
-      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self'; worker-src 'self' blob:;"
+      'Content-Security-Policy': "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob:; connect-src 'self' https://cdn.jsdelivr.net; worker-src 'self' blob:;"
     }
   }
 });

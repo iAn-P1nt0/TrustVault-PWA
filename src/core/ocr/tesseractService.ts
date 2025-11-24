@@ -10,6 +10,7 @@ import type { Worker, RecognizeResult } from 'tesseract.js';
 
 let tesseractWorker: Worker | null = null;
 let initializationPromise: Promise<Worker> | null = null;
+let prefetchStarted = false;
 
 export interface OCRProgress {
   status: string;
@@ -92,4 +93,57 @@ export function isOCRSupported(): boolean {
     navigator.mediaDevices &&
     typeof navigator.mediaDevices.getUserMedia === 'function'
   );
+}
+
+/**
+ * Prefetch Tesseract language data to warm the service worker cache.
+ * Call this on app idle time (e.g., after initial render) to ensure
+ * the ~15MB eng.traineddata is cached before user's first scan.
+ * 
+ * This uses fetch with low priority to avoid blocking critical resources.
+ */
+export async function prefetchTesseractAssets(): Promise<void> {
+  if (prefetchStarted) {
+    return;
+  }
+  prefetchStarted = true;
+
+  // Don't prefetch if service worker isn't available or during tests
+  if (!('serviceWorker' in navigator) || typeof jest !== 'undefined') {
+    return;
+  }
+
+  try {
+    // Wait for service worker to be ready
+    await navigator.serviceWorker.ready;
+
+    // Tesseract.js CDN URLs for core WASM and language data
+    // These URLs match the runtime caching patterns in vite.config.ts
+    const assetsToCache = [
+      'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js',
+      'https://cdn.jsdelivr.net/npm/tesseract.js-core@5/tesseract-core-simd-lstm.wasm.js',
+      'https://cdn.jsdelivr.net/npm/tesseract.js-data@5/4.0.0/eng.traineddata.gz',
+    ];
+
+    // Use low-priority fetch to avoid blocking critical resources
+    for (const url of assetsToCache) {
+      try {
+        // Fetch with cache-first - service worker will intercept and cache
+        await fetch(url, {
+          method: 'GET',
+          // @ts-expect-error - priority is a valid fetch option in modern browsers
+          priority: 'low',
+          cache: 'default',
+        });
+      } catch {
+        // Ignore individual fetch failures - user can still download on first scan
+        console.debug(`[OCR] Prefetch skipped: ${url}`);
+      }
+    }
+
+    console.debug('[OCR] Tesseract assets prefetched for faster first-scan');
+  } catch {
+    // Prefetch is best-effort; don't block app on failure
+    console.debug('[OCR] Prefetch unavailable');
+  }
 }

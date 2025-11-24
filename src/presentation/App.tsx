@@ -20,6 +20,7 @@ import OfflineIndicator from './components/OfflineIndicator';
 import UpdateNotification from './components/UpdateNotification';
 import CryptoAPIError from './components/CryptoAPIError';
 import { initPerformanceMonitoring } from './utils/performance';
+import { prefetchTesseractAssets } from '@/core/ocr';
 import OnboardingTour from '@/components/OnboardingTour';
 import '@/styles/driver-custom.css';
 
@@ -244,6 +245,27 @@ function AppContent() {
   useEffect(() => {
     initPerformanceMonitoring();
   }, []);
+
+  // Prefetch Tesseract OCR assets on idle for faster first-scan UX
+  useEffect(() => {
+    if (!isInitialized) return;
+
+    // Use requestIdleCallback to prefetch during browser idle time
+    const prefetch = () => {
+      prefetchTesseractAssets().catch(() => {
+        // Best-effort; ignore failures
+      });
+    };
+
+    if ('requestIdleCallback' in window) {
+      const handle = window.requestIdleCallback(prefetch, { timeout: 5000 });
+      return () => window.cancelIdleCallback(handle);
+    } else {
+      // Fallback for Safari: use setTimeout with delay
+      const handle = setTimeout(prefetch, 3000);
+      return () => clearTimeout(handle);
+    }
+  }, [isInitialized]);
 
   useEffect(() => {
     console.log('App mounted, initializing database...');

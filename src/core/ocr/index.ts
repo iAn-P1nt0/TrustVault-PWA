@@ -6,6 +6,7 @@ export {
   recognizeText,
   terminateWorker,
   isOCRSupported,
+  prefetchTesseractAssets,
   type OCRProgress,
 } from './tesseractService';
 
