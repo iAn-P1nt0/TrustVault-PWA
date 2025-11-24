@@ -27,6 +27,7 @@ import {
   Save,
   Delete,
   AutoAwesome,
+  CameraAlt,
 } from '@mui/icons-material';
 import { credentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
 import { useAuthStore } from '@/presentation/store/authStore';
@@ -42,6 +43,9 @@ import {
   toBrowserCredential,
   isCredentialManagementSupported,
 } from '@/core/autofill/credentialManagementService';
+import { CameraScanDialog } from '@/presentation/components/CameraScanDialog';
+import { OcrResultDialog } from '@/presentation/components/OcrResultDialog';
+import { isCameraSupported, type ParsedCredential } from '@/core/ocr';
 
 const CATEGORIES: { value: CredentialCategory; label: string }[] = [
   { value: 'login', label: 'Login' },
@@ -89,6 +93,11 @@ export default function EditCredentialPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [generatorOpen, setGeneratorOpen] = useState(false);
+
+  // OCR scan state
+  const [scanDialogOpen, setScanDialogOpen] = useState(false);
+  const [ocrResultDialogOpen, setOcrResultDialogOpen] = useState(false);
+  const [ocrResult, setOcrResult] = useState<ParsedCredential | null>(null);
 
   // Validation
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -195,6 +204,35 @@ export default function EditCredentialPage() {
 
   const handleUseGeneratedPassword = (generatedPassword: string) => {
     setPassword(generatedPassword);
+  };
+
+  // OCR scan handlers
+  const handleOpenScan = () => {
+    setScanDialogOpen(true);
+  };
+
+  const handleScanResult = (result: ParsedCredential) => {
+    setOcrResult(result);
+    setScanDialogOpen(false);
+    setOcrResultDialogOpen(true);
+  };
+
+  const handleApplyOcrResult = (fields: {
+    username?: string;
+    password?: string;
+    url?: string;
+    notes?: string;
+  }) => {
+    if (fields.username) setUsername(fields.username);
+    if (fields.password) setPassword(fields.password);
+    if (fields.url) setUrl(fields.url);
+    if (fields.notes) setNotes(fields.notes);
+    setOcrResultDialogOpen(false);
+  };
+
+  const handleRescan = () => {
+    setOcrResultDialogOpen(false);
+    setScanDialogOpen(true);
   };
 
   const handleSave = async () => {
@@ -325,6 +363,17 @@ export default function EditCredentialPage() {
           <Typography variant="h5" component="h1" sx={{ fontWeight: 600, flexGrow: 1 }}>
             Edit Credential
           </Typography>
+          {isCameraSupported() && (
+            <Button
+              variant="outlined"
+              startIcon={<CameraAlt />}
+              onClick={handleOpenScan}
+              size="small"
+              sx={{ mr: 1 }}
+            >
+              Scan
+            </Button>
+          )}
           <Button
             variant="outlined"
             color="error"
@@ -661,6 +710,22 @@ export default function EditCredentialPage() {
         open={generatorOpen}
         onClose={() => setGeneratorOpen(false)}
         onUse={handleUseGeneratedPassword}
+      />
+
+      {/* Camera Scan Dialog */}
+      <CameraScanDialog
+        open={scanDialogOpen}
+        onClose={() => setScanDialogOpen(false)}
+        onResult={handleScanResult}
+      />
+
+      {/* OCR Result Dialog */}
+      <OcrResultDialog
+        open={ocrResultDialogOpen}
+        result={ocrResult}
+        onClose={() => setOcrResultDialogOpen(false)}
+        onApply={handleApplyOcrResult}
+        onRescan={handleRescan}
       />
     </Container>
   );
