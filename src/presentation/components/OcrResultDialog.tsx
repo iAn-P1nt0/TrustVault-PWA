@@ -93,13 +93,13 @@ export function OcrResultDialog({
 
   // Update form when result changes
   useEffect(() => {
-    if (result && open) {
+    if (result) {
       setUsername(sanitizeValue(result.username ?? ''));
       setPassword(sanitizeValue(result.password ?? ''));
       setUrl(sanitizeValue(result.url ?? ''));
       setNotes(sanitizeValue(result.notes ?? ''));
     }
-  }, [result, open]);
+  }, [result]);
 
   const handleApply = () => {
     const fields: {
