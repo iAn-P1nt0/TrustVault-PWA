@@ -171,14 +171,15 @@ export async function storeCredentialInBrowser(
   try {
     // Create PasswordCredential object using the constructor available in supported browsers
     // Note: TypeScript doesn't have built-in types for Credential Management API
-    const PasswordCredentialConstructor = (window as any).PasswordCredential;
+    const PasswordCredentialConstructor = (window as unknown as { PasswordCredential?: unknown }).PasswordCredential;
 
     if (!PasswordCredentialConstructor) {
       console.warn('PasswordCredential constructor not available');
       return false;
     }
 
-    const passwordCredential = new PasswordCredentialConstructor({
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+    const passwordCredential = new (PasswordCredentialConstructor as any)({
       id: credential.id,
       password: credential.password,
       name: credential.name,

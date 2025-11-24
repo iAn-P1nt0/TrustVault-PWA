@@ -43,7 +43,7 @@ export interface RegistrationOptions {
  */
 export function isWebAuthnSupported(): boolean {
   return (
-    window?.PublicKeyCredential !== undefined &&
+    window.PublicKeyCredential !== undefined &&
     typeof window.PublicKeyCredential === 'function'
   );
 }
@@ -291,10 +291,12 @@ export async function getAuthenticatorInfo(): Promise<{
   
   let conditionalMediationAvailable = false;
   if (
-    window?.PublicKeyCredential?.isConditionalMediationAvailable !== undefined
+    window.PublicKeyCredential?.isConditionalMediationAvailable !== undefined
   ) {
-    conditionalMediationAvailable =
-      await window.PublicKeyCredential.isConditionalMediationAvailable();
+    const cond = window.PublicKeyCredential.isConditionalMediationAvailable;
+    if (cond !== undefined) {
+      conditionalMediationAvailable = await cond();
+    }
   }
 
   return {

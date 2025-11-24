@@ -95,7 +95,7 @@ export async function decryptVaultKeyFromBiometric(
   userId: string
 ): Promise<CryptoKey> {
   // Parse encrypted data
-  const encryptedData: EncryptedData = JSON.parse(encryptedVaultKeyJson);
+  const encryptedData = JSON.parse(encryptedVaultKeyJson) as EncryptedData;
 
   // Decode salt
   const saltBytes = Uint8Array.from(atob(salt), c => c.charCodeAt(0));

@@ -5,7 +5,7 @@
  */
 
 import { hmac } from '@noble/hashes/hmac';
-import { sha1 } from '@noble/hashes/sha1';
+import { sha1 } from '@noble/hashes/legacy';
 
 /**
  * Base32 character set (RFC 4648)
@@ -69,7 +69,8 @@ export function base32Encode(data: Uint8Array): string {
   let value = 0;
 
   for (let i = 0; i < data.length; i++) {
-    value = (value << 8) | (data[i] as number);
+    const byte = data[i] ?? 0;
+    value = (value << 8) | byte;
     bits += 8;
 
     while (bits >= 5) {
@@ -119,12 +120,26 @@ export function generateTOTP(
   const hash = hmac(sha1, secretBytes, new Uint8Array(buffer));
 
   // Dynamic truncation (RFC 6238)
-  const offset = hash[hash.length - 1]! & 0x0f;
+  const lastByte = hash[hash.length - 1];
+  if (lastByte === undefined) {
+    throw new Error('Failed to generate TOTP hash');
+  }
+  const offset = lastByte & 0x0f;
+
+  const hashOffset = hash[offset];
+  const hashOffset1 = hash[offset + 1];
+  const hashOffset2 = hash[offset + 2];
+  const hashOffset3 = hash[offset + 3];
+
+  if (hashOffset === undefined || hashOffset1 === undefined || hashOffset2 === undefined || hashOffset3 === undefined) {
+    throw new Error('Invalid hash offset in TOTP generation');
+  }
+
   const code =
-    (((hash[offset]! & 0x7f) << 24) |
-      ((hash[offset + 1]!) << 16) |
-      ((hash[offset + 2]!) << 8) |
-      hash[offset + 3]!) %
+    (((hashOffset & 0x7f) << 24) |
+      (hashOffset1 << 16) |
+      (hashOffset2 << 8) |
+      hashOffset3) %
     Math.pow(10, digits);
 
   // Return zero-padded code

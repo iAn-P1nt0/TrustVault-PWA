@@ -75,55 +75,57 @@ export default function TourHelpButton() {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        MenuListProps={{
-          'aria-labelledby': 'help-button',
+        slotProps={{
+          paper: {
+            'aria-labelledby': 'help-button',
+          },
         }}
         transformOrigin={{ horizontal: 'right', vertical: 'top' }}
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
-        <MenuItem onClick={() => handleTourSelect(startFirstTimeTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startFirstTimeTour); }}>
           <ListItemIcon>
             <PlayCircleOutline fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Getting Started Tour" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startDashboardTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startDashboardTour); }}>
           <ListItemIcon>
             <Dashboard fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Dashboard Features" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startSecurityTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startSecurityTour); }}>
           <ListItemIcon>
             <Security fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Security Features" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startCredentialsTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startCredentialsTour); }}>
           <ListItemIcon>
             <VpnKey fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Managing Credentials" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startExportTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startExportTour); }}>
           <ListItemIcon>
             <FileDownload fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Export & Backup" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startBiometricTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startBiometricTour); }}>
           <ListItemIcon>
             <Fingerprint fontSize="small" />
           </ListItemIcon>
           <ListItemText primary="Biometric Setup" />
         </MenuItem>
 
-        <MenuItem onClick={() => handleTourSelect(startPWAInstallTour)}>
+        <MenuItem onClick={() => { handleTourSelect(startPWAInstallTour); }}>
           <ListItemIcon>
             <InstallMobile fontSize="small" />
           </ListItemIcon>

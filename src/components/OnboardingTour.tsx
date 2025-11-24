@@ -49,7 +49,7 @@ export default function OnboardingTour({
       return () => clearTimeout(timeout);
     }
 
-    return undefined;
+    return () => {};
   }, [autoStart, delay, isFirstTimeUser, startFirstTimeTour, onComplete]);
 
   // This component doesn't render anything visible

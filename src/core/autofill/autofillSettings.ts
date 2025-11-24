@@ -33,7 +33,7 @@ export function loadAutofillSettings(): AutofillSettings {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      const parsed = JSON.parse(stored);
+      const parsed = JSON.parse(stored) as AutofillSettings;
       return { ...DEFAULT_AUTOFILL_SETTINGS, ...parsed };
     }
   } catch (error) {
