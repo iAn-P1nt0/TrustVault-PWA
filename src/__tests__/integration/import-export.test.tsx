@@ -39,6 +39,9 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
   await waitFor(() => {
     expect(screen.getByLabelText('add')).toBeInTheDocument();
   }, { timeout: 5000 });
+  
+  // Debug: print what's on screen
+  screen.debug(undefined, 5000);
 
   // Add multiple test credentials
   const credentials = [
