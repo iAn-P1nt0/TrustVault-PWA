@@ -284,17 +284,10 @@ describe('Authentication Flow Integration', () => {
         
       );
 
-      // Create account and sign in
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
+      // With no users, app auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
@@ -352,17 +345,10 @@ describe('Authentication Flow Integration', () => {
 
       );
 
-      // STEP 1: SIGNUP
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      let signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
+      // STEP 1: SIGNUP - with no users, app auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       let emailInput = screen.getByLabelText(/email/i);
       let passwordInput = screen.getByLabelText(/^master password/i);
@@ -450,17 +436,10 @@ describe('Authentication Flow Integration', () => {
 
       );
 
-      // Create account
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
+      // With no users, app auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
