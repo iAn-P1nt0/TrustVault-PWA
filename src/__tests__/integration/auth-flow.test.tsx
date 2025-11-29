@@ -120,6 +120,9 @@ describe('Authentication Flow Integration', () => {
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'SecurePassword123!');
       await user.type(confirmInput, 'DifferentPassword123!');
+      
+      // Debug: check if error shows before clicking submit
+      screen.debug(undefined, 50000);
 
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
