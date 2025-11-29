@@ -274,11 +274,11 @@ describe('Import/Export Integration', () => {
 
       // Create fresh account
       await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+        expect(screen.getByText(/create account/i)).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
+      
+      
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
@@ -369,11 +369,11 @@ describe('Import/Export Integration', () => {
 
       // Setup user
       await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+        expect(screen.getByText(/create account/i)).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
+      
+      
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
@@ -505,11 +505,11 @@ describe('Import/Export Integration', () => {
 
       // Setup user and navigate to import
       await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+        expect(screen.getByText(/create account/i)).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
+      
+      
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
