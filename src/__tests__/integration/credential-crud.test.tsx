@@ -41,6 +41,38 @@ async function setupAuthenticatedUser(user: ReturnType<typeof userEvent.setup>) 
   }, { timeout: 10000 });
 }
 
+// Helper to create a credential from dashboard (fills required fields: title, username, password)
+async function createCredentialFromDashboard(
+  user: ReturnType<typeof userEvent.setup>,
+  title: string,
+  username = 'testuser',
+  password = 'testpass123'
+) {
+  const addButton = screen.getByLabelText('add');
+  await user.click(addButton);
+
+  await waitFor(() => {
+    expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
+  }, { timeout: 5000 });
+
+  const titleInput = screen.getByLabelText(/title/i);
+  await user.type(titleInput, title);
+
+  const usernameInput = screen.getByLabelText(/username/i);
+  await user.type(usernameInput, username);
+
+  const passwordInput = screen.getByLabelText(/^password/i);
+  await user.type(passwordInput, password);
+
+  const saveButton = screen.getByRole('button', { name: /save/i });
+  await user.click(saveButton);
+
+  // Wait for navigation back to dashboard
+  await waitFor(() => {
+    expect(screen.getByLabelText('add')).toBeInTheDocument();
+  }, { timeout: 5000 });
+}
+
 describe('Credential CRUD Integration', () => {
   beforeEach(async () => {
     useAuthStore.getState().clearSession();
@@ -183,40 +215,10 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create first credential
-      let addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      let titleInput = screen.getByLabelText(/title/i);
-      await user.type(titleInput, 'Gmail');
-
-      let saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'Gmail', 'gmailuser', 'gmailpass123');
 
       // Create second credential
-      addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      titleInput = screen.getByLabelText(/title/i);
-      await user.type(titleInput, 'Twitter');
-
-      saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'Twitter', 'twitteruser', 'twitterpass123');
 
       // Both should be visible
       await waitFor(() => {
@@ -236,27 +238,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      const addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      const titleInput = screen.getByLabelText(/title/i);
-      const usernameInput = screen.getByLabelText(/username/i);
-      const urlInput = screen.getByLabelText(/url|website/i);
-
-      await user.type(titleInput, 'Facebook');
-      await user.type(usernameInput, 'fbuser');
-      await user.type(urlInput, 'https://facebook.com');
-
-      const saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'Facebook', 'fbuser', 'fbpass123');
 
       // Click on credential to view details
       const credentialItem = screen.getByText('Facebook');
@@ -281,25 +263,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      let addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      let titleInput = screen.getByLabelText(/title/i);
-      let usernameInput = screen.getByLabelText(/username/i);
-
-      await user.type(titleInput, 'LinkedIn');
-      await user.type(usernameInput, 'oldusername');
-
-      let saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'LinkedIn', 'oldusername', 'oldpass123');
 
       await waitFor(() => {
         expect(screen.getByText('LinkedIn')).toBeInTheDocument();
@@ -323,15 +287,15 @@ describe('Credential CRUD Integration', () => {
       });
 
       // Update username
-      usernameInput = screen.getByLabelText(/username/i);
+      const usernameInput = screen.getByLabelText(/username/i);
       await user.clear(usernameInput);
       await user.type(usernameInput, 'newusername');
 
-      saveButton = screen.getByRole('button', { name: /save/i });
+      const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       // View again to verify update
@@ -352,22 +316,8 @@ describe('Credential CRUD Integration', () => {
 
       await setupAuthenticatedUser(user);
 
-      // Create and update credential
-      const addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      let titleInput = screen.getByLabelText(/title/i);
-      let usernameInput = screen.getByLabelText(/username/i);
-
-      await user.type(titleInput, 'Amazon');
-      await user.type(usernameInput, 'updateduser');
-
-      let saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
+      // Create credential
+      await createCredentialFromDashboard(user, 'Amazon', 'updateduser', 'amazonpass123');
 
       await waitFor(() => {
         expect(screen.getByText(/vault/i)).toBeInTheDocument();
@@ -426,22 +376,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      const addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      const titleInput = screen.getByLabelText(/title/i);
-      await user.type(titleInput, 'ToBeDeleted');
-
-      const saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'ToBeDeleted', 'deleteuser', 'deletepass123');
 
       await waitFor(() => {
         expect(screen.getByText('ToBeDeleted')).toBeInTheDocument();
@@ -469,7 +404,7 @@ describe('Credential CRUD Integration', () => {
 
       // Should navigate back to dashboard
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       // Credential should no longer exist
@@ -489,29 +424,12 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create two credentials
-      let addButton = screen.getByLabelText('add');
-      await user.click(addButton);
+      await createCredentialFromDashboard(user, 'Keep This', 'keepuser', 'keeppass123');
+      await createCredentialFromDashboard(user, 'Delete This', 'deleteuser', 'deletepass123');
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      let titleInput = screen.getByLabelText(/title/i);
-      await user.type(titleInput, 'Keep This');
-
-      let saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      // Create second credential
-      addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
+        expect(screen.getByText('Keep This')).toBeInTheDocument();
+        expect(screen.getByText('Delete This')).toBeInTheDocument();
       });
 
       titleInput = screen.getByLabelText(/title/i);
