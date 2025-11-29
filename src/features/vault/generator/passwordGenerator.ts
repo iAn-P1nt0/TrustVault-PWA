@@ -25,8 +25,9 @@ const LOWERCASE = 'abcdefghijklmnopqrstuvwxyz';
 const NUMBERS = '0123456789';
 const SYMBOLS = '!@#$%^&*()_+-=[]{}|;:,.<>?';
 
-// Ambiguous characters to exclude
-const AMBIGUOUS_CHARS = '0Ol1I';
+// Ambiguous characters to exclude (characters that look similar and cause confusion)
+// 0/O/o, 1/l/I/i/|
+const AMBIGUOUS_CHARS = '0Oo1lIi|';
 
 /**
  * Get cryptographically secure random bytes

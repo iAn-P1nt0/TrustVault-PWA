@@ -5,6 +5,7 @@
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
+import { useEffect, useRef, useCallback } from 'react';
 
 // Mock auto-lock hook
 interface AutoLockConfig {
@@ -15,12 +16,13 @@ interface AutoLockConfig {
 
 const createUseAutoLock = (lockCallback: () => void) => {
   return (config: AutoLockConfig) => {
-    const timeoutRef = { current: null as NodeJS.Timeout | null };
-    const lastActivityRef = { current: Date.now() };
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const lastActivityRef = useRef<number>(Date.now());
 
-    const resetTimer = () => {
+    const resetTimer = useCallback(() => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
       }
 
       if (!config.enabled) return;
@@ -30,38 +32,44 @@ const createUseAutoLock = (lockCallback: () => void) => {
       }, config.timeoutMinutes * 60 * 1000);
 
       lastActivityRef.current = Date.now();
-    };
+    }, [config.enabled, config.timeoutMinutes]);
 
-    const handleActivity = () => {
+    const handleActivity = useCallback(() => {
       resetTimer();
-    };
+    }, [resetTimer]);
 
-    const handleVisibilityChange = () => {
+    const handleVisibilityChange = useCallback(() => {
       if (config.lockOnTabSwitch && document.hidden) {
         lockCallback();
       }
-    };
+    }, [config.lockOnTabSwitch]);
 
-    // Setup
-    if (typeof document !== 'undefined') {
+    // Setup and cleanup with useEffect
+    useEffect(() => {
+      if (typeof document === 'undefined') return;
+
       document.addEventListener('mousemove', handleActivity);
       document.addEventListener('keypress', handleActivity);
       document.addEventListener('click', handleActivity);
       document.addEventListener('visibilitychange', handleVisibilityChange);
       resetTimer();
-    }
 
-    // Cleanup
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-      if (typeof document !== 'undefined') {
+      // Cleanup
+      return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current);
+          timeoutRef.current = null;
+        }
         document.removeEventListener('mousemove', handleActivity);
         document.removeEventListener('keypress', handleActivity);
         document.removeEventListener('click', handleActivity);
         document.removeEventListener('visibilitychange', handleVisibilityChange);
-      }
+      };
+    }, [handleActivity, handleVisibilityChange, resetTimer]);
+
+    return {
+      resetTimer,
+      lastActivityTime: lastActivityRef.current,
     };
   };
 };
