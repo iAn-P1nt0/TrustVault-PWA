@@ -269,16 +269,12 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByText('LinkedIn')).toBeInTheDocument();
       });
 
-      // Click to view/edit
-      const credentialItem = screen.getByText('LinkedIn');
-      await user.click(credentialItem);
-
-      // Find and click edit button
+      // Find and click edit button (Edit button is visible on credential card)
       await waitFor(() => {
         expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
       });
 
-      const editButton = screen.getByRole('button', { name: /edit/i });
+      let editButton = screen.getByRole('button', { name: /edit/i });
       await user.click(editButton);
 
       // Should navigate to edit page
@@ -298,11 +294,14 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      // View again to verify update
-      await user.click(screen.getByText('LinkedIn'));
+      // Click edit again to verify the update persisted
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      await user.click(editButtons[0]);
 
+      // Verify the username was updated
       await waitFor(() => {
-        expect(screen.getByText('newusername')).toBeInTheDocument();
+        const usernameField = screen.getByLabelText(/username/i);
+        expect(usernameField).toHaveValue('newusername');
       });
     });
 
@@ -432,22 +431,6 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByText('Delete This')).toBeInTheDocument();
       });
 
-      titleInput = screen.getByLabelText(/title/i);
-      await user.type(titleInput, 'Delete This');
-
-      saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      // Both should exist
-      await waitFor(() => {
-        expect(screen.getByText('Keep This')).toBeInTheDocument();
-        expect(screen.getByText('Delete This')).toBeInTheDocument();
-      });
-
       // Delete second credential
       await user.click(screen.getByText('Delete This'));
 
@@ -466,7 +449,7 @@ describe('Credential CRUD Integration', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       // First should still exist, second should not
@@ -489,25 +472,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // CREATE
-      let addButton = screen.getByLabelText('add');
-      await user.click(addButton);
-
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
-      });
-
-      let titleInput = screen.getByLabelText(/title/i);
-      let usernameInput = screen.getByLabelText(/username/i);
-
-      await user.type(titleInput, 'Complete Cycle Test');
-      await user.type(usernameInput, 'originaluser');
-
-      let saveButton = screen.getByRole('button', { name: /save/i });
-      await user.click(saveButton);
-
-      await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+      await createCredentialFromDashboard(user, 'Complete Cycle Test', 'originaluser', 'originalpass123');
 
       // READ
       await waitFor(() => {
@@ -528,15 +493,15 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByRole('heading', { name: /edit credential/i })).toBeInTheDocument();
       });
 
-      usernameInput = screen.getByLabelText(/username/i);
+      const usernameInput = screen.getByLabelText(/username/i);
       await user.clear(usernameInput);
       await user.type(usernameInput, 'updateduser');
 
-      saveButton = screen.getByRole('button', { name: /save/i });
+      const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
 
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       // Verify update
@@ -559,7 +524,7 @@ describe('Credential CRUD Integration', () => {
       });
 
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
       // Verify deletion
