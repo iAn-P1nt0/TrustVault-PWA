@@ -489,26 +489,24 @@ describe('Credential CRUD Integration', () => {
       // CREATE
       await createCredentialFromDashboard(user, 'Complete Cycle Test', 'originaluser', 'originalpass123');
 
-      // READ
+      // READ - verify credential shows in list
       await waitFor(() => {
         expect(screen.getByText('Complete Cycle Test')).toBeInTheDocument();
       });
 
-      await user.click(screen.getByText('Complete Cycle Test'));
-
-      await waitFor(() => {
-        expect(screen.getByText('originaluser')).toBeInTheDocument();
-      });
-
-      // UPDATE
-      const editButton = screen.getByRole('button', { name: /edit/i });
+      // UPDATE - click Edit button on the card
+      let editButton = screen.getByRole('button', { name: /edit/i });
       await user.click(editButton);
 
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /edit credential/i })).toBeInTheDocument();
       });
 
-      const usernameInput = screen.getByLabelText(/username/i);
+      // Verify original username in edit form
+      let usernameInput = screen.getByLabelText(/username/i);
+      expect(usernameInput).toHaveValue('originaluser');
+
+      // Update username
       await user.clear(usernameInput);
       await user.type(usernameInput, 'updateduser');
 
@@ -519,24 +517,45 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByLabelText('add')).toBeInTheDocument();
       }, { timeout: 5000 });
 
-      // Verify update
-      await user.click(screen.getByText('Complete Cycle Test'));
+      // Verify update - click Edit again
+      const editButtons = screen.getAllByRole('button', { name: /edit/i });
+      await user.click(editButtons[0]);
 
       await waitFor(() => {
-        expect(screen.getByText('updateduser')).toBeInTheDocument();
-        expect(screen.queryByText('originaluser')).not.toBeInTheDocument();
+        usernameInput = screen.getByLabelText(/username/i);
+        expect(usernameInput).toHaveValue('updateduser');
       });
 
-      // DELETE
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      // Navigate back to dashboard before deleting (click the ArrowBack icon button)
+      const backButton = screen.getByTestId('ArrowBackIcon').closest('button');
+      if (backButton) {
+        await user.click(backButton);
+      }
 
       await waitFor(() => {
-        const confirmButton = screen.queryByRole('button', { name: /confirm|yes/i });
+        expect(screen.getByLabelText('add')).toBeInTheDocument();
+      }, { timeout: 5000 });
+
+      // DELETE - click menu button and then delete
+      const moreIcons = screen.getAllByTestId('MoreVertIcon');
+      const menuButton = moreIcons[0].closest('button');
+      if (menuButton) {
+        await user.click(menuButton);
+      }
+
+      await waitFor(() => {
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
+      });
+
+      const deleteMenuItem = screen.getByRole('menuitem', { name: /delete/i });
+      await user.click(deleteMenuItem);
+
+      await waitFor(() => {
+        const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
           user.click(confirmButton);
         }
-      });
+      }, { timeout: 2000 });
 
       await waitFor(() => {
         expect(screen.getByLabelText('add')).toBeInTheDocument();
