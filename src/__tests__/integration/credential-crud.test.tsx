@@ -240,13 +240,20 @@ describe('Credential CRUD Integration', () => {
       // Create credential
       await createCredentialFromDashboard(user, 'Facebook', 'fbuser', 'fbpass123');
 
-      // Click on credential to view details
-      const credentialItem = screen.getByText('Facebook');
-      await user.click(credentialItem);
+      // The credential card shows the title, and has Copy/Edit buttons
+      // Click Edit to view details
+      const editButton = screen.getByRole('button', { name: /edit/i });
+      await user.click(editButton);
 
-      // Should show credential details (implementation dependent)
+      // Should navigate to edit page showing credential details
       await waitFor(() => {
-        expect(screen.getByText('fbuser')).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /edit credential/i })).toBeInTheDocument();
+      });
+
+      // Verify the username is shown in the form
+      await waitFor(() => {
+        const usernameField = screen.getByLabelText(/username/i);
+        expect(usernameField).toHaveValue('fbuser');
       });
     });
   });
