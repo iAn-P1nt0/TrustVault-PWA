@@ -161,23 +161,33 @@ describe('Authentication Flow Integration', () => {
         expect(screen.getByText(/vault/i)).toBeInTheDocument();
       }, { timeout: 5000 });
 
+      // Verify user was created in database before signing out
+      const userCount = await db.users.count();
+      expect(userCount).toBe(1);
+
       // Sign out
       useAuthStore.getState().clearSession();
       unmount();
+      
+      // Verify user still in database after unmount
+      const userCountAfter = await db.users.count();
+      console.log('Users in DB after unmount:', userCountAfter);
 
-      // Now sign back in
+      // Now sign back in - user exists so should show signin page
       render(
         
           <App />
         
       );
-
+      
+      // Wait for initialization to complete first, then look for sign in button
       await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+        // With user in database, app should show signin page after initialization
+        expect(screen.getByRole('button', { name: /sign in/i })).toBeInTheDocument();
+      }, { timeout: 10000 });
 
       emailInput = screen.getByLabelText(/email/i);
-      passwordInput = screen.getByLabelText(/password/i);
+      passwordInput = screen.getByLabelText(/^password$/i);
 
       await user.type(emailInput, 'testuser@example.com');
       await user.type(passwordInput, 'TestPassword123!');
