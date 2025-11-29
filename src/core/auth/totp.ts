@@ -17,6 +17,11 @@ const BASE32_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
  * Base32 is commonly used for TOTP secrets (e.g., Google Authenticator format)
  */
 export function base32Decode(base32: string): Uint8Array {
+  // Throw on empty string
+  if (!base32 || base32.trim().length === 0) {
+    throw new Error('Base32 string cannot be empty');
+  }
+
   // Remove spaces and convert to uppercase
   const cleanedBase32 = base32.replace(/\s/g, '').toUpperCase();
 
@@ -105,6 +110,17 @@ export function generateTOTP(
   digits: number = 6,
   time: number = Date.now()
 ): string {
+  // Input validation
+  if (timeStep <= 0) {
+    throw new Error('Time step must be a positive number');
+  }
+  if (digits <= 0) {
+    throw new Error('Digits must be a positive number');
+  }
+  if (!secret || secret.trim().length === 0) {
+    throw new Error('Secret cannot be empty');
+  }
+
   // Calculate time counter
   const counter = Math.floor(time / 1000 / timeStep);
 
@@ -149,12 +165,27 @@ export function generateTOTP(
 /**
  * Formats a TOTP code with a space in the middle for readability
  * Example: "123456" -> "123 456"
+ * Handles 4-8 digit codes
  */
 export function formatTOTPCode(code: string): string {
+  if (code.length < 2) {
+    return code;
+  }
+  if (code.length === 4) {
+    return `${code.substring(0, 2)} ${code.substring(2)}`;
+  }
   if (code.length === 6) {
     return `${code.substring(0, 3)} ${code.substring(3)}`;
   }
-  return code;
+  if (code.length === 7) {
+    return `${code.substring(0, 3)} ${code.substring(3)}`;
+  }
+  if (code.length === 8) {
+    return `${code.substring(0, 4)} ${code.substring(4)}`;
+  }
+  // For other lengths, split roughly in half
+  const mid = Math.floor(code.length / 2);
+  return `${code.substring(0, mid)} ${code.substring(mid)}`;
 }
 
 /**
@@ -172,11 +203,11 @@ export function getTOTPRemaining(timeStep: number = 30, time: number = Date.now(
  * Gets the progress percentage for the current TOTP code
  * @param timeStep - Time step in seconds (default: 30)
  * @param time - Optional time in milliseconds (defaults to Date.now())
- * @returns Progress percentage (0-100)
+ * @returns Progress percentage (0-100, where 0 = start of window, 100 = end of window)
  */
 export function getTOTPProgress(timeStep: number = 30, time: number = Date.now()): number {
-  const remaining = getTOTPRemaining(timeStep, time);
-  return (remaining / timeStep) * 100;
+  const elapsed = Math.floor(time / 1000) % timeStep;
+  return (elapsed / timeStep) * 100;
 }
 
 /**
@@ -186,7 +217,10 @@ export function getTOTPProgress(timeStep: number = 30, time: number = Date.now()
  */
 export function isValidTOTPSecret(secret: string): boolean {
   try {
-    const cleaned = secret.replace(/\s/g, '').toUpperCase();
+    // Reject if contains spaces (user should remove them manually)
+    if (secret.includes(' ')) return false;
+    
+    const cleaned = secret.toUpperCase();
     if (cleaned.length === 0) return false;
 
     // Check if it's valid base32
@@ -219,20 +253,24 @@ export function generateTOTPSecret(length: number = 20): string {
  * @param secret - Base32-encoded secret
  * @param window - Number of time steps to check before/after (default: 1)
  * @param timeStep - Time step in seconds (default: 30)
+ * @param time - Optional time in milliseconds to verify against (defaults to Date.now())
+ * @param digits - Number of digits (default: 6)
  * @returns true if code is valid, false otherwise
  */
 export function verifyTOTP(
   code: string,
   secret: string,
   window: number = 1,
-  timeStep: number = 30
+  timeStep: number = 30,
+  time?: number,
+  digits: number = 6
 ): boolean {
-  const now = Date.now();
+  const baseTime = time ?? Date.now();
 
   // Check current and adjacent time windows
   for (let i = -window; i <= window; i++) {
-    const time = now + i * timeStep * 1000;
-    const expectedCode = generateTOTP(secret, timeStep, 6, time);
+    const checkTime = baseTime + i * timeStep * 1000;
+    const expectedCode = generateTOTP(secret, timeStep, digits, checkTime);
 
     if (code === expectedCode) {
       return true;

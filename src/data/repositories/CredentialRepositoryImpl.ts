@@ -14,6 +14,13 @@ export class CredentialRepository implements ICredentialRepository {
     // Encrypt the password
     const encryptedPassword = await encrypt(input.password, encryptionKey);
 
+    // Encrypt notes if provided
+    let encryptedNotes: string | undefined;
+    if (input.notes) {
+      const notesEncrypted = await encrypt(input.notes, encryptionKey);
+      encryptedNotes = JSON.stringify(notesEncrypted);
+    }
+
     // Encrypt TOTP secret if provided
     let encryptedTotpSecret: string | undefined;
     if (input.totpSecret) {
@@ -40,8 +47,9 @@ export class CredentialRepository implements ICredentialRepository {
       username: input.username,
       encryptedPassword: JSON.stringify(encryptedPassword),
       encryptedTotpSecret,
+      encryptedNotes,
       url: input.url ?? undefined,
-      notes: input.notes ?? undefined,
+      notes: undefined, // Don't store plaintext notes
       category: input.category,
       tags: input.tags || [],
       createdAt: Date.now(),
@@ -97,10 +105,21 @@ export class CredentialRepository implements ICredentialRepository {
     if (input.title) updates.title = input.title;
     if (input.username) updates.username = input.username;
     if (input.url !== undefined) updates.url = input.url;
-    if (input.notes !== undefined) updates.notes = input.notes;
     if (input.category) updates.category = input.category;
     if (input.tags) updates.tags = input.tags;
     if (input.isFavorite !== undefined) updates.isFavorite = input.isFavorite;
+
+    // Encrypt notes if provided
+    if (input.notes !== undefined) {
+      if (input.notes) {
+        const notesEncrypted = await encrypt(input.notes, encryptionKey);
+        updates.encryptedNotes = JSON.stringify(notesEncrypted);
+        updates.notes = undefined; // Clear legacy plaintext notes
+      } else {
+        updates.encryptedNotes = undefined;
+        updates.notes = undefined;
+      }
+    }
 
     if (input.password) {
       const encryptedPassword = await encrypt(input.password, encryptionKey);
@@ -272,6 +291,22 @@ export class CredentialRepository implements ICredentialRepository {
       const encryptedPasswordData = JSON.parse(stored.encryptedPassword);
       const password = await decrypt(encryptedPasswordData, vaultKey);
 
+      // Decrypt notes if present (support both encrypted and legacy plaintext)
+      let notes: string | undefined;
+      if (stored.encryptedNotes) {
+        try {
+          const encryptedNotesData = JSON.parse(stored.encryptedNotes);
+          notes = await decrypt(encryptedNotesData, vaultKey);
+        } catch (error) {
+          console.error('Failed to decrypt notes:', error);
+          // Fall back to legacy plaintext notes if present
+          notes = stored.notes;
+        }
+      } else {
+        // Legacy unencrypted notes
+        notes = stored.notes;
+      }
+
       // Decrypt TOTP secret if present
       let totpSecret: string | undefined;
       if (stored.encryptedTotpSecret) {
@@ -311,7 +346,7 @@ export class CredentialRepository implements ICredentialRepository {
         username: stored.username,
         password, // Decrypted password
         url: stored.url,
-        notes: stored.notes,
+        notes, // Decrypted notes
         category: stored.category,
         tags: stored.tags,
         createdAt: new Date(stored.createdAt),
@@ -359,6 +394,91 @@ export class CredentialRepository implements ICredentialRepository {
       updatedAt: new Date(stored.updatedAt),
       lastAccessedAt: stored.lastAccessedAt ? new Date(stored.lastAccessedAt) : undefined,
     };
+  }
+
+  /**
+   * Save a credential - creates if new, updates if existing
+   * This is a convenience method for tests and backwards compatibility
+   */
+  async save(credential: Credential, encryptionKey: CryptoKey): Promise<Credential> {
+    const existing = await db.credentials.get(credential.id);
+    
+    if (existing) {
+      // Update existing credential
+      return this.update(credential.id, {
+        title: credential.title,
+        username: credential.username,
+        password: credential.password,
+        url: credential.url,
+        notes: credential.notes,
+        category: credential.category,
+        tags: credential.tags,
+        isFavorite: credential.isFavorite,
+        totpSecret: credential.totpSecret,
+        cardNumber: credential.cardNumber,
+        cardholderName: credential.cardholderName,
+        expiryMonth: credential.expiryMonth,
+        expiryYear: credential.expiryYear,
+        cvv: credential.cvv,
+        cardType: credential.cardType,
+        billingAddress: credential.billingAddress,
+      }, encryptionKey);
+    } else {
+      // Create new credential with specified ID
+      const encryptedPassword = await encrypt(credential.password || '', encryptionKey);
+
+      let encryptedTotpSecret: string | undefined;
+      if (credential.totpSecret) {
+        const totpSecretEncrypted = await encrypt(credential.totpSecret, encryptionKey);
+        encryptedTotpSecret = JSON.stringify(totpSecretEncrypted);
+      }
+
+      let encryptedNotes: string | undefined;
+      if (credential.notes) {
+        const notesEncrypted = await encrypt(credential.notes, encryptionKey);
+        encryptedNotes = JSON.stringify(notesEncrypted);
+      }
+
+      let encryptedCardNumber: string | undefined;
+      if (credential.cardNumber) {
+        const cardNumberEncrypted = await encrypt(credential.cardNumber, encryptionKey);
+        encryptedCardNumber = JSON.stringify(cardNumberEncrypted);
+      }
+
+      let encryptedCvv: string | undefined;
+      if (credential.cvv) {
+        const cvvEncrypted = await encrypt(credential.cvv, encryptionKey);
+        encryptedCvv = JSON.stringify(cvvEncrypted);
+      }
+
+      const stored: StoredCredential = {
+        id: credential.id,
+        title: credential.title,
+        username: credential.username,
+        encryptedPassword: JSON.stringify(encryptedPassword),
+        encryptedTotpSecret,
+        encryptedNotes,
+        url: credential.url ?? undefined,
+        notes: encryptedNotes, // Store encrypted notes
+        category: credential.category,
+        tags: credential.tags || [],
+        createdAt: credential.createdAt?.getTime() || Date.now(),
+        updatedAt: credential.updatedAt?.getTime() || Date.now(),
+        lastAccessedAt: credential.lastAccessedAt?.getTime(),
+        isFavorite: credential.isFavorite || false,
+        securityScore: credential.password ? analyzePasswordStrength(credential.password).score : 0,
+        encryptedCardNumber,
+        cardholderName: credential.cardholderName,
+        expiryMonth: credential.expiryMonth,
+        expiryYear: credential.expiryYear,
+        encryptedCvv,
+        cardType: credential.cardType,
+        billingAddress: credential.billingAddress,
+      };
+
+      await db.credentials.add(stored);
+      return credential;
+    }
   }
 }
 

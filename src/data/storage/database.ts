@@ -21,8 +21,9 @@ export interface StoredCredential {
   username: string;
   encryptedPassword: string;
   encryptedTotpSecret?: string | undefined; // Encrypted TOTP secret
+  encryptedNotes?: string | undefined; // Encrypted notes
   url?: string | undefined;
-  notes?: string | undefined;
+  notes?: string | undefined; // Legacy unencrypted notes (for backward compat)
   category: CredentialCategory;
   tags: string[];
   createdAt: number; // Store as timestamp

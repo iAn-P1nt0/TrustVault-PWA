@@ -138,13 +138,18 @@ describe('TOTP Edge Cases', () => {
 
   describe('Leap Seconds Handling', () => {
     it('should handle time values near leap seconds', () => {
-      // June 30, 2015 23:59:60 UTC (leap second)
-      const leapSecondTime = new Date('2015-06-30T23:59:60Z').getTime();
+      // JavaScript Date doesn't support leap seconds, so :60 seconds is invalid
+      // Use the time just before and after the leap second boundary
+      const beforeLeapTime = new Date('2015-06-30T23:59:59Z').getTime();
+      const afterLeapTime = new Date('2015-07-01T00:00:00Z').getTime();
 
-      const code = generateTOTP(testSecret, 30, 6, leapSecondTime);
+      const codeBefore = generateTOTP(testSecret, 30, 6, beforeLeapTime);
+      const codeAfter = generateTOTP(testSecret, 30, 6, afterLeapTime);
 
-      expect(code).toBeDefined();
-      expect(code.length).toBe(6);
+      expect(codeBefore).toBeDefined();
+      expect(codeAfter).toBeDefined();
+      expect(codeBefore.length).toBe(6);
+      expect(codeAfter.length).toBe(6);
     });
 
     it('should generate consistent codes across leap second boundary', () => {
@@ -391,6 +396,7 @@ describe('TOTP Edge Cases', () => {
     });
 
     it('should reject secret with spaces', () => {
+      // Strict validation - spaces should be rejected
       expect(isValidTOTPSecret('JBSWY3DP EHPK3PXP')).toBe(false);
     });
 
@@ -405,22 +411,24 @@ describe('TOTP Edge Cases', () => {
       const secret = generateTOTPSecret();
 
       expect(secret).toBeDefined();
-      expect(secret.length).toBe(32); // Default length
+      expect(secret.length).toBe(32); // 20 bytes = 32 base32 chars
       expect(isValidTOTPSecret(secret)).toBe(true);
     });
 
     it('should generate secret with custom length', () => {
-      const secret = generateTOTPSecret(64);
+      const secret = generateTOTPSecret(40); // 40 bytes
 
       expect(secret).toBeDefined();
+      // Base32 encoding: 40 bytes * 8 bits / 5 bits per char = 64 chars
       expect(secret.length).toBe(64);
       expect(isValidTOTPSecret(secret)).toBe(true);
     });
 
     it('should generate secret with minimum length', () => {
-      const secret = generateTOTPSecret(16);
+      const secret = generateTOTPSecret(10); // 10 bytes
 
       expect(secret).toBeDefined();
+      // Base32 encoding: 10 bytes * 8 bits / 5 bits per char = 16 chars
       expect(secret.length).toBe(16);
       expect(isValidTOTPSecret(secret)).toBe(true);
     });
@@ -511,13 +519,13 @@ describe('TOTP Edge Cases', () => {
         const time = 30000; // 30 seconds
 
         const progress30 = getTOTPProgress(30, time);
-        expect(progress30).toBe(0); // New window
+        expect(progress30).toBe(0); // At 30s with 30s step = start of new window (0%)
 
         const progress60 = getTOTPProgress(60, time);
-        expect(progress60).toBe(50); // Halfway
+        expect(progress60).toBe(50); // At 30s with 60s step = halfway (50%)
 
         const progress120 = getTOTPProgress(120, time);
-        expect(progress120).toBe(25); // Quarter way
+        expect(progress120).toBe(25); // At 30s with 120s step = quarter way (25%)
       });
 
       it('should use current time if not specified', () => {
