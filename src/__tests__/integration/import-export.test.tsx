@@ -8,23 +8,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/presentation/App';
 import { useAuthStore } from '@/presentation/store/authStore';
+import { db } from '@/data/storage/database';
 
 // Helper to setup authenticated user with multiple credentials
 async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<typeof userEvent.setup>) {
-  await waitFor(() => {
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-  }, { timeout: 5000 });
-
-  const signupLink = screen.getByText(/create account/i);
-  await user.click(signupLink);
-
+  // With no users in DB, app redirects directly to signup
   await waitFor(() => {
     expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-  });
+  }, { timeout: 5000 });
 
   const emailInput = screen.getByLabelText(/email/i);
-  const passwordInput = screen.getByLabelText(/^master password/i);
-  const confirmInput = screen.getByLabelText(/confirm password/i);
+  // Both password fields have "Master Password" in label, so we use getAllByLabelText
+  const passwordInputs = screen.getAllByLabelText(/master password/i);
+  const passwordInput = passwordInputs[0]; // First one is the password field
+  const confirmInput = passwordInputs[1]; // Second one is confirm field
 
   await user.type(emailInput, 'exporttest@example.com');
   await user.type(passwordInput, 'TestPassword123!');
@@ -34,8 +31,9 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
   await user.click(submitButton);
 
   await waitFor(() => {
-    expect(screen.getByText(/vault/i)).toBeInTheDocument();
-  }, { timeout: 5000 });
+    const state = useAuthStore.getState();
+    expect(state.isAuthenticated).toBe(true);
+  }, { timeout: 10000 });
 
   // Add multiple test credentials
   const credentials = [
@@ -45,7 +43,7 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
   ];
 
   for (const cred of credentials) {
-    const addButton = screen.getByRole('button', { name: /add credential/i });
+    const addButton = screen.getByLabelText('add');
     await user.click(addButton);
 
     await waitFor(() => {
@@ -74,6 +72,10 @@ describe('Import/Export Integration', () => {
     useAuthStore.getState().clearSession();
     localStorage.clear();
     sessionStorage.clear();
+    // Clear database tables to ensure clean state
+    await db.users.clear();
+    await db.credentials.clear();
+    await db.sessions.clear();
     await vi.waitFor(() => {}, { timeout: 100 });
   });
 

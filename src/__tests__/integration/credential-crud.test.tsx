@@ -8,23 +8,20 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/presentation/App';
 import { useAuthStore } from '@/presentation/store/authStore';
+import { db } from '@/data/storage/database';
 
-// Helper to setup authenticated user
+// Helper to setup authenticated user with dashboard ready
 async function setupAuthenticatedUser(user: ReturnType<typeof userEvent.setup>) {
-  await waitFor(() => {
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-  }, { timeout: 5000 });
-
-  const signupLink = screen.getByText(/create account/i);
-  await user.click(signupLink);
-
+  // With no users in DB, app redirects directly to signup
   await waitFor(() => {
     expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-  });
+  }, { timeout: 5000 });
 
   const emailInput = screen.getByLabelText(/email/i);
-  const passwordInput = screen.getByLabelText(/^master password/i);
-  const confirmInput = screen.getByLabelText(/confirm password/i);
+  // Both password fields have "Master Password" in label, so we use getAllByLabelText
+  const passwordInputs = screen.getAllByLabelText(/master password/i);
+  const passwordInput = passwordInputs[0]; // First one is the password field
+  const confirmInput = passwordInputs[1]; // Second one is confirm field
 
   await user.type(emailInput, 'crudtest@example.com');
   await user.type(passwordInput, 'TestPassword123!');
@@ -34,8 +31,14 @@ async function setupAuthenticatedUser(user: ReturnType<typeof userEvent.setup>) 
   await user.click(submitButton);
 
   await waitFor(() => {
-    expect(screen.getByText(/vault/i)).toBeInTheDocument();
-  }, { timeout: 5000 });
+    const state = useAuthStore.getState();
+    expect(state.isAuthenticated).toBe(true);
+  }, { timeout: 10000 });
+  
+  // Wait for dashboard to fully render (lazy loaded component)
+  await waitFor(() => {
+    expect(screen.getByLabelText('add')).toBeInTheDocument();
+  }, { timeout: 10000 });
 }
 
 describe('Credential CRUD Integration', () => {
@@ -43,6 +46,10 @@ describe('Credential CRUD Integration', () => {
     useAuthStore.getState().clearSession();
     localStorage.clear();
     sessionStorage.clear();
+    // Clear database tables to ensure clean state
+    await db.users.clear();
+    await db.credentials.clear();
+    await db.sessions.clear();
     await vi.waitFor(() => {}, { timeout: 100 });
   });
 
@@ -57,8 +64,9 @@ describe('Credential CRUD Integration', () => {
 
       await setupAuthenticatedUser(user);
 
+
       // Navigate to Add Credential page
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -103,7 +111,7 @@ describe('Credential CRUD Integration', () => {
 
       await setupAuthenticatedUser(user);
 
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -136,7 +144,7 @@ describe('Credential CRUD Integration', () => {
 
       await setupAuthenticatedUser(user);
 
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -169,7 +177,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create first credential
-      let addButton = screen.getByRole('button', { name: /add.*credential/i });
+      let addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -187,7 +195,7 @@ describe('Credential CRUD Integration', () => {
       }, { timeout: 5000 });
 
       // Create second credential
-      addButton = screen.getByRole('button', { name: /add.*credential/i });
+      addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -222,7 +230,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -267,7 +275,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      let addButton = screen.getByRole('button', { name: /add.*credential/i });
+      let addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -339,7 +347,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create and update credential
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -412,7 +420,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create credential
-      const addButton = screen.getByRole('button', { name: /add.*credential/i });
+      const addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -475,7 +483,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // Create two credentials
-      let addButton = screen.getByRole('button', { name: /add.*credential/i });
+      let addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -493,7 +501,7 @@ describe('Credential CRUD Integration', () => {
       }, { timeout: 5000 });
 
       // Create second credential
-      addButton = screen.getByRole('button', { name: /add.*credential/i });
+      addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
@@ -557,7 +565,7 @@ describe('Credential CRUD Integration', () => {
       await setupAuthenticatedUser(user);
 
       // CREATE
-      let addButton = screen.getByRole('button', { name: /add.*credential/i });
+      let addButton = screen.getByLabelText('add');
       await user.click(addButton);
 
       await waitFor(() => {
