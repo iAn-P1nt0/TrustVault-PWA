@@ -388,25 +388,27 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByText('ToBeDeleted')).toBeInTheDocument();
       });
 
-      // Click to view
-      const credentialItem = screen.getByText('ToBeDeleted');
-      await user.click(credentialItem);
+      // Click the menu button (MoreVert icon) on the credential card
+      const menuButton = screen.getByTestId('MoreVertIcon').closest('button');
+      if (menuButton) {
+        await user.click(menuButton);
+      }
 
-      // Find and click delete button
+      // Find and click delete option in the menu
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      const deleteMenuItem = screen.getByRole('menuitem', { name: /delete/i });
+      await user.click(deleteMenuItem);
 
       // Confirm deletion (if confirmation dialog exists)
       await waitFor(() => {
-        const confirmButton = screen.queryByRole('button', { name: /confirm|yes/i });
+        const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
           user.click(confirmButton);
         }
-      });
+      }, { timeout: 2000 });
 
       // Should navigate back to dashboard
       await waitFor(() => {
@@ -438,22 +440,28 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByText('Delete This')).toBeInTheDocument();
       });
 
-      // Delete second credential
-      await user.click(screen.getByText('Delete This'));
+      // Find the "Delete This" credential card and click its menu button
+      // The MoreVertIcon will appear twice (once per card), find the one for "Delete This"
+      const deleteThisCard = screen.getByText('Delete This').closest('.MuiCard-root');
+      const menuButton = deleteThisCard?.querySelector('[data-testid="MoreVertIcon"]')?.closest('button');
+      if (menuButton) {
+        await user.click(menuButton);
+      }
 
+      // Click delete menu item
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /delete/i })).toBeInTheDocument();
+        expect(screen.getByRole('menuitem', { name: /delete/i })).toBeInTheDocument();
       });
 
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
-      await user.click(deleteButton);
+      const deleteMenuItem = screen.getByRole('menuitem', { name: /delete/i });
+      await user.click(deleteMenuItem);
 
       await waitFor(() => {
-        const confirmButton = screen.queryByRole('button', { name: /confirm|yes/i });
+        const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
           user.click(confirmButton);
         }
-      });
+      }, { timeout: 2000 });
 
       await waitFor(() => {
         expect(screen.getByLabelText('add')).toBeInTheDocument();
