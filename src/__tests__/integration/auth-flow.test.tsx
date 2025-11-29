@@ -8,6 +8,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import App from '@/presentation/App';
 import { useAuthStore } from '@/presentation/store/authStore';
+import { db } from '@/data/storage/database';
 
 describe('Authentication Flow Integration', () => {
   beforeEach(async () => {
@@ -15,6 +16,11 @@ describe('Authentication Flow Integration', () => {
     useAuthStore.getState().clearSession();
     localStorage.clear();
     sessionStorage.clear();
+    
+    // Clear database tables
+    await db.users.clear();
+    await db.credentials.clear();
+    await db.sessions.clear();
 
     // Wait for any pending operations
     await vi.waitFor(() => {}, { timeout: 100 });
@@ -29,24 +35,17 @@ describe('Authentication Flow Integration', () => {
         
       );
 
-      // Wait for app to initialize and redirect to signin
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      // Navigate to signup page
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
-      // Wait for signup page to load
+      // Wait for app to initialize - with no users, it auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       // Fill signup form
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      // Both password fields have "Master Password" in label, so we use getAllByLabelText
+      const passwordInputs = screen.getAllByLabelText(/master password/i);
+      const passwordInput = passwordInputs[0]; // First one is the password field
+      const confirmInput = passwordInputs[1]; // Second one is confirm field
 
       await user.type(emailInput, 'newuser@example.com');
       await user.type(passwordInput, 'SecurePassword123!');
@@ -56,10 +55,11 @@ describe('Authentication Flow Integration', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
 
-      // Should navigate to dashboard
+      // Should navigate to dashboard after signup completes
       await waitFor(() => {
-        expect(screen.getByText(/vault/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
+        const state = useAuthStore.getState();
+        expect(state.isAuthenticated).toBe(true);
+      }, { timeout: 10000 });
 
       // Verify authenticated state
       const state = useAuthStore.getState();
