@@ -63,10 +63,13 @@ describe('Encryption Core', () => {
       const key1 = await deriveKeyFromPassword(password, salt);
       const key2 = await deriveKeyFromPassword(password, salt);
       
-      const exported1 = await exportKey(key1);
-      const exported2 = await exportKey(key2);
+      // Keys derived from PBKDF2 are non-extractable for security
+      // Verify by checking both can encrypt/decrypt the same data
+      const testData = 'test data for key comparison';
+      const encrypted = await encrypt(testData, key1);
+      const decrypted = await decrypt(encrypted, key2);
       
-      expect(exported1).toBe(exported2);
+      expect(decrypted).toBe(testData);
     });
 
     it('should derive different keys from different passwords', async () => {
@@ -75,10 +78,11 @@ describe('Encryption Core', () => {
       const key1 = await deriveKeyFromPassword('Password1', salt);
       const key2 = await deriveKeyFromPassword('Password2', salt);
       
-      const exported1 = await exportKey(key1);
-      const exported2 = await exportKey(key2);
+      // Encrypt with key1, try to decrypt with key2 (should fail)
+      const testData = 'test data for key comparison';
+      const encrypted = await encrypt(testData, key1);
       
-      expect(exported1).not.toBe(exported2);
+      await expect(decrypt(encrypted, key2)).rejects.toThrow();
     });
 
     it('should derive different keys from different salts', async () => {
@@ -89,10 +93,11 @@ describe('Encryption Core', () => {
       const key1 = await deriveKeyFromPassword(password, salt1);
       const key2 = await deriveKeyFromPassword(password, salt2);
       
-      const exported1 = await exportKey(key1);
-      const exported2 = await exportKey(key2);
+      // Encrypt with key1, try to decrypt with key2 (should fail)
+      const testData = 'test data for key comparison';
+      const encrypted = await encrypt(testData, key1);
       
-      expect(exported1).not.toBe(exported2);
+      await expect(decrypt(encrypted, key2)).rejects.toThrow();
     });
 
     it('should use OWASP-compliant iteration count', () => {
