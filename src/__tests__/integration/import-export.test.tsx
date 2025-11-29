@@ -35,6 +35,11 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
     expect(state.isAuthenticated).toBe(true);
   }, { timeout: 10000 });
 
+  // Wait for dashboard to be visible before adding credentials
+  await waitFor(() => {
+    expect(screen.getByLabelText('add')).toBeInTheDocument();
+  }, { timeout: 5000 });
+
   // Add multiple test credentials
   const credentials = [
     { title: 'Gmail Account', username: 'user@gmail.com', password: 'GmailPass123!' },
@@ -48,6 +53,11 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
 
     await waitFor(() => {
       expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
+    }, { timeout: 5000 });
+    
+    // Wait for form fields to be available
+    await waitFor(() => {
+      expect(screen.getByLabelText(/title/i)).toBeInTheDocument();
     });
 
     const titleInput = screen.getByLabelText(/title/i);
@@ -58,7 +68,7 @@ async function setupAuthenticatedUserWithMultipleCredentials(user: ReturnType<ty
     await user.type(usernameInput, cred.username);
     await user.type(credPasswordInput, cred.password);
 
-    const saveButton = screen.getByRole('button', { name: /save/i });
+    const saveButton = screen.getByRole('button', { name: /save credential/i });
     await user.click(saveButton);
 
     await waitFor(() => {
