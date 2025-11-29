@@ -147,7 +147,7 @@ describe('Authentication Flow Integration', () => {
 
       let emailInput = screen.getByLabelText(/email/i);
       let passwordInput = screen.getByLabelText(/^master password/i);
-      let confirmInput = screen.getByLabelText(/confirm password/i);
+      let confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'testuser@example.com');
       await user.type(passwordInput, 'TestPassword123!');
@@ -209,7 +209,7 @@ describe('Authentication Flow Integration', () => {
 
       let emailInput = screen.getByLabelText(/email/i);
       let passwordInput = screen.getByLabelText(/^master password/i);
-      let confirmInput = screen.getByLabelText(/confirm password/i);
+      let confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'CorrectPassword123!');
@@ -291,7 +291,7 @@ describe('Authentication Flow Integration', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'signouttest@example.com');
       await user.type(passwordInput, 'TestPassword123!');
@@ -352,7 +352,7 @@ describe('Authentication Flow Integration', () => {
 
       let emailInput = screen.getByLabelText(/email/i);
       let passwordInput = screen.getByLabelText(/^master password/i);
-      let confirmInput = screen.getByLabelText(/confirm password/i);
+      let confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, testEmail);
       await user.type(passwordInput, testPassword);
@@ -443,7 +443,7 @@ describe('Authentication Flow Integration', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, testEmail);
       await user.type(passwordInput, testPassword);
