@@ -274,7 +274,7 @@ describe('Import/Export Integration', () => {
 
       // Create fresh account
       await waitFor(() => {
-        expect(screen.getByText(/create account/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
       }, { timeout: 5000 });
 
       
@@ -286,7 +286,7 @@ describe('Import/Export Integration', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'importtest@example.com');
       await user.type(passwordInput, 'TestPassword123!');
@@ -369,7 +369,7 @@ describe('Import/Export Integration', () => {
 
       // Setup user
       await waitFor(() => {
-        expect(screen.getByText(/create account/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
       }, { timeout: 5000 });
 
       
@@ -381,7 +381,7 @@ describe('Import/Export Integration', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'importerror@example.com');
       await user.type(passwordInput, 'TestPassword123!');
@@ -505,7 +505,7 @@ describe('Import/Export Integration', () => {
 
       // Setup user and navigate to import
       await waitFor(() => {
-        expect(screen.getByText(/create account/i)).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
       }, { timeout: 5000 });
 
       
@@ -517,7 +517,7 @@ describe('Import/Export Integration', () => {
 
       const emailInput = screen.getByLabelText(/email/i);
       const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const confirmInput = screen.getByLabelText(/confirm.*master.*password/i);
 
       await user.type(emailInput, 'largeimport@example.com');
       await user.type(passwordInput, 'TestPassword123!');
