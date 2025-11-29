@@ -101,7 +101,7 @@ describe('Credential CRUD Integration', () => {
       });
     });
 
-    it('should create credential with minimal fields (title only)', async () => {
+    it('should create credential with minimal fields', async () => {
       const user = userEvent.setup();
       render(
         
@@ -118,9 +118,15 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByRole('heading', { name: /add credential/i })).toBeInTheDocument();
       });
 
-      // Only fill required field
+      // Fill required fields (title, username, password)
       const titleInput = screen.getByLabelText(/title/i);
       await user.type(titleInput, 'Minimal Credential');
+      
+      const usernameInput = screen.getByLabelText(/username/i);
+      await user.type(usernameInput, 'minuser');
+      
+      const passwordInput = screen.getByLabelText(/^password/i);
+      await user.type(passwordInput, 'minpass123');
 
       const saveButton = screen.getByRole('button', { name: /save/i });
       await user.click(saveButton);
