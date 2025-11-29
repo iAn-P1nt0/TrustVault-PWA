@@ -75,21 +75,16 @@ describe('Authentication Flow Integration', () => {
         
       );
 
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
+      // With no users, app auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       // Try weak password
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const passwordInputs = screen.getAllByLabelText(/master password/i);
+      const passwordInput = passwordInputs[0];
+      const confirmInput = passwordInputs[1];
 
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, '123456');
@@ -98,9 +93,9 @@ describe('Authentication Flow Integration', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
 
-      // Should show error about weak password
+      // Should show error about weak password (minimum length requirement)
       await waitFor(() => {
-        expect(screen.getByText(/password.*weak/i)).toBeInTheDocument();
+        expect(screen.getByText(/at least 12 characters/i)).toBeInTheDocument();
       });
     });
 
@@ -112,20 +107,15 @@ describe('Authentication Flow Integration', () => {
         
       );
 
-      await waitFor(() => {
-        expect(screen.getByText(/sign in/i)).toBeInTheDocument();
-      }, { timeout: 5000 });
-
-      const signupLink = screen.getByText(/create account/i);
-      await user.click(signupLink);
-
+      // With no users, app auto-redirects to signup
       await waitFor(() => {
         expect(screen.getByRole('heading', { name: /create account/i })).toBeInTheDocument();
-      });
+      }, { timeout: 5000 });
 
       const emailInput = screen.getByLabelText(/email/i);
-      const passwordInput = screen.getByLabelText(/^master password/i);
-      const confirmInput = screen.getByLabelText(/confirm password/i);
+      const passwordInputs = screen.getAllByLabelText(/master password/i);
+      const passwordInput = passwordInputs[0];
+      const confirmInput = passwordInputs[1];
 
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'SecurePassword123!');
@@ -136,7 +126,7 @@ describe('Authentication Flow Integration', () => {
 
       // Should show error about mismatched passwords
       await waitFor(() => {
-        expect(screen.getByText(/passwords.*match/i)).toBeInTheDocument();
+        expect(screen.getByText(/do not match/i)).toBeInTheDocument();
       });
     });
   });
