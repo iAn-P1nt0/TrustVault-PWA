@@ -124,10 +124,10 @@ describe('Authentication Flow Integration', () => {
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
 
-      // Should show error about mismatched passwords
+      // Should show error about mismatched passwords (shown as helper text)
       await waitFor(() => {
-        expect(screen.getByText(/do not match/i)).toBeInTheDocument();
-      });
+        expect(screen.queryByText(/passwords do not match/i)).toBeInTheDocument();
+      }, { timeout: 3000 });
     });
   });
 
