@@ -472,6 +472,19 @@ describe('Authentication Flow Integration', () => {
       await waitFor(() => {
         expect(screen.getByText(/vault/i)).toBeInTheDocument();
       }, { timeout: 5000 });
+      
+      // Debug: check state right after seeing dashboard
+      console.log('State after dashboard:', JSON.stringify({
+        isAuthenticated: useAuthStore.getState().isAuthenticated,
+        hasUser: !!useAuthStore.getState().user,
+        hasVaultKey: !!useAuthStore.getState().vaultKey,
+        isLocked: useAuthStore.getState().isLocked
+      }));
+
+      // Wait for state to be properly set after signup
+      await waitFor(() => {
+        expect(useAuthStore.getState().isAuthenticated).toBe(true);
+      }, { timeout: 3000 });
 
       // Verify authenticated with vault key
       let state = useAuthStore.getState();
