@@ -165,8 +165,9 @@ describe('Authentication Flow Integration', () => {
       const userCount = await db.users.count();
       expect(userCount).toBe(1);
 
-      // Sign out
+      // Sign out and clear persisted state
       useAuthStore.getState().clearSession();
+      localStorage.clear(); // Clear persisted auth state
       unmount();
       
       // Verify user still in database after unmount
