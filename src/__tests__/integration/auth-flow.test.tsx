@@ -120,16 +120,14 @@ describe('Authentication Flow Integration', () => {
       await user.type(emailInput, 'test@example.com');
       await user.type(passwordInput, 'SecurePassword123!');
       await user.type(confirmInput, 'DifferentPassword123!');
-      
-      // Debug: check if error shows before clicking submit
-      screen.debug(undefined, 50000);
 
       const submitButton = screen.getByRole('button', { name: /create account/i });
       await user.click(submitButton);
 
-      // Should show error about mismatched passwords (shown as helper text)
+      // Should show error about mismatched passwords (may appear in multiple places)
       await waitFor(() => {
-        expect(screen.queryByText(/passwords do not match/i)).toBeInTheDocument();
+        const errorElements = screen.getAllByText(/passwords do not match/i);
+        expect(errorElements.length).toBeGreaterThan(0);
       }, { timeout: 3000 });
     });
   });
