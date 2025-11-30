@@ -28,8 +28,8 @@ describe('WebAuthn Security', () => {
 
       // Mock navigator.credentials.create
       const challenges: string[] = [];
-      const mockCreate = vi.fn().mockImplementation((options) => {
-        challenges.push(options.publicKey.challenge);
+      const mockCreate = vi.fn().mockImplementation((options: { publicKey: { challenge: string } }) => {
+        challenges.push(options.publicKey.challenge as string);
         return Promise.resolve({
           id: 'mock-credential-id',
           rawId: new ArrayBuffer(32),
@@ -77,8 +77,8 @@ describe('WebAuthn Security', () => {
       }
 
       const challenges: ArrayBuffer[] = [];
-      const mockGet = vi.fn().mockImplementation((options) => {
-        challenges.push(options.publicKey.challenge);
+      const mockGet = vi.fn().mockImplementation((options: { publicKey: { challenge: ArrayBuffer } }) => {
+        challenges.push(options.publicKey.challenge as ArrayBuffer);
         return Promise.resolve({
           id: 'mock-credential-id',
           rawId: new ArrayBuffer(32),
@@ -139,6 +139,7 @@ describe('WebAuthn Security', () => {
       const storedCounter = 100;
       const authenticatorCounter = 99; // Rollback!
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Testing boundary condition for counter rollback detection
       const isValid = authenticatorCounter > storedCounter;
       expect(isValid).toBe(false);
     });
@@ -147,6 +148,7 @@ describe('WebAuthn Security', () => {
       const storedCounter = 100;
       const authenticatorCounter = 101; // Valid increment
 
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Testing boundary condition for counter increment validation
       const isValid = authenticatorCounter > storedCounter;
       expect(isValid).toBe(true);
     });
@@ -158,6 +160,7 @@ describe('WebAuthn Security', () => {
 
       // In real implementation, should handle overflow
       // This test documents the edge case
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Testing edge case for counter overflow (max uint32 to 0)
       const isSimpleCheck = authenticatorCounter > storedCounter;
       expect(isSimpleCheck).toBe(false);
 
@@ -318,6 +321,7 @@ describe('WebAuthn Security', () => {
       try {
         const info = await getAuthenticatorInfo();
 
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Runtime check, info may be undefined in test environment
         if (info) {
           expect(info).toHaveProperty('available');
           expect(typeof info.available).toBe('boolean');
@@ -416,7 +420,7 @@ describe('WebAuthn Security', () => {
       }
     });
 
-    it('should accept valid registration options', async () => {
+    it('should accept valid registration options', () => {
       const validOptions = {
         rpName: 'TrustVault',
         rpId: 'localhost',
@@ -525,7 +529,7 @@ describe('WebAuthn Security', () => {
 
         if (isWebAuthnSupported()) {
           // Should either reject or sanitize
-          const result = await registerBiometric(options).catch(e => e);
+          const result = await registerBiometric(options).catch((e: unknown) => e as Error);
           expect(result).toBeDefined();
         }
       }

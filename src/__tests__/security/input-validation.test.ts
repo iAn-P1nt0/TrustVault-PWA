@@ -88,7 +88,7 @@ describe('OWASP M4: Insufficient Input Validation', () => {
           lastAccessedAt: new Date(),
         };
 
-        const saved = await credRepo.save(credential, vaultKey);
+        await credRepo.save(credential, vaultKey);
         const retrieved = await credRepo.findById(credential.id, vaultKey);
 
         expect(retrieved?.notes).toBe(note);
@@ -285,14 +285,14 @@ describe('OWASP M4: Insufficient Input Validation', () => {
         lastAccessedAt: new Date(),
       };
 
-      const saved = await credRepo.save(credential, vaultKey);
+      await credRepo.save(credential, vaultKey);
       const retrieved = await credRepo.findById(credential.id, vaultKey);
 
       expect(retrieved?.notes?.length).toBe(longNotes.length);
     });
 
     it('should handle many tags without overflow', async () => {
-      const manyTags = Array.from({ length: 1000 }, (_, i) => `tag${i}`);
+      const manyTags = Array.from({ length: 1000 }, (_, i) => `tag${String(i)}`);
 
       const credential: Credential = {
         id: crypto.randomUUID(),
@@ -493,7 +493,7 @@ describe('OWASP M4: Insufficient Input Validation', () => {
 
   describe('Type Confusion Prevention', () => {
     it('should handle unexpected data types gracefully', async () => {
-      const credential: any = {
+      const credential = {
         id: crypto.randomUUID(),
         userId,
         title: 123, // Number instead of string

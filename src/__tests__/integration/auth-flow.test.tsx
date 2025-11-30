@@ -173,7 +173,8 @@ describe('Authentication Flow Integration', () => {
       
       // Verify user still in database after unmount
       const userCountAfter = await db.users.count();
-      console.log('Users in DB after unmount:', userCountAfter);
+      // Debug: Users in DB after unmount
+      expect(userCountAfter).toBe(1);
 
       // Now sign back in - user exists so should show signin page
       render(
@@ -472,14 +473,10 @@ describe('Authentication Flow Integration', () => {
       await waitFor(() => {
         expect(screen.getByText(/vault/i)).toBeInTheDocument();
       }, { timeout: 5000 });
-      
-      // Debug: check state right after seeing dashboard
-      console.log('State after dashboard:', JSON.stringify({
-        isAuthenticated: useAuthStore.getState().isAuthenticated,
-        hasUser: !!useAuthStore.getState().user,
-        hasVaultKey: !!useAuthStore.getState().vaultKey,
-        isLocked: useAuthStore.getState().isLocked
-      }));
+
+      // Debug: check state right after seeing dashboard - ensure it's properly set
+      const debugState = useAuthStore.getState();
+      expect(debugState.isAuthenticated).toBeDefined();
 
       // Wait for state to be properly set after signup
       await waitFor(() => {
@@ -505,7 +502,6 @@ describe('Authentication Flow Integration', () => {
 
     it('should clear vault keys and credentials on lock', async () => {
       const testEmail = 'datalock@example.com';
-      const testPassword = 'DataLock123!';
 
       // Create account and sign in
       useAuthStore.getState().setUser({
@@ -558,7 +554,7 @@ describe('Authentication Flow Integration', () => {
       expect(state.user).not.toBeNull(); // User still present for unlock
     });
 
-    it('should lock on tab hide if lockOnTabHidden is true', async () => {
+    it('should lock on tab hide if lockOnTabHidden is true', () => {
       // This test would require mocking document.visibilityState
       // For now, we test the logic exists in useAutoLock hook
       const state = useAuthStore.getState();

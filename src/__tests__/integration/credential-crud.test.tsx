@@ -404,10 +404,10 @@ describe('Credential CRUD Integration', () => {
       await user.click(deleteMenuItem);
 
       // Confirm deletion (if confirmation dialog exists)
-      await waitFor(() => {
+      await waitFor(async () => {
         const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
-          user.click(confirmButton);
+          await user.click(confirmButton);
         }
       }, { timeout: 2000 });
 
@@ -457,10 +457,10 @@ describe('Credential CRUD Integration', () => {
       const deleteMenuItem = screen.getByRole('menuitem', { name: /delete/i });
       await user.click(deleteMenuItem);
 
-      await waitFor(() => {
+      await waitFor(async () => {
         const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
-          user.click(confirmButton);
+          await user.click(confirmButton);
         }
       }, { timeout: 2000 });
 
@@ -551,10 +551,10 @@ describe('Credential CRUD Integration', () => {
       const deleteMenuItem = screen.getByRole('menuitem', { name: /delete/i });
       await user.click(deleteMenuItem);
 
-      await waitFor(() => {
+      await waitFor(async () => {
         const confirmButton = screen.queryByRole('button', { name: /confirm|yes|delete/i });
         if (confirmButton) {
-          user.click(confirmButton);
+          await user.click(confirmButton);
         }
       }, { timeout: 2000 });
 

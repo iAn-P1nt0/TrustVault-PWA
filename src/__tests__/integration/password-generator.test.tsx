@@ -108,7 +108,7 @@ describe('Password Generator Integration', () => {
       });
 
       // Verify password field is populated
-      const passwordField = screen.getByLabelText(/^password/i);
+      const passwordField = screen.getByLabelText(/^password/i) as HTMLInputElement;
       expect(passwordField.value).toBeTruthy();
       expect(passwordField.value.length).toBeGreaterThanOrEqual(12);
     });
@@ -157,7 +157,7 @@ describe('Password Generator Integration', () => {
       expect(savedPrefs).toBeTruthy();
 
       if (savedPrefs) {
-        const prefs = JSON.parse(savedPrefs);
+        const prefs = JSON.parse(savedPrefs) as { length: number; excludeAmbiguous: boolean };
         expect(prefs.length).toBe(24);
         expect(prefs.excludeAmbiguous).toBe(true);
       }
@@ -285,7 +285,7 @@ describe('Password Generator Integration', () => {
 
       // Get the password value
       const passwordField = screen.getByLabelText(/^password/i);
-      const generatedPassword = passwordField.value;
+      const generatedPassword = String(passwordField.value);
 
       // Verify no symbols in password (basic check - no common symbols)
       expect(/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(generatedPassword)).toBe(false);

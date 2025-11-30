@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { renderHook, act, waitFor } from '@testing-library/react';
+import { renderHook, act } from '@testing-library/react';
 import { useAutoLock } from '@/presentation/hooks/useAutoLock';
 import { useAuthStore } from '@/presentation/store/authStore';
 import { useCredentialStore } from '@/presentation/store/credentialStore';
@@ -73,7 +73,7 @@ describe('useAutoLock Hook', () => {
       });
 
       // Render hook with 1 minute timeout
-      const { result } = renderHook(
+      renderHook(
         () => useAutoLock({
           timeoutMinutes: 1,
           lockOnTabHidden: false,
@@ -588,7 +588,7 @@ describe('useAutoLock Hook', () => {
   });
 
   describe('Not authenticated state', () => {
-    it('should not set up timers when not authenticated', async () => {
+    it('should not set up timers when not authenticated', () => {
       // Don't set user or vault key
       expect(useAuthStore.getState().isAuthenticated).toBe(false);
 

@@ -4,7 +4,7 @@
  * Tests OWASP M3: Insecure Authentication & M9: Insecure Data Storage
  */
 
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { UserRepositoryImpl } from '@/data/repositories/UserRepositoryImpl';
 import { CredentialRepository } from '@/data/repositories/CredentialRepositoryImpl';
 import { db } from '@/data/storage/database';
@@ -30,7 +30,7 @@ describe('OWASP M3: Insecure Authentication - Session Security', () => {
 
   describe('Session Creation Security', () => {
     it('should create session with expiry time', async () => {
-      const user = await userRepo.createUser('test@example.com', 'Password123!');
+      await userRepo.createUser('test@example.com', 'Password123!');
       const session = await userRepo.authenticateWithPassword('test@example.com', 'Password123!');
 
       expect(session.expiresAt).toBeDefined();
@@ -53,7 +53,7 @@ describe('OWASP M3: Insecure Authentication - Session Security', () => {
       expect(session.vaultKey.type).toBe('secret');
 
       // Vault key should not be serializable to JSON
-      const sessionCopy = JSON.parse(JSON.stringify(session));
+      const sessionCopy = JSON.parse(JSON.stringify(session)) as { vaultKey?: CryptoKey };
       expect(sessionCopy.vaultKey).toEqual({}); // CryptoKey becomes empty object
     });
 
@@ -157,7 +157,6 @@ describe('OWASP M3: Insecure Authentication - Session Security', () => {
       await userRepo.createUser('test@example.com', 'Password123!');
 
       await userRepo.authenticateWithPassword('test@example.com', 'Password123!');
-      const session1 = await userRepo.getSession();
 
       // Authenticate again
       await userRepo.authenticateWithPassword('test@example.com', 'Password123!');
@@ -259,7 +258,7 @@ describe('OWASP M3: Insecure Authentication - Session Security', () => {
 
       for (let i = 0; i < attempts; i++) {
         try {
-          await userRepo.authenticateWithPassword('test@example.com', `WrongPassword${i}!`);
+          await userRepo.authenticateWithPassword('test@example.com', `WrongPassword${String(i)}!`);
         } catch {
           failures++;
         }
@@ -458,7 +457,7 @@ describe('OWASP M9: Insecure Data Storage', () => {
       expect(typeof user.encryptedVaultKey).toBe('string');
 
       // Should be JSON with ciphertext, iv (authTag is embedded in ciphertext for AES-GCM)
-      const parsed = JSON.parse(user.encryptedVaultKey);
+      const parsed = JSON.parse(user.encryptedVaultKey) as { ciphertext: string; iv: string };
       expect(parsed.ciphertext).toBeDefined();
       expect(parsed.iv).toBeDefined();
       // AES-GCM appends auth tag to ciphertext, so we verify ciphertext is long enough

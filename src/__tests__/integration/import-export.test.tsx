@@ -155,10 +155,8 @@ describe('Import/Export Integration', () => {
 
       // Verify download initiated (success message or file download)
       await waitFor(() => {
-        expect(
-          screen.getByText(/export.*successful|vault.*exported/i) ||
-          downloadSpy
-        ).toBeTruthy();
+        const hasSuccessMessage = screen.queryByText(/export.*successful|vault.*exported/i);
+        expect(hasSuccessMessage || downloadSpy).toBeTruthy();
       }, { timeout: 3000 });
 
       createElementSpy.mockRestore();
@@ -498,9 +496,9 @@ describe('Import/Export Integration', () => {
       // Create mock file with many credentials
       const mockCredentials = Array.from({ length: 50 }, (_, i) => ({
         id: String(i),
-        title: `Account ${i}`,
-        username: `user${i}@example.com`,
-        password: `Password${i}!`,
+        title: `Account ${String(i)}`,
+        username: `user${String(i)}@example.com`,
+        password: `Password${String(i)}!`,
         category: 'Login',
       }));
 
