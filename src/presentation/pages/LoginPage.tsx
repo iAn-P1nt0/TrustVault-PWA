@@ -148,10 +148,20 @@ export default function LoginPage() {
         throw new Error('Biometric authentication is not set up for this account. Please sign in with your password first.');
       }
 
-      // For now, prompt user to use password first
-      // In a production app, you'd perform full WebAuthn authentication
-      // and decrypt the vault key using biometric-specific encryption
-      setError('Biometric quick unlock requires password authentication first. Please sign in with your password, then register biometric in Settings.');
+      // Get the first biometric credential ID for authentication
+      const credentialId = targetUser.webAuthnCredentials[0]?.id;
+      if (!credentialId) {
+        throw new Error('No biometric credential found. Please sign in with your password and re-enable biometric in Settings.');
+      }
+
+      // Perform full biometric authentication (WebAuthn + vault key decryption)
+      const session = await userRepository.authenticateWithBiometric(targetUser.id, credentialId);
+
+      // Set authentication state with vault key
+      setUser(targetUser);
+      setSession(session);
+      setVaultKey(session.vaultKey);
+      console.log('Biometric login successful');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Biometric authentication failed');
       console.error('Biometric login failed:', err);

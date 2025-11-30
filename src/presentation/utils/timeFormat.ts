@@ -25,12 +25,19 @@ export function formatRelativeTime(date: Date | number, baseTime: number = Date.
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffSeconds < 60) return 'just now';
-  if (diffMinutes < 60) return `${diffMinutes} minute${diffMinutes === 1 ? '' : 's'} ago`;
-  if (diffHours < 24) return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`;
-  if (diffDays < 7) return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)} week${Math.floor(diffDays / 7) === 1 ? '' : 's'} ago`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)} month${Math.floor(diffDays / 30) === 1 ? '' : 's'} ago`;
-  return `${Math.floor(diffDays / 365)} year${Math.floor(diffDays / 365) === 1 ? '' : 's'} ago`;
+  if (diffMinutes < 60) return `${String(diffMinutes)} minute${diffMinutes === 1 ? '' : 's'} ago`;
+  if (diffHours < 24) return `${String(diffHours)} hour${diffHours === 1 ? '' : 's'} ago`;
+  if (diffDays < 7) return `${String(diffDays)} day${diffDays === 1 ? '' : 's'} ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${String(weeks)} week${weeks === 1 ? '' : 's'} ago`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${String(months)} month${months === 1 ? '' : 's'} ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return `${String(years)} year${years === 1 ? '' : 's'} ago`;
 }
 
 /**
@@ -48,12 +55,12 @@ export function formatShortRelativeTime(date: Date | number, baseTime: number = 
   const diffDays = Math.floor(diffHours / 24);
 
   if (diffSeconds < 60) return 'now';
-  if (diffMinutes < 60) return `${diffMinutes}m`;
-  if (diffHours < 24) return `${diffHours}h`;
-  if (diffDays < 7) return `${diffDays}d`;
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}w`;
-  if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo`;
-  return `${Math.floor(diffDays / 365)}y`;
+  if (diffMinutes < 60) return `${String(diffMinutes)}m`;
+  if (diffHours < 24) return `${String(diffHours)}h`;
+  if (diffDays < 7) return `${String(diffDays)}d`;
+  if (diffDays < 30) return `${String(Math.floor(diffDays / 7))}w`;
+  if (diffDays < 365) return `${String(Math.floor(diffDays / 30))}mo`;
+  return `${String(Math.floor(diffDays / 365))}y`;
 }
 
 /**
@@ -154,17 +161,17 @@ export function formatDistanceToNow(
   } else if (diffMinutes < 1) {
     result = 'less than a minute';
   } else if (diffMinutes < 60) {
-    result = diffMinutes === 1 ? '1 minute' : `${diffMinutes} minutes`;
+    result = diffMinutes === 1 ? '1 minute' : `${String(diffMinutes)} minutes`;
   } else if (diffHours < 24) {
-    result = diffHours === 1 ? 'about 1 hour' : `about ${diffHours} hours`;
+    result = diffHours === 1 ? 'about 1 hour' : `about ${String(diffHours)} hours`;
   } else if (diffDays < 30) {
-    result = diffDays === 1 ? '1 day' : `${diffDays} days`;
+    result = diffDays === 1 ? '1 day' : `${String(diffDays)} days`;
   } else if (diffDays < 365) {
     const months = Math.floor(diffDays / 30);
-    result = months === 1 ? 'about 1 month' : `about ${months} months`;
+    result = months === 1 ? 'about 1 month' : `about ${String(months)} months`;
   } else {
     const years = Math.floor(diffDays / 365);
-    result = years === 1 ? 'about 1 year' : `about ${years} years`;
+    result = years === 1 ? 'about 1 year' : `about ${String(years)} years`;
   }
 
   if (options.addSuffix) {
