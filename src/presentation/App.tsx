@@ -54,7 +54,7 @@ function PageLoader() {
 }
 
 function AppRoutes() {
-  const { user, isAuthenticated, isLocked } = useAuthStore();
+  const { user, isAuthenticated, isLocked, vaultKey, lockVault } = useAuthStore();
 
   // Setup auto-lock with user's security settings (must be inside BrowserRouter)
   const autoLockConfig = useMemo(
@@ -63,14 +63,26 @@ function AppRoutes() {
   );
   useAutoLock(autoLockConfig);
 
+  // Auto-lock vault when user is authenticated but vaultKey is missing (e.g., after page refresh)
+  // The vaultKey cannot be persisted (CryptoKey is not serializable), so we need to redirect to unlock
+  useEffect(() => {
+    if (isAuthenticated && !isLocked && !vaultKey) {
+      console.log('[AppRoutes] Detected authenticated user without vault key, locking vault');
+      lockVault();
+    }
+  }, [isAuthenticated, isLocked, vaultKey, lockVault]);
+
+  // Consider vault locked if no vault key is available (even if isLocked is false)
+  const effectivelyLocked = isLocked || (isAuthenticated && !vaultKey);
+
   return (
     <>
       {/* Global components */}
       <ClipboardNotification />
       <MobileNavigation />
 
-      {/* Onboarding tour - only for authenticated users */}
-      {isAuthenticated && !isLocked && <OnboardingTour autoStart delay={1500} />}
+      {/* Onboarding tour - only for authenticated users with vault unlocked */}
+      {isAuthenticated && !effectivelyLocked && <OnboardingTour autoStart delay={1500} />}
       
       <Suspense fallback={<PageLoader />}>
         <Routes>
@@ -90,7 +102,7 @@ function AppRoutes() {
         <Route
           path="/unlock"
           element={
-            isAuthenticated && isLocked ? (
+            isAuthenticated && effectivelyLocked ? (
               <UnlockPage />
             ) : isAuthenticated ? (
               <Navigate to="/dashboard" replace />
@@ -104,11 +116,11 @@ function AppRoutes() {
         <Route
           path="/dashboard"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <DashboardPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -120,11 +132,11 @@ function AppRoutes() {
         <Route
           path="/credentials/add"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <AddCredentialPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -136,11 +148,11 @@ function AppRoutes() {
         <Route
           path="/credentials/:id/edit"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <EditCredentialPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -152,11 +164,11 @@ function AppRoutes() {
         <Route
           path="/settings"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <SettingsPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -168,11 +180,11 @@ function AppRoutes() {
         <Route
           path="/security-audit"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <SecurityAuditPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -184,11 +196,11 @@ function AppRoutes() {
         <Route
           path="/favorites"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <FavoritesPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />
@@ -200,11 +212,11 @@ function AppRoutes() {
         <Route
           path="/password-generator"
           element={
-            isAuthenticated && !isLocked ? (
+            isAuthenticated && !effectivelyLocked ? (
               <Box sx={{ pb: { xs: 8, md: 0 } }}>
                 <PasswordGeneratorPage />
               </Box>
-            ) : isAuthenticated && isLocked ? (
+            ) : isAuthenticated && effectivelyLocked ? (
               <Navigate to="/unlock" replace />
             ) : (
               <Navigate to="/signin" replace />

@@ -8,7 +8,6 @@ import {
   isWebAuthnSupported,
   isBiometricAvailable,
   registerBiometric,
-  authenticateBiometric,
   verifyRegistrationResponse,
   verifyAuthenticationResponse,
   getDeviceName,
@@ -22,16 +21,23 @@ describe('WebAuthn Core Functions', () => {
 
   beforeEach(() => {
     // Mock PublicKeyCredential
+    type WindowWithPublicKey = typeof globalThis.window & {
+      PublicKeyCredential: {
+        isUserVerifyingPlatformAuthenticatorAvailable: () => Promise<boolean>;
+        isConditionalMediationAvailable: () => Promise<boolean>;
+      };
+    };
+
     global.window = {
-      PublicKeyCredential: function() {} as any,
+      PublicKeyCredential: {
+        isUserVerifyingPlatformAuthenticatorAvailable: vi.fn().mockResolvedValue(true),
+        isConditionalMediationAvailable: vi.fn().mockResolvedValue(true),
+      },
       location: {
         hostname: 'localhost',
         origin: 'http://localhost:3000',
-      } as any,
-    } as any;
-
-    (global.window.PublicKeyCredential as any).isUserVerifyingPlatformAuthenticatorAvailable = vi.fn().mockResolvedValue(true);
-    (global.window.PublicKeyCredential as any).isConditionalMediationAvailable = vi.fn().mockResolvedValue(true);
+      },
+    } as unknown as WindowWithPublicKey;
   });
 
   describe('isWebAuthnSupported', () => {
@@ -40,7 +46,10 @@ describe('WebAuthn Core Functions', () => {
     });
 
     it('should return false when PublicKeyCredential is undefined', () => {
-      (global.window as any).PublicKeyCredential = undefined;
+      type WindowWithOptionalPublicKey = typeof globalThis.window & {
+        PublicKeyCredential?: unknown;
+      };
+      (global.window as WindowWithOptionalPublicKey).PublicKeyCredential = undefined;
       expect(isWebAuthnSupported()).toBe(false);
     });
   });
@@ -52,14 +61,22 @@ describe('WebAuthn Core Functions', () => {
     });
 
     it('should return false when WebAuthn is not supported', async () => {
-      (global.window as any).PublicKeyCredential = undefined;
+      type WindowWithOptionalPublicKey = typeof globalThis.window & {
+        PublicKeyCredential?: unknown;
+      };
+      (global.window as WindowWithOptionalPublicKey).PublicKeyCredential = undefined;
       const available = await isBiometricAvailable();
       expect(available).toBe(false);
     });
 
     it('should handle errors gracefully', async () => {
-      (global.window.PublicKeyCredential as any).isUserVerifyingPlatformAuthenticatorAvailable = vi.fn().mockRejectedValue(new Error('Not available'));
-      
+      type WindowWithPublicKey = typeof globalThis.window & {
+        PublicKeyCredential: {
+          isUserVerifyingPlatformAuthenticatorAvailable: () => Promise<boolean>;
+        };
+      };
+      (global.window as WindowWithPublicKey).PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable = vi.fn().mockRejectedValue(new Error('Not available'));
+
       const available = await isBiometricAvailable();
       expect(available).toBe(false);
     });
@@ -209,7 +226,7 @@ describe('WebAuthn Core Functions', () => {
         })),
         authenticatorData: encodeUint8ArrayToBase64Url(new Uint8Array([
           // 32 bytes RP ID hash + 1 byte flags + 4 bytes counter
-          ...Array(33).fill(0),
+          ...Array<number>(33).fill(0),
           (counter >> 24) & 0xff,
           (counter >> 16) & 0xff,
           (counter >> 8) & 0xff,
@@ -288,8 +305,11 @@ describe('WebAuthn Integration', () => {
 
   describe('Error Handling', () => {
     it('should handle missing WebAuthn support gracefully', async () => {
-      (global.window as any).PublicKeyCredential = undefined;
-      
+      type WindowWithOptionalPublicKey = typeof globalThis.window & {
+        PublicKeyCredential?: unknown;
+      };
+      (global.window as WindowWithOptionalPublicKey).PublicKeyCredential = undefined;
+
       await expect(registerBiometric({
         rpName: 'TrustVault',
         rpId: 'localhost',
@@ -299,12 +319,12 @@ describe('WebAuthn Integration', () => {
       })).rejects.toThrow('WebAuthn is not supported');
     });
 
-    it('should handle registration cancellation', async () => {
+    it('should handle registration cancellation', () => {
       // Mock startRegistration to simulate user cancellation
       const mockStartRegistration = vi.fn().mockRejectedValue(
         new Error('The operation was cancelled by the user')
       );
-      
+
       vi.doMock('@simplewebauthn/browser', () => ({
         startRegistration: mockStartRegistration,
         startAuthentication: vi.fn(),
@@ -347,19 +367,22 @@ describe('WebAuthn Integration', () => {
     it('should use secure challenge generation', () => {
       // Challenges should be cryptographically random
       // Verify crypto.getRandomValues is available
-      expect(crypto.getRandomValues).toBeDefined();
-      
+      expect(typeof crypto.getRandomValues).toBe('function');
+
       const testArray = new Uint8Array(32);
       crypto.getRandomValues(testArray);
-      
+
       // Verify array is filled with values (not all zeros)
       expect(testArray.some(byte => byte !== 0)).toBe(true);
-      
+
       // Verify randomness (two calls should produce different values)
       const testArray2 = new Uint8Array(32);
       crypto.getRandomValues(testArray2);
-      
-      expect(testArray.some((byte, i) => byte !== testArray2[i])).toBe(true);
+
+      expect(testArray.some((byte, i) => {
+        const byte2 = testArray2[i];
+        return byte2 !== undefined && byte !== byte2;
+      })).toBe(true);
     });
   });
 

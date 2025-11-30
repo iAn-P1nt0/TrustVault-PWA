@@ -14,17 +14,16 @@ afterEach(() => {
 });
 
 // Setup before all tests
-beforeAll(() => {
+beforeAll(async () => {
   // Use Node.js WebCrypto API
-  const { webcrypto } = require('crypto');
-  
-  if (!globalThis.crypto) {
-    Object.defineProperty(globalThis, 'crypto', {
-      value: webcrypto,
-      writable: true,
-      configurable: true,
-    });
-  }
+  const { webcrypto } = await import('node:crypto');
+
+  // Always set crypto for consistency in test environment
+  Object.defineProperty(globalThis, 'crypto', {
+    value: webcrypto,
+    writable: true,
+    configurable: true,
+  });
 
   // Mock window.matchMedia for responsive design tests
   Object.defineProperty(window, 'matchMedia', {
@@ -43,14 +42,13 @@ beforeAll(() => {
 
   // Mock IntersectionObserver
   globalThis.IntersectionObserver = class IntersectionObserver {
-    constructor() {}
-    disconnect() {}
-    observe() {}
-    takeRecords() {
+    disconnect(): void {}
+    observe(): void {}
+    takeRecords(): IntersectionObserverEntry[] {
       return [];
     }
-    unobserve() {}
-  } as any;
+    unobserve(): void {}
+  } as unknown as typeof IntersectionObserver;
 });
 
 // Mock navigator.clipboard (configurable for userEvent)

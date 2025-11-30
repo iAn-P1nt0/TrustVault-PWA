@@ -29,7 +29,7 @@ describe('WebAuthn Security', () => {
       // Mock navigator.credentials.create
       const challenges: string[] = [];
       const mockCreate = vi.fn().mockImplementation((options: { publicKey: { challenge: string } }) => {
-        challenges.push(options.publicKey.challenge as string);
+        challenges.push(options.publicKey.challenge);
         return Promise.resolve({
           id: 'mock-credential-id',
           rawId: new ArrayBuffer(32),
@@ -78,7 +78,7 @@ describe('WebAuthn Security', () => {
 
       const challenges: ArrayBuffer[] = [];
       const mockGet = vi.fn().mockImplementation((options: { publicKey: { challenge: ArrayBuffer } }) => {
-        challenges.push(options.publicKey.challenge as ArrayBuffer);
+        challenges.push(options.publicKey.challenge);
         return Promise.resolve({
           id: 'mock-credential-id',
           rawId: new ArrayBuffer(32),

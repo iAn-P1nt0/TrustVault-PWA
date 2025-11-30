@@ -108,9 +108,12 @@ describe('Password Generator Integration', () => {
       });
 
       // Verify password field is populated
-      const passwordField = screen.getByLabelText(/^password/i) as HTMLInputElement;
-      expect(passwordField.value).toBeTruthy();
-      expect(passwordField.value.length).toBeGreaterThanOrEqual(12);
+      const passwordField = screen.getByLabelText(/^password/i);
+      expect(passwordField).toBeInstanceOf(HTMLInputElement);
+      if (passwordField instanceof HTMLInputElement) {
+        expect(passwordField.value).toBeTruthy();
+        expect(passwordField.value.length).toBeGreaterThanOrEqual(12);
+      }
     });
 
     it('should persist generator preferences across sessions', async () => {
