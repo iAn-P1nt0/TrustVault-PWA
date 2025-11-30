@@ -8,31 +8,59 @@ import {
   now as chronNow,
   format,
   diff,
-  formatRelativeTime as chronFormatRelativeTime,
-  formatShortRelativeTime as chronFormatShortRelativeTime,
-  formatDistanceToNow as chronFormatDistanceToNow,
 } from 'chroncraft';
 
 /**
  * Format a date as relative time (e.g., "2 hours ago", "3 days ago")
- * Uses ChronCraft's native formatRelativeTime
  * @param date - Date to format
  * @param baseTime - Current time (defaults to Date.now())
  * @returns Human-readable relative time string
  */
 export function formatRelativeTime(date: Date | number, baseTime: number = Date.now()): string {
-  return chronFormatRelativeTime(date, { baseDate: new Date(baseTime) });
+  const targetDate = typeof date === 'number' ? new Date(date) : date;
+  const diffMs = baseTime - targetDate.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSeconds < 60) return 'just now';
+  if (diffMinutes < 60) return `${String(diffMinutes)} minute${diffMinutes === 1 ? '' : 's'} ago`;
+  if (diffHours < 24) return `${String(diffHours)} hour${diffHours === 1 ? '' : 's'} ago`;
+  if (diffDays < 7) return `${String(diffDays)} day${diffDays === 1 ? '' : 's'} ago`;
+  if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    return `${String(weeks)} week${weeks === 1 ? '' : 's'} ago`;
+  }
+  if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    return `${String(months)} month${months === 1 ? '' : 's'} ago`;
+  }
+  const years = Math.floor(diffDays / 365);
+  return `${String(years)} year${years === 1 ? '' : 's'} ago`;
 }
 
 /**
  * Format a date as a short relative time (e.g., "2h", "3d")
- * Uses ChronCraft's native formatShortRelativeTime
  * @param date - Date to format
  * @param baseTime - Current time (defaults to Date.now())
  * @returns Short relative time string
  */
 export function formatShortRelativeTime(date: Date | number, baseTime: number = Date.now()): string {
-  return chronFormatShortRelativeTime(date, { baseDate: new Date(baseTime) });
+  const targetDate = typeof date === 'number' ? new Date(date) : date;
+  const diffMs = baseTime - targetDate.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+
+  if (diffSeconds < 60) return 'now';
+  if (diffMinutes < 60) return `${String(diffMinutes)}m`;
+  if (diffHours < 24) return `${String(diffHours)}h`;
+  if (diffDays < 7) return `${String(diffDays)}d`;
+  if (diffDays < 30) return `${String(Math.floor(diffDays / 7))}w`;
+  if (diffDays < 365) return `${String(Math.floor(diffDays / 30))}mo`;
+  return `${String(Math.floor(diffDays / 365))}y`;
 }
 
 /**
@@ -104,7 +132,7 @@ export function formatSmartTime(date: Date | number): string {
 }
 
 /**
- * Format distance to now - Uses ChronCraft's native formatDistanceToNow
+ * Format distance to now
  * Returns human-readable relative time string
  * @param date - Date to format
  * @param options - Formatting options
@@ -114,5 +142,40 @@ export function formatDistanceToNow(
   date: Date | number | string,
   options: { addSuffix?: boolean; includeSeconds?: boolean } = {}
 ): string {
-  return chronFormatDistanceToNow(date, options);
+  const targetDate = typeof date === 'string' ? new Date(date) : 
+                     typeof date === 'number' ? new Date(date) : date;
+  const now = Date.now();
+  const diffMs = now - targetDate.getTime();
+  const diffSeconds = Math.floor(Math.abs(diffMs) / 1000);
+  const diffMinutes = Math.floor(diffSeconds / 60);
+  const diffHours = Math.floor(diffMinutes / 60);
+  const diffDays = Math.floor(diffHours / 24);
+  const isFuture = diffMs < 0;
+
+  let result: string;
+  if (options.includeSeconds && diffSeconds < 60) {
+    result = diffSeconds < 5 ? 'less than 5 seconds' :
+             diffSeconds < 10 ? 'less than 10 seconds' :
+             diffSeconds < 30 ? 'less than 30 seconds' :
+             'less than a minute';
+  } else if (diffMinutes < 1) {
+    result = 'less than a minute';
+  } else if (diffMinutes < 60) {
+    result = diffMinutes === 1 ? '1 minute' : `${String(diffMinutes)} minutes`;
+  } else if (diffHours < 24) {
+    result = diffHours === 1 ? 'about 1 hour' : `about ${String(diffHours)} hours`;
+  } else if (diffDays < 30) {
+    result = diffDays === 1 ? '1 day' : `${String(diffDays)} days`;
+  } else if (diffDays < 365) {
+    const months = Math.floor(diffDays / 30);
+    result = months === 1 ? 'about 1 month' : `about ${String(months)} months`;
+  } else {
+    const years = Math.floor(diffDays / 365);
+    result = years === 1 ? 'about 1 year' : `about ${String(years)} years`;
+  }
+
+  if (options.addSuffix) {
+    return isFuture ? `in ${result}` : `${result} ago`;
+  }
+  return result;
 }
