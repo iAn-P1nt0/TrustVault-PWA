@@ -3,9 +3,6 @@ import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 import path from 'path';
 
-// Version constant for service worker
-const APP_VERSION = `v${process.env.npm_package_version || '1.0.0'}-${Date.now()}`;
-
 // Determine base path based on deployment target
 const BASE_PATH = process.env.VERCEL ? '/' : '/TrustVault-PWA/';
 

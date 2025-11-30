@@ -472,7 +472,7 @@ describe('Encryption Edge Cases', () => {
 
       const corrupted = {
         ...encrypted,
-        salt: encrypted.salt.slice(0, -5) + 'xxxxx'
+        salt: (encrypted.salt?.slice(0, -5) ?? '') + 'xxxxx'
       };
 
       await expect(

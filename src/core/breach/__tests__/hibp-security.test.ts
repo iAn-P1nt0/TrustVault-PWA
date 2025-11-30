@@ -461,8 +461,7 @@ describe('HIBP Breach Detection Security', () => {
       try {
         await expect(
           checkPasswordBreach('password', {
-            forceRefresh: true,
-            timeout: 50
+            forceRefresh: true
           })
         ).rejects.toThrow();
       } finally {
@@ -672,7 +671,6 @@ describe('HIBP Breach Detection Security', () => {
 
       try {
         const result = await checkEmailBreach('test@example.com', {
-          apiKey: 'test-api-key',
           forceRefresh: true
         });
 
@@ -692,7 +690,6 @@ describe('HIBP Breach Detection Security', () => {
 
       try {
         const result = await checkEmailBreach('clean@example.com', {
-          apiKey: 'test-api-key',
           forceRefresh: true
         });
 

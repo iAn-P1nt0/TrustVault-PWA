@@ -79,13 +79,15 @@ export function base32Encode(data: Uint8Array): string {
     bits += 8;
 
     while (bits >= 5) {
-      output += BASE32_CHARS[(value >>> (bits - 5)) & 0x1f];
+      const char = BASE32_CHARS[(value >>> (bits - 5)) & 0x1f];
+      output += char ?? '';
       bits -= 5;
     }
   }
 
   if (bits > 0) {
-    output += BASE32_CHARS[(value << (5 - bits)) & 0x1f];
+    const char = BASE32_CHARS[(value << (5 - bits)) & 0x1f];
+    output += char ?? '';
   }
 
   // Add padding

@@ -112,13 +112,21 @@ export function logPerformanceMetrics(): void {
       const metrics = getPerformanceMetrics();
       
       if (metrics) {
+        // eslint-disable-next-line no-console
         console.group('⚡ Performance Metrics');
+        // eslint-disable-next-line no-console
         console.log(`TTFB: ${metrics.ttfb.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.log(`DOM Content Loaded: ${metrics.domContentLoaded.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.log(`Page Load: ${metrics.loadTime.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.log(`Total Time: ${metrics.totalTime.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.log(`DNS Lookup: ${metrics.dnsTime.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.log(`Connection: ${metrics.connectionTime.toFixed(2)}ms`);
+        // eslint-disable-next-line no-console
         console.groupEnd();
       }
     }, 0);
@@ -200,6 +208,7 @@ export function measureFID(): void {
         const fidEntry = entry as PerformanceEntry & { processingStart: number };
         if ('processingStart' in entry) {
           const fid = fidEntry.processingStart - entry.startTime;
+          // eslint-disable-next-line no-console
           console.log(`First Input Delay: ${fid.toFixed(2)}ms`);
         }
       }
@@ -222,6 +231,7 @@ export function measureLCP(): void {
       const entries = list.getEntries();
       const lastEntry = entries[entries.length - 1];
       if (lastEntry) {
+        // eslint-disable-next-line no-console
         console.log(`Largest Contentful Paint: ${lastEntry.startTime.toFixed(2)}ms`);
       }
     });
@@ -245,6 +255,7 @@ export function measureCLS(): void {
       for (const entry of list.getEntries()) {
         if (!(entry as any).hadRecentInput) {
           clsValue += (entry as any).value;
+          // eslint-disable-next-line no-console
           console.log(`Cumulative Layout Shift: ${clsValue.toFixed(4)}`);
         }
       }
@@ -267,5 +278,6 @@ export function initPerformanceMonitoring(): void {
   measureLCP();
   measureCLS();
   
+  // eslint-disable-next-line no-console
   console.log('🚀 Performance monitoring enabled');
 }

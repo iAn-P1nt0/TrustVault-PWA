@@ -46,7 +46,9 @@ export default function OnboardingTour({
         }
       }, delay);
 
-      return () => clearTimeout(timeout);
+      return () => {
+        clearTimeout(timeout);
+      };
     }
 
     return () => {};
