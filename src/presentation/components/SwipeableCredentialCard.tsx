@@ -113,7 +113,7 @@ export default function SwipeableCredentialCard({
 
     if (isRevealed) {
       document.addEventListener('mousedown', handleClickOutside);
-      return () => document.removeEventListener('mousedown', handleClickOutside);
+      return () => { document.removeEventListener('mousedown', handleClickOutside); };
     }
     
     return undefined;

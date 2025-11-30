@@ -435,7 +435,7 @@ export class UserRepositoryImpl implements IUserRepository {
   async getUsersWithBiometric(): Promise<User[]> {
     // Use filter instead of indexed query to avoid index dependency
     const allUsers = await db.users.toArray();
-    const users = allUsers.filter(user => user.biometricEnabled === true);
+    const users = allUsers.filter(user => user.biometricEnabled);
     return users.map(this.mapStoredUserToUser);
   }
 

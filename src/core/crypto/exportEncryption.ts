@@ -198,7 +198,7 @@ export function readImportFile(file: File): Promise<string> {
         reject(new Error('Failed to read file'));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read file'));
+    reader.onerror = () => { reject(new Error('Failed to read file')); };
     reader.readAsText(file);
   });
 }

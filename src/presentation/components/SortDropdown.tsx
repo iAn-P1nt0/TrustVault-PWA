@@ -44,7 +44,7 @@ export default function SortDropdown({ value, onChange }: SortDropdownProps) {
         id="sort-select"
         value={value}
         label="Sort by"
-        onChange={(e) => onChange(e.target.value as SortOption)}
+        onChange={(e) => { onChange(e.target.value as SortOption); }}
       >
         {SORT_OPTIONS.map((option) => (
           <MenuItem key={option.value} value={option.value}>

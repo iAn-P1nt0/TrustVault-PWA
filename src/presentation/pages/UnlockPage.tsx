@@ -144,7 +144,7 @@ export default function UnlockPage() {
             label="Master Password"
             type={showPassword ? 'text' : 'password'}
             value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            onChange={(e) => { setPassword(e.target.value); }}
             onKeyPress={handleKeyPress}
             disabled={unlocking}
             autoFocus
@@ -153,7 +153,7 @@ export default function UnlockPage() {
               endAdornment: (
                 <InputAdornment position="end">
                   <IconButton
-                    onClick={() => setShowPassword(!showPassword)}
+                    onClick={() => { setShowPassword(!showPassword); }}
                     edge="end"
                     disabled={unlocking}
                   >

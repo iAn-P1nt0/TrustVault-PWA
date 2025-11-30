@@ -39,7 +39,7 @@ export default function SearchBar({
       }
     }, debounceMs);
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [localValue, debounceMs, onChange, value]);
 
   const handleClear = useCallback(() => {
@@ -52,7 +52,7 @@ export default function SearchBar({
       fullWidth={fullWidth}
       placeholder={placeholder}
       value={localValue}
-      onChange={(e) => setLocalValue(e.target.value)}
+      onChange={(e) => { setLocalValue(e.target.value); }}
       slotProps={{
         input: {
           startAdornment: (

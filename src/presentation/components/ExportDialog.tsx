@@ -113,7 +113,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
 
         {/* Error Alert */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => { setError(null); }}>
             {error}
           </Alert>
         )}
@@ -124,7 +124,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
           type={showPassword ? 'text' : 'password'}
           fullWidth
           value={exportPassword}
-          onChange={(e) => setExportPassword(e.target.value)}
+          onChange={(e) => { setExportPassword(e.target.value); }}
           disabled={exporting}
           autoFocus
           margin="normal"
@@ -132,7 +132,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                <IconButton onClick={() => { setShowPassword(!showPassword); }} edge="end">
                   {showPassword ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
@@ -153,7 +153,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
           type={showConfirm ? 'text' : 'password'}
           fullWidth
           value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
+          onChange={(e) => { setConfirmPassword(e.target.value); }}
           disabled={exporting}
           margin="normal"
           error={confirmPassword.length > 0 && exportPassword !== confirmPassword}
@@ -165,7 +165,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
-                <IconButton onClick={() => setShowConfirm(!showConfirm)} edge="end">
+                <IconButton onClick={() => { setShowConfirm(!showConfirm); }} edge="end">
                   {showConfirm ? <VisibilityOff /> : <Visibility />}
                 </IconButton>
               </InputAdornment>
@@ -189,7 +189,7 @@ export default function ExportDialog({ open, onClose, onSuccess }: ExportDialogP
           control={
             <Checkbox
               checked={confirmationChecked}
-              onChange={(e) => setConfirmationChecked(e.target.checked)}
+              onChange={(e) => { setConfirmationChecked(e.target.checked); }}
               disabled={exporting}
             />
           }

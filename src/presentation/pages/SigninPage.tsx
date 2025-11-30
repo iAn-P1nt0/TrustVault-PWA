@@ -167,7 +167,7 @@ export default function SigninPage() {
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(e): void => setEmail(e.target.value)}
+                onChange={(e): void => { setEmail(e.target.value); }}
                 required
                 disabled={isLoading}
                 autoComplete="email"
@@ -178,7 +178,7 @@ export default function SigninPage() {
                 label="Master Password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e): void => setPassword(e.target.value)}
+                onChange={(e): void => { setPassword(e.target.value); }}
                 required
                 disabled={isLoading}
                 autoComplete="current-password"
@@ -187,7 +187,7 @@ export default function SigninPage() {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={(): void => setShowPassword(!showPassword)}
+                          onClick={(): void => { setShowPassword(!showPassword); }}
                           edge="end"
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}

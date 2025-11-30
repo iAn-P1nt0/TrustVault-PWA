@@ -30,7 +30,7 @@ import {
 } from '@mui/icons-material';
 import { useServiceWorkerUpdate } from '../hooks/useServiceWorkerUpdate';
 
-function SlideTransition(props: TransitionProps & { children: ReactElement<unknown> }) {
+function SlideTransition(props: TransitionProps & { children: ReactElement }) {
   return <Slide {...props} direction="up" appear={props.appear ?? true} />;
 }
 
@@ -53,7 +53,7 @@ export default function UpdateNotification() {
       sessionStorage.removeItem('sw-update-completed');
       setShowSuccessMessage(true);
       // Auto-hide after 5 seconds
-      setTimeout(() => setShowSuccessMessage(false), 5000);
+      setTimeout(() => { setShowSuccessMessage(false); }, 5000);
     }
   }, []);
 
@@ -72,13 +72,13 @@ export default function UpdateNotification() {
         open={true}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
         TransitionComponent={SlideTransition}
-        onClose={() => setShowSuccessMessage(false)}
+        onClose={() => { setShowSuccessMessage(false); }}
         sx={{ bottom: { xs: 70, md: 24 } }} // Account for mobile navigation
       >
         <Alert
           severity="success"
           icon={<CheckCircle />}
-          onClose={() => setShowSuccessMessage(false)}
+          onClose={() => { setShowSuccessMessage(false); }}
           sx={{
             width: '100%',
             maxWidth: 600,

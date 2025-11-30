@@ -85,7 +85,7 @@ export default function AutoLockSettings({
           labelId="timeout-select-label"
           value={timeout}
           label="Session Timeout"
-          onChange={(e) => handleTimeoutChange(Number(e.target.value))}
+          onChange={(e) => { handleTimeoutChange(Number(e.target.value)); }}
         >
           {TIMEOUT_OPTIONS.map((option) => (
             <MenuItem key={option.value} value={option.value}>
@@ -100,7 +100,7 @@ export default function AutoLockSettings({
         control={
           <Switch
             checked={lockOnHidden}
-            onChange={(e) => handleLockOnHiddenChange(e.target.checked)}
+            onChange={(e) => { handleLockOnHiddenChange(e.target.checked); }}
           />
         }
         label={

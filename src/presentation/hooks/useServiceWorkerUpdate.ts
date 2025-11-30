@@ -75,7 +75,7 @@ export function useServiceWorkerUpdate(): ServiceWorkerUpdateState {
         );
 
         // Timeout after 2 seconds
-        setTimeout(() => resolve(null), 2000);
+        setTimeout(() => { resolve(null); }, 2000);
       });
     } catch (err) {
       console.error('Failed to fetch current version:', err);
@@ -105,7 +105,7 @@ export function useServiceWorkerUpdate(): ServiceWorkerUpdateState {
         );
 
         // Timeout after 2 seconds
-        setTimeout(() => resolve(null), 2000);
+        setTimeout(() => { resolve(null); }, 2000);
       });
     } catch (err) {
       console.error('Failed to fetch waiting version:', err);

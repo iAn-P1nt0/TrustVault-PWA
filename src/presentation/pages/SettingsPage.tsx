@@ -90,7 +90,7 @@ export default function SettingsPage() {
       setUser(updatedUser);
 
       setSaveMessage('Settings saved successfully');
-      setTimeout(() => setSaveMessage(null), 3000);
+      setTimeout(() => { setSaveMessage(null); }, 3000);
     } catch (err) {
       console.error('Failed to save settings:', err);
       setError('Failed to save settings. Please try again.');
@@ -107,7 +107,7 @@ export default function SettingsPage() {
       }
     }, 500); // Debounce 500ms
 
-    return () => clearTimeout(timer);
+    return () => { clearTimeout(timer); };
   }, [sessionTimeout, clipboardClearSeconds]);
 
   const handleClearAllData = async () => {
@@ -181,7 +181,7 @@ export default function SettingsPage() {
 
         {/* Error message */}
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => { setError(null); }}>
             {error}
           </Alert>
         )}
@@ -201,7 +201,7 @@ export default function SettingsPage() {
 
         <ClipboardSettings
           clipboardClearSeconds={clipboardClearSeconds}
-          onSave={(seconds) => setClipboardClearSeconds(seconds)}
+          onSave={(seconds) => { setClipboardClearSeconds(seconds); }}
         />
 
         {/* Biometric Authentication */}
@@ -229,7 +229,7 @@ export default function SettingsPage() {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => setBiometricDialogOpen(true)}
+            onClick={() => { setBiometricDialogOpen(true); }}
           >
             Manage Biometric Devices
           </Button>
@@ -357,14 +357,14 @@ export default function SettingsPage() {
             <Button
               variant="outlined"
               color="primary"
-              onClick={() => setExportDialogOpen(true)}
+              onClick={() => { setExportDialogOpen(true); }}
             >
               Export Vault
             </Button>
             <Button
               variant="outlined"
               color="primary"
-              onClick={() => setImportDialogOpen(true)}
+              onClick={() => { setImportDialogOpen(true); }}
             >
               Import Vault
             </Button>
@@ -412,7 +412,7 @@ export default function SettingsPage() {
           <Button
             variant="outlined"
             color="primary"
-            onClick={() => setChangePasswordDialogOpen(true)}
+            onClick={() => { setChangePasswordDialogOpen(true); }}
           >
             Change Master Password
           </Button>
@@ -469,7 +469,7 @@ export default function SettingsPage() {
       {/* Change Master Password Dialog */}
       <ChangeMasterPasswordDialog
         open={changePasswordDialogOpen}
-        onClose={() => setChangePasswordDialogOpen(false)}
+        onClose={() => { setChangePasswordDialogOpen(false); }}
         onSuccess={() => {
           setSaveMessage('Master password changed successfully!');
           setChangePasswordDialogOpen(false);
@@ -479,7 +479,7 @@ export default function SettingsPage() {
       {/* Export Dialog */}
       <ExportDialog
         open={exportDialogOpen}
-        onClose={() => setExportDialogOpen(false)}
+        onClose={() => { setExportDialogOpen(false); }}
         onSuccess={() => {
           setSaveMessage('Vault exported successfully!');
           setExportDialogOpen(false);
@@ -489,7 +489,7 @@ export default function SettingsPage() {
       {/* Import Dialog */}
       <ImportDialog
         open={importDialogOpen}
-        onClose={() => setImportDialogOpen(false)}
+        onClose={() => { setImportDialogOpen(false); }}
         onSuccess={(count) => {
           setSaveMessage(`Successfully imported ${count} credentials!`);
           setImportDialogOpen(false);
@@ -499,7 +499,7 @@ export default function SettingsPage() {
       {/* Biometric Setup Dialog */}
       <BiometricSetupDialog
         open={biometricDialogOpen}
-        onClose={() => setBiometricDialogOpen(false)}
+        onClose={() => { setBiometricDialogOpen(false); }}
       />
     </Box>
   );

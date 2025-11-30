@@ -65,7 +65,7 @@ export default function TotpDisplay({ totpSecret, timeStep = 30 }: TotpDisplayPr
     // Update every second
     const interval = setInterval(updateTOTP, 1000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [totpSecret, timeStep, error]);
 
   const handleCopy = async () => {

@@ -156,7 +156,7 @@ export function CameraScanDialog({
       }
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => { clearInterval(interval); };
   }, [scanState]);
 
   const handleCapture = useCallback(async () => {
@@ -211,7 +211,7 @@ export function CameraScanDialog({
       cameraStreamRef.current = null;
     }
     // Small delay then reset to trigger effect
-    setTimeout(() => setScanState('requesting'), 100);
+    setTimeout(() => { setScanState('requesting'); }, 100);
   }, []);
 
   return (

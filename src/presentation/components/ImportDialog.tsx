@@ -189,7 +189,7 @@ export default function ImportDialog({ open, onClose, onSuccess }: ImportDialogP
       <DialogContent>
         {/* Error Alert */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => { setError(null); }}>
             {error}
           </Alert>
         )}
@@ -253,14 +253,14 @@ export default function ImportDialog({ open, onClose, onSuccess }: ImportDialogP
                     type={showPassword ? 'text' : 'password'}
                     fullWidth
                     value={exportPassword}
-                    onChange={(e) => setExportPassword(e.target.value)}
+                    onChange={(e) => { setExportPassword(e.target.value); }}
                     disabled={decrypting}
                     margin="normal"
                     helperText="Enter the password used to encrypt this backup"
                     InputProps={{
                       endAdornment: (
                         <InputAdornment position="end">
-                          <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+                          <IconButton onClick={() => { setShowPassword(!showPassword); }} edge="end">
                             {showPassword ? <VisibilityOff /> : <Visibility />}
                           </IconButton>
                         </InputAdornment>
@@ -289,7 +289,7 @@ export default function ImportDialog({ open, onClose, onSuccess }: ImportDialogP
                   <Select
                     value={importMode}
                     label="Import Mode"
-                    onChange={(e) => setImportMode(e.target.value as ImportMode)}
+                    onChange={(e) => { setImportMode(e.target.value as ImportMode); }}
                   >
                     <MenuItem value="merge">
                       <Box>

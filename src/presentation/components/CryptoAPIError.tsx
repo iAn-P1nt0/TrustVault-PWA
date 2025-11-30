@@ -91,7 +91,7 @@ export default function CryptoAPIError({ currentUrl }: CryptoAPIErrorProps) {
           <Button
             variant="contained"
             startIcon={<Lock />}
-            onClick={() => window.location.reload()}
+            onClick={() => { window.location.reload(); }}
           >
             Retry Connection
           </Button>

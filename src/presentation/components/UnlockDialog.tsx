@@ -126,7 +126,7 @@ export default function UnlockDialog({ open, onClose }: UnlockDialogProps) {
           label="Master Password"
           type={showPassword ? 'text' : 'password'}
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => { setPassword(e.target.value); }}
           onKeyPress={handleKeyPress}
           disabled={unlocking}
           autoFocus
@@ -135,7 +135,7 @@ export default function UnlockDialog({ open, onClose }: UnlockDialogProps) {
             endAdornment: (
               <InputAdornment position="end">
                 <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
+                  onClick={() => { setShowPassword(!showPassword); }}
                   edge="end"
                   disabled={unlocking}
                 >

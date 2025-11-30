@@ -353,7 +353,7 @@ export default function DashboardPage() {
           <IconButton
             color="inherit"
             edge="start"
-            onClick={() => setDrawerOpen(!drawerOpen)}
+            onClick={() => { setDrawerOpen(!drawerOpen); }}
             sx={{ mr: 2 }}
           >
             <MenuIcon />
@@ -366,7 +366,7 @@ export default function DashboardPage() {
           <IconButton color="inherit" onClick={handleLockVault}>
             <LockIcon />
           </IconButton>
-          <IconButton color="inherit" onClick={(e) => setMenuAnchor(e.currentTarget)}>
+          <IconButton color="inherit" onClick={(e) => { setMenuAnchor(e.currentTarget); }}>
             <Avatar sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
               {user?.email?.[0]?.toUpperCase() || 'U'}
             </Avatar>
@@ -374,7 +374,7 @@ export default function DashboardPage() {
           <Menu
             anchorEl={menuAnchor}
             open={Boolean(menuAnchor)}
-            onClose={() => setMenuAnchor(null)}
+            onClose={() => { setMenuAnchor(null); }}
           >
             <MenuItem
               onClick={() => {
@@ -401,7 +401,7 @@ export default function DashboardPage() {
       <Drawer
         variant="temporary"
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => { setDrawerOpen(false); }}
         sx={{
           width: 240,
           flexShrink: 0,
@@ -477,7 +477,7 @@ export default function DashboardPage() {
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
             favoritesOnly={favoritesOnly}
-            onFavoritesToggle={() => setFavoritesOnly(!favoritesOnly)}
+            onFavoritesToggle={() => { setFavoritesOnly(!favoritesOnly); }}
             selectedTags={selectedTags}
             onTagsChange={setSelectedTags}
             availableTags={allTags}
@@ -725,11 +725,11 @@ export default function DashboardPage() {
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={4000}
-        onClose={() => setSnackbarOpen(false)}
+        onClose={() => { setSnackbarOpen(false); }}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
         <Alert
-          onClose={() => setSnackbarOpen(false)}
+          onClose={() => { setSnackbarOpen(false); }}
           severity="success"
           variant="filled"
           sx={{ width: '100%' }}

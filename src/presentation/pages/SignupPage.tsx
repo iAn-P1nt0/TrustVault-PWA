@@ -122,7 +122,7 @@ export default function SignupPage() {
                 label="Email"
                 type="email"
                 value={email}
-                onChange={(e): void => setEmail(e.target.value)}
+                onChange={(e): void => { setEmail(e.target.value); }}
                 required
                 disabled={isLoading}
                 autoComplete="email"
@@ -133,7 +133,7 @@ export default function SignupPage() {
                 label="Master Password (min 12 characters)"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e): void => setPassword(e.target.value)}
+                onChange={(e): void => { setPassword(e.target.value); }}
                 required
                 disabled={isLoading}
                 autoComplete="new-password"
@@ -143,7 +143,7 @@ export default function SignupPage() {
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={(): void => setShowPassword(!showPassword)}
+                          onClick={(): void => { setShowPassword(!showPassword); }}
                           edge="end"
                         >
                           {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -159,7 +159,7 @@ export default function SignupPage() {
                 label="Confirm Master Password"
                 type={showPassword ? 'text' : 'password'}
                 value={confirmPassword}
-                onChange={(e): void => setConfirmPassword(e.target.value)}
+                onChange={(e): void => { setConfirmPassword(e.target.value); }}
                 required
                 disabled={isLoading}
                 autoComplete="new-password"

@@ -58,7 +58,7 @@ export default function ClipboardSettings({
           labelId="clipboard-timeout-label"
           value={timeout}
           label="Auto-clear timeout"
-          onChange={(e) => handleChange(Number(e.target.value))}
+          onChange={(e) => { handleChange(Number(e.target.value)); }}
         >
           {TIMEOUT_OPTIONS.map((option) => (
             <MenuItem key={option.value} value={option.value}>

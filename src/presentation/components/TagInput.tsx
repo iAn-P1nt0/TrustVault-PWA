@@ -56,7 +56,7 @@ export default function TagInput({
         freeSolo
         options={suggestions.filter((s) => !tags.includes(s))}
         inputValue={inputValue}
-        onInputChange={(_, value) => setInputValue(value)}
+        onInputChange={(_, value) => { setInputValue(value); }}
         onChange={(_, value) => {
           if (typeof value === 'string') {
             handleAddTag(value);
@@ -86,7 +86,7 @@ export default function TagInput({
             <Chip
               key={tag}
               label={tag}
-              {...(!disabled && { onDelete: () => handleDeleteTag(tag) })}
+              {...(!disabled && { onDelete: () => { handleDeleteTag(tag); } })}
               color="primary"
               variant="outlined"
             />

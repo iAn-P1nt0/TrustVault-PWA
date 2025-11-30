@@ -524,7 +524,7 @@ describe('Password Edge Cases and Security', () => {
       );
 
       // All should be false (no timing leak)
-      expect(results.every(r => r === false)).toBe(true);
+      expect(results.every(r => !r)).toBe(true);
     });
   });
 

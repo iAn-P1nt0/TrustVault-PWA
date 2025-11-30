@@ -56,7 +56,7 @@ export default function UpdateAvailableSnackbar() {
       open={open}
       message="A new version is available"
       action={<Button color="inherit" size="small" onClick={handleRefresh}>Update</Button>}
-      onClose={() => setOpen(false)}
+      onClose={() => { setOpen(false); }}
     />
   );
 }

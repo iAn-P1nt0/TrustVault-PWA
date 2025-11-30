@@ -297,7 +297,7 @@ describe('TOTP Edge Cases', () => {
         )
       );
 
-      expect(verifications.every(v => v === true)).toBe(true);
+      expect(verifications.every(v => v)).toBe(true);
     });
 
     it('should generate different codes for different secrets concurrently', async () => {

@@ -41,40 +41,40 @@ const createAuthStore = () => create<AuthState>((set) => ({
   isLocked: false,
   vaultKey: null,
 
-  setUser: (user) => set({ user, isAuthenticated: !!user }),
+  setUser: (user) => { set({ user, isAuthenticated: !!user }); },
   
-  setSession: (session) => set({ 
+  setSession: (session) => { set({ 
     session, 
     isLocked: session?.isLocked ?? false 
-  }),
+  }); },
   
-  setVaultKey: (key) => set({ vaultKey: key }),
+  setVaultKey: (key) => { set({ vaultKey: key }); },
   
-  lockVault: () => set((state) => ({ 
+  lockVault: () => { set((state) => ({ 
     isLocked: true, 
     vaultKey: null,
     session: state.session ? { ...state.session, isLocked: true } : null
-  })),
+  })); },
   
-  unlockVault: (key) => set((state) => ({
+  unlockVault: (key) => { set((state) => ({
     isLocked: false,
     vaultKey: key,
     session: state.session ? { ...state.session, isLocked: false } : null
-  })),
+  })); },
 
-  lock: () => set((state) => ({
+  lock: () => { set((state) => ({
     isLocked: true,
     vaultKey: null,
     session: state.session ? { ...state.session, isLocked: true } : null,
-  })),
+  })); },
 
-  logout: () => set({
+  logout: () => { set({
     user: null,
     session: null,
     isAuthenticated: false,
     isLocked: false,
     vaultKey: null
-  }),
+  }); },
 }));
 
 describe('Auth Store', () => {

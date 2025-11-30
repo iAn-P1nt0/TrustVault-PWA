@@ -144,7 +144,7 @@ describe('Import/Export Integration', () => {
       const createElementSpy = vi.spyOn(document, 'createElement');
       createElementSpy.mockImplementation((tagName) => {
         if (tagName === 'a') {
-          const anchor = document.createElement('a') as HTMLAnchorElement;
+          const anchor = document.createElement('a');
           anchor.click = downloadSpy;
           return anchor;
         }

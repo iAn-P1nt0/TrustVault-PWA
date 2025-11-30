@@ -281,7 +281,7 @@ describe('Credential CRUD Integration', () => {
         expect(screen.getByRole('button', { name: /edit/i })).toBeInTheDocument();
       });
 
-      let editButton = screen.getByRole('button', { name: /edit/i });
+      const editButton = screen.getByRole('button', { name: /edit/i });
       await user.click(editButton);
 
       // Should navigate to edit page
@@ -496,7 +496,7 @@ describe('Credential CRUD Integration', () => {
       });
 
       // UPDATE - click Edit button on the card
-      let editButton = screen.getByRole('button', { name: /edit/i });
+      const editButton = screen.getByRole('button', { name: /edit/i });
       await user.click(editButton);
 
       await waitFor(() => {

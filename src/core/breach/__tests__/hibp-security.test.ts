@@ -454,7 +454,7 @@ describe('HIBP Breach Detection Security', () => {
     it('should handle API timeout', async () => {
       const fetchSpy = vi.spyOn(global, 'fetch').mockImplementation(
         () => new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Timeout')), 100)
+          setTimeout(() => { reject(new Error('Timeout')); }, 100)
         )
       );
 

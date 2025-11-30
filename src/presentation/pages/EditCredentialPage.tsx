@@ -378,7 +378,7 @@ export default function EditCredentialPage() {
             variant="outlined"
             color="error"
             startIcon={<Delete />}
-            onClick={() => setDeleteDialogOpen(true)}
+            onClick={() => { setDeleteDialogOpen(true); }}
             disabled={loading || deleting}
           >
             Delete
@@ -387,7 +387,7 @@ export default function EditCredentialPage() {
 
         {/* Error Alert */}
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 3 }} onClose={() => { setError(null); }}>
             {error}
           </Alert>
         )}
@@ -399,7 +399,7 @@ export default function EditCredentialPage() {
             fullWidth
             label="Title"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => { setTitle(e.target.value); }}
             error={!!errors.title}
             helperText={errors.title}
             margin="normal"
@@ -413,7 +413,7 @@ export default function EditCredentialPage() {
             select
             label="Category"
             value={category}
-            onChange={(e) => setCategory(e.target.value as CredentialCategory)}
+            onChange={(e) => { setCategory(e.target.value as CredentialCategory); }}
             margin="normal"
           >
             {CATEGORIES.map((cat) => (
@@ -431,7 +431,7 @@ export default function EditCredentialPage() {
                 fullWidth
                 label="Card Number"
                 value={cardNumber}
-                onChange={(e) => setCardNumber(e.target.value)}
+                onChange={(e) => { setCardNumber(e.target.value); }}
                 error={!!errors.cardNumber}
                 helperText={errors.cardNumber}
                 margin="normal"
@@ -445,7 +445,7 @@ export default function EditCredentialPage() {
                 fullWidth
                 label="Cardholder Name"
                 value={cardholderName}
-                onChange={(e) => setCardholderName(e.target.value)}
+                onChange={(e) => { setCardholderName(e.target.value); }}
                 error={!!errors.cardholderName}
                 helperText={errors.cardholderName}
                 margin="normal"
@@ -459,7 +459,7 @@ export default function EditCredentialPage() {
                 select
                 label="Card Type"
                 value={cardType}
-                onChange={(e) => setCardType(e.target.value as typeof cardType)}
+                onChange={(e) => { setCardType(e.target.value as typeof cardType); }}
                 margin="normal"
               >
                 <MenuItem value="visa">Visa</MenuItem>
@@ -475,7 +475,7 @@ export default function EditCredentialPage() {
                   select
                   label="Expiry Month"
                   value={expiryMonth}
-                  onChange={(e) => setExpiryMonth(e.target.value)}
+                  onChange={(e) => { setExpiryMonth(e.target.value); }}
                   error={!!errors.expiry}
                   required
                   sx={{ flex: 1 }}
@@ -494,7 +494,7 @@ export default function EditCredentialPage() {
                   select
                   label="Expiry Year"
                   value={expiryYear}
-                  onChange={(e) => setExpiryYear(e.target.value)}
+                  onChange={(e) => { setExpiryYear(e.target.value); }}
                   error={!!errors.expiry}
                   required
                   sx={{ flex: 1 }}
@@ -521,7 +521,7 @@ export default function EditCredentialPage() {
                 label="CVV / Security Code"
                 type={showPassword ? 'text' : 'password'}
                 value={cvv}
-                onChange={(e) => setCvv(e.target.value)}
+                onChange={(e) => { setCvv(e.target.value); }}
                 error={!!errors.cvv}
                 helperText={errors.cvv}
                 margin="normal"
@@ -532,7 +532,7 @@ export default function EditCredentialPage() {
                   endAdornment: (
                     <InputAdornment position="end">
                       <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => { setShowPassword(!showPassword); }}
                         edge="end"
                         title={showPassword ? 'Hide CVV' : 'Show CVV'}
                       >
@@ -548,7 +548,7 @@ export default function EditCredentialPage() {
                 fullWidth
                 label="Billing Address (Optional)"
                 value={billingAddress}
-                onChange={(e) => setBillingAddress(e.target.value)}
+                onChange={(e) => { setBillingAddress(e.target.value); }}
                 margin="normal"
                 multiline
                 rows={2}
@@ -562,7 +562,7 @@ export default function EditCredentialPage() {
                 fullWidth
                 label="Username / Email"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => { setUsername(e.target.value); }}
                 error={!!errors.username}
                 helperText={errors.username}
                 margin="normal"
@@ -576,7 +576,7 @@ export default function EditCredentialPage() {
                 label="Password"
                 type={showPassword ? 'text' : 'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => { setPassword(e.target.value); }}
                 error={!!errors.password}
                 helperText={errors.password}
                 margin="normal"
@@ -593,7 +593,7 @@ export default function EditCredentialPage() {
                         <AutoAwesome />
                       </IconButton>
                       <IconButton
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() => { setShowPassword(!showPassword); }}
                         edge="end"
                         title={showPassword ? 'Hide password' : 'Show password'}
                       >
@@ -612,7 +612,7 @@ export default function EditCredentialPage() {
                 fullWidth
                 label="TOTP Secret (Optional)"
                 value={totpSecret}
-                onChange={(e) => setTotpSecret(e.target.value)}
+                onChange={(e) => { setTotpSecret(e.target.value); }}
                 margin="normal"
                 placeholder="Base32-encoded secret (e.g., from Google Authenticator)"
                 helperText="Enter the base32-encoded secret key for 2FA/TOTP authentication"
@@ -638,7 +638,7 @@ export default function EditCredentialPage() {
             fullWidth
             label="Website URL"
             value={url}
-            onChange={(e) => setUrl(e.target.value)}
+            onChange={(e) => { setUrl(e.target.value); }}
             margin="normal"
             placeholder="https://example.com"
             type="url"
@@ -654,7 +654,7 @@ export default function EditCredentialPage() {
             fullWidth
             label="Notes"
             value={notes}
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e) => { setNotes(e.target.value); }}
             margin="normal"
             multiline
             rows={4}
@@ -666,7 +666,7 @@ export default function EditCredentialPage() {
             control={
               <Checkbox
                 checked={isFavorite}
-                onChange={(e) => setIsFavorite(e.target.checked)}
+                onChange={(e) => { setIsFavorite(e.target.checked); }}
               />
             }
             label="Add to favorites"
@@ -700,7 +700,7 @@ export default function EditCredentialPage() {
       <DeleteConfirmDialog
         open={deleteDialogOpen}
         credentialTitle={credential.title}
-        onCancel={() => setDeleteDialogOpen(false)}
+        onCancel={() => { setDeleteDialogOpen(false); }}
         onConfirm={handleDelete}
         loading={deleting}
       />
@@ -708,14 +708,14 @@ export default function EditCredentialPage() {
       {/* Password Generator Dialog */}
       <PasswordGeneratorDialog
         open={generatorOpen}
-        onClose={() => setGeneratorOpen(false)}
+        onClose={() => { setGeneratorOpen(false); }}
         onUse={handleUseGeneratedPassword}
       />
 
       {/* Camera Scan Dialog */}
       <CameraScanDialog
         open={scanDialogOpen}
-        onClose={() => setScanDialogOpen(false)}
+        onClose={() => { setScanDialogOpen(false); }}
         onResult={handleScanResult}
       />
 
@@ -723,7 +723,7 @@ export default function EditCredentialPage() {
       <OcrResultDialog
         open={ocrResultDialogOpen}
         result={ocrResult}
-        onClose={() => setOcrResultDialogOpen(false)}
+        onClose={() => { setOcrResultDialogOpen(false); }}
         onApply={handleApplyOcrResult}
         onRescan={handleRescan}
       />

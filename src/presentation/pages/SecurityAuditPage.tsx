@@ -91,7 +91,7 @@ export default function SecurityAuditPage() {
     const foundIssues: SecurityIssue[] = [];
     const passwordMap = new Map<string, string[]>(); // password -> [credential titles]
     let totalScore = 0;
-    let credentialCount = credentials.length;
+    const credentialCount = credentials.length;
 
     // Load breach data if available
     let breachedCredentials: Array<{
@@ -576,7 +576,7 @@ export default function SecurityAuditPage() {
                             variant="text"
                             color="error"
                             startIcon={<Visibility />}
-                            onClick={() => handleViewBreachDetails(issue)}
+                            onClick={() => { handleViewBreachDetails(issue); }}
                             sx={{ mt: 1 }}
                           >
                             View Breach Details
@@ -643,7 +643,7 @@ export default function SecurityAuditPage() {
       {selectedBreach && (
         <BreachDetailsModal
           open={true}
-          onClose={() => setSelectedBreach(null)}
+          onClose={() => { setSelectedBreach(null); }}
           breaches={selectedBreach.breaches.breaches}
           credentialTitle={selectedBreach.title}
           severity={selectedBreach.breaches.severity}

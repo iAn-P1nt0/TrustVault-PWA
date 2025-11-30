@@ -259,11 +259,11 @@ function AppContent() {
 
     if ('requestIdleCallback' in window) {
       const handle = window.requestIdleCallback(prefetch, { timeout: 5000 });
-      return () => window.cancelIdleCallback(handle);
+      return () => { window.cancelIdleCallback(handle); };
     } else {
       // Fallback for Safari: use setTimeout with delay
       const handle = setTimeout(prefetch, 3000);
-      return () => clearTimeout(handle);
+      return () => { clearTimeout(handle); };
     }
   }, [isInitialized]);
 

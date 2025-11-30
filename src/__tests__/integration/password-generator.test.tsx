@@ -108,7 +108,7 @@ describe('Password Generator Integration', () => {
       });
 
       // Verify password field is populated
-      const passwordField = screen.getByLabelText(/^password/i) as HTMLInputElement;
+      const passwordField = screen.getByLabelText(/^password/i);
       expect(passwordField.value).toBeTruthy();
       expect(passwordField.value.length).toBeGreaterThanOrEqual(12);
     });
@@ -284,7 +284,7 @@ describe('Password Generator Integration', () => {
       await user.click(useButton);
 
       // Get the password value
-      const passwordField = screen.getByLabelText(/^password/i) as HTMLInputElement;
+      const passwordField = screen.getByLabelText(/^password/i);
       const generatedPassword = passwordField.value;
 
       // Verify no symbols in password (basic check - no common symbols)

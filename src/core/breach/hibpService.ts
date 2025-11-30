@@ -25,7 +25,7 @@ const CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 /**
  * Rate limiting state
  */
-let rateLimitState: RateLimitState = {
+const rateLimitState: RateLimitState = {
   lastRequestAt: 0,
   requestCount: 0,
   windowResetAt: Date.now() + 60000, // 1 minute window

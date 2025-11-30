@@ -146,7 +146,7 @@ const CredentialCard = memo(function CredentialCard({
               <Tooltip title={credential.isFavorite ? 'Remove from favorites' : 'Add to favorites'}>
                 <IconButton
                   size="small"
-                  onClick={() => onToggleFavorite(credential.id)}
+                  onClick={() => { onToggleFavorite(credential.id); }}
                   sx={{ color: credential.isFavorite ? 'warning.main' : 'action.disabled' }}
                 >
                   {credential.isFavorite ? <Star fontSize="small" /> : <StarBorder fontSize="small" />}
@@ -159,7 +159,7 @@ const CredentialCard = memo(function CredentialCard({
           </Box>
           <IconButton
             size="small"
-            onClick={(e) => setMenuAnchor(e.currentTarget)}
+            onClick={(e) => { setMenuAnchor(e.currentTarget); }}
             sx={{ ml: 1 }}
           >
             <MoreVert />
@@ -271,7 +271,7 @@ const CredentialCard = memo(function CredentialCard({
         <Button size="small" startIcon={<ContentCopy />} onClick={handleCopyPassword}>
           Password
         </Button>
-        <Button size="small" startIcon={<Edit />} onClick={() => onEdit(credential.id)}>
+        <Button size="small" startIcon={<Edit />} onClick={() => { onEdit(credential.id); }}>
           Edit
         </Button>
       </CardActions>
@@ -280,7 +280,7 @@ const CredentialCard = memo(function CredentialCard({
       <Menu
         anchorEl={menuAnchor}
         open={Boolean(menuAnchor)}
-        onClose={() => setMenuAnchor(null)}
+        onClose={() => { setMenuAnchor(null); }}
       >
         <MenuItem onClick={() => { onEdit(credential.id); setMenuAnchor(null); }}>
           <ListItemIcon>

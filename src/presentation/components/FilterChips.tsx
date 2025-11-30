@@ -60,7 +60,7 @@ export default function FilterChips({
             key={option.value}
             label={option.label}
             {...(option.icon && { icon: option.icon })}
-            onClick={() => onCategoryChange(option.value)}
+            onClick={() => { onCategoryChange(option.value); }}
             color={selectedCategory === option.value ? 'primary' : 'default'}
             variant={selectedCategory === option.value ? 'filled' : 'outlined'}
             sx={{
@@ -98,7 +98,7 @@ export default function FilterChips({
           size="small"
           options={availableTags}
           value={selectedTags}
-          onChange={(_, newValue) => onTagsChange(newValue)}
+          onChange={(_, newValue) => { onTagsChange(newValue); }}
           renderInput={(params) => (
             <TextField 
               {...params} 

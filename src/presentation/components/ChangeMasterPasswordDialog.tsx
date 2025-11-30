@@ -174,7 +174,7 @@ export default function ChangeMasterPasswordDialog({
 
         {/* Error Alert */}
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => { setError(null); }}>
             {error}
           </Alert>
         )}
@@ -190,7 +190,7 @@ export default function ChangeMasterPasswordDialog({
               type={showCurrentPassword ? 'text' : 'password'}
               fullWidth
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              onChange={(e) => { setCurrentPassword(e.target.value); }}
               disabled={processing}
               autoFocus
               margin="normal"
@@ -198,7 +198,7 @@ export default function ChangeMasterPasswordDialog({
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      onClick={() => { setShowCurrentPassword(!showCurrentPassword); }}
                       edge="end"
                     >
                       {showCurrentPassword ? <VisibilityOff /> : <Visibility />}
@@ -214,7 +214,7 @@ export default function ChangeMasterPasswordDialog({
               type={showNewPassword ? 'text' : 'password'}
               fullWidth
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => { setNewPassword(e.target.value); }}
               disabled={processing}
               margin="normal"
               helperText="Minimum 12 characters"
@@ -222,7 +222,7 @@ export default function ChangeMasterPasswordDialog({
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      onClick={() => { setShowNewPassword(!showNewPassword); }}
                       edge="end"
                     >
                       {showNewPassword ? <VisibilityOff /> : <Visibility />}
@@ -245,7 +245,7 @@ export default function ChangeMasterPasswordDialog({
               type={showConfirmPassword ? 'text' : 'password'}
               fullWidth
               value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
+              onChange={(e) => { setConfirmPassword(e.target.value); }}
               disabled={processing}
               margin="normal"
               error={confirmPassword.length > 0 && newPassword !== confirmPassword}
@@ -258,7 +258,7 @@ export default function ChangeMasterPasswordDialog({
                 endAdornment: (
                   <InputAdornment position="end">
                     <IconButton
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() => { setShowConfirmPassword(!showConfirmPassword); }}
                       edge="end"
                     >
                       {showConfirmPassword ? <VisibilityOff /> : <Visibility />}

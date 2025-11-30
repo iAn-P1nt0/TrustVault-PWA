@@ -155,7 +155,7 @@ export function OcrResultDialog({
                   fullWidth
                   size="small"
                   value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  onChange={(e) => { setUsername(e.target.value); }}
                   placeholder="Not detected"
                 />
               </Box>
@@ -182,13 +182,13 @@ export function OcrResultDialog({
                   size="small"
                   type={showPassword ? 'text' : 'password'}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => { setPassword(e.target.value); }}
                   placeholder="Not detected"
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">
                         <IconButton
-                          onClick={() => setShowPassword(!showPassword)}
+                          onClick={() => { setShowPassword(!showPassword); }}
                           edge="end"
                           size="small"
                         >
@@ -235,7 +235,7 @@ export function OcrResultDialog({
                   fullWidth
                   size="small"
                   value={url}
-                  onChange={(e) => setUrl(e.target.value)}
+                  onChange={(e) => { setUrl(e.target.value); }}
                   placeholder="Not detected"
                 />
               </Box>
@@ -263,7 +263,7 @@ export function OcrResultDialog({
                   multiline
                   rows={2}
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  onChange={(e) => { setNotes(e.target.value); }}
                   placeholder="Not detected"
                 />
               </Box>

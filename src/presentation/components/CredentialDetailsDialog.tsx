@@ -412,7 +412,7 @@ export default function CredentialDetailsDialog({
                   <Button
                     size="small"
                     color="inherit"
-                    onClick={() => setBreachDetailsOpen(true)}
+                    onClick={() => { setBreachDetailsOpen(true); }}
                   >
                     Details
                   </Button>
@@ -550,7 +550,7 @@ export default function CredentialDetailsDialog({
     {breachResult && isBreached && (
       <BreachDetailsModal
         open={breachDetailsOpen}
-        onClose={() => setBreachDetailsOpen(false)}
+        onClose={() => { setBreachDetailsOpen(false); }}
         breaches={breachResult.breaches}
         credentialTitle={credential.title}
         severity={breachResult.severity}

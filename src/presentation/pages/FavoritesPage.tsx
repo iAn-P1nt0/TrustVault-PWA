@@ -135,7 +135,7 @@ export default function FavoritesPage() {
 
   const showSnackbar = (message: string) => {
     setSnackbarMessage(message);
-    setTimeout(() => setSnackbarMessage(''), 3000);
+    setTimeout(() => { setSnackbarMessage(''); }, 3000);
   };
 
   const handleOpenWebsite = (website: string) => {
@@ -193,7 +193,7 @@ export default function FavoritesPage() {
           fullWidth
           placeholder="Search favorites..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(e) => { setSearchQuery(e.target.value); }}
           sx={{ mb: 3 }}
           InputProps={{
             startAdornment: (
@@ -242,7 +242,7 @@ export default function FavoritesPage() {
             <Typography variant="h6" gutterBottom color="text.secondary">
               No favorites match "{searchQuery}"
             </Typography>
-            <Button variant="outlined" onClick={() => setSearchQuery('')}>
+            <Button variant="outlined" onClick={() => { setSearchQuery(''); }}>
               Clear Search
             </Button>
           </Box>
@@ -328,7 +328,7 @@ export default function FavoritesPage() {
                           <Tooltip title={visiblePasswords.has(credential.id) ? 'Hide' : 'Show'}>
                             <IconButton
                               size="small"
-                              onClick={() => togglePasswordVisibility(credential.id)}
+                              onClick={() => { togglePasswordVisibility(credential.id); }}
                             >
                               {visiblePasswords.has(credential.id) ? (
                                 <VisibilityOff fontSize="small" />
@@ -365,14 +365,14 @@ export default function FavoritesPage() {
                               cursor: 'pointer',
                               textDecoration: 'underline',
                             }}
-                            onClick={() => handleOpenWebsite(credential.url!)}
+                            onClick={() => { handleOpenWebsite(credential.url!); }}
                           >
                             {credential.url}
                           </Typography>
                           <Tooltip title="Open website">
                             <IconButton
                               size="small"
-                              onClick={() => handleOpenWebsite(credential.url!)}
+                              onClick={() => { handleOpenWebsite(credential.url!); }}
                             >
                               <OpenInNew fontSize="small" />
                             </IconButton>
@@ -419,7 +419,7 @@ export default function FavoritesPage() {
               zIndex: 1400,
               minWidth: 300,
             }}
-            onClose={() => setSnackbarMessage('')}
+            onClose={() => { setSnackbarMessage(''); }}
           >
             {snackbarMessage}
           </Alert>

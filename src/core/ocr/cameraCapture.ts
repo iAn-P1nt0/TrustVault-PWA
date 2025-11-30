@@ -51,7 +51,7 @@ export async function requestCameraAccess(): Promise<CameraStream> {
   const videoTrack = stream.getVideoTracks()[0];
 
   if (!videoTrack) {
-    stream.getTracks().forEach((t) => t.stop());
+    stream.getTracks().forEach((t) => { t.stop(); });
     throw new Error('No video track available');
   }
 
@@ -59,7 +59,7 @@ export async function requestCameraAccess(): Promise<CameraStream> {
     stream,
     videoTrack,
     stop: () => {
-      stream.getTracks().forEach((track) => track.stop());
+      stream.getTracks().forEach((track) => { track.stop(); });
     },
   };
 }

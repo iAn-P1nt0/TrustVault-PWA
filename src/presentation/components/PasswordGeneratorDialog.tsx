@@ -59,7 +59,7 @@ export default function PasswordGeneratorDialog({
     const success = await copyPassword(password, 30);
     if (success) {
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      setTimeout(() => { setCopySuccess(false); }, 2000);
     }
   };
 

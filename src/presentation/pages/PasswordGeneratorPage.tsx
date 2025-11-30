@@ -112,7 +112,7 @@ export default function PasswordGeneratorPage() {
     const success = await copyPassword(generatedPassword, 30);
     if (success) {
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      setTimeout(() => { setCopySuccess(false); }, 2000);
     }
   };
 
@@ -333,7 +333,7 @@ export default function PasswordGeneratorPage() {
                     <Checkbox
                       checked={passwordOptions.includeUppercase}
                       onChange={(e) =>
-                        updatePasswordOptions({ includeUppercase: e.target.checked })
+                        { updatePasswordOptions({ includeUppercase: e.target.checked }); }
                       }
                       disabled={!hasValidPasswordOptions && passwordOptions.includeUppercase}
                     />
@@ -345,7 +345,7 @@ export default function PasswordGeneratorPage() {
                     <Checkbox
                       checked={passwordOptions.includeLowercase}
                       onChange={(e) =>
-                        updatePasswordOptions({ includeLowercase: e.target.checked })
+                        { updatePasswordOptions({ includeLowercase: e.target.checked }); }
                       }
                       disabled={!hasValidPasswordOptions && passwordOptions.includeLowercase}
                     />
@@ -356,7 +356,7 @@ export default function PasswordGeneratorPage() {
                   control={
                     <Checkbox
                       checked={passwordOptions.includeNumbers}
-                      onChange={(e) => updatePasswordOptions({ includeNumbers: e.target.checked })}
+                      onChange={(e) => { updatePasswordOptions({ includeNumbers: e.target.checked }); }}
                       disabled={!hasValidPasswordOptions && passwordOptions.includeNumbers}
                     />
                   }
@@ -366,7 +366,7 @@ export default function PasswordGeneratorPage() {
                   control={
                     <Checkbox
                       checked={passwordOptions.includeSymbols}
-                      onChange={(e) => updatePasswordOptions({ includeSymbols: e.target.checked })}
+                      onChange={(e) => { updatePasswordOptions({ includeSymbols: e.target.checked }); }}
                       disabled={!hasValidPasswordOptions && passwordOptions.includeSymbols}
                     />
                   }
@@ -382,7 +382,7 @@ export default function PasswordGeneratorPage() {
                   <Switch
                     checked={passwordOptions.excludeAmbiguous}
                     onChange={(e) =>
-                      updatePasswordOptions({ excludeAmbiguous: e.target.checked })
+                      { updatePasswordOptions({ excludeAmbiguous: e.target.checked }); }
                     }
                   />
                 }
@@ -447,25 +447,25 @@ export default function PasswordGeneratorPage() {
               <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                 <Chip
                   label="Dash (-)"
-                  onClick={() => updatePassphraseOptions({ separator: 'dash' })}
+                  onClick={() => { updatePassphraseOptions({ separator: 'dash' }); }}
                   color={passphraseOptions.separator === 'dash' ? 'primary' : 'default'}
                   variant={passphraseOptions.separator === 'dash' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="Space"
-                  onClick={() => updatePassphraseOptions({ separator: 'space' })}
+                  onClick={() => { updatePassphraseOptions({ separator: 'space' }); }}
                   color={passphraseOptions.separator === 'space' ? 'primary' : 'default'}
                   variant={passphraseOptions.separator === 'space' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="Symbols"
-                  onClick={() => updatePassphraseOptions({ separator: 'symbol' })}
+                  onClick={() => { updatePassphraseOptions({ separator: 'symbol' }); }}
                   color={passphraseOptions.separator === 'symbol' ? 'primary' : 'default'}
                   variant={passphraseOptions.separator === 'symbol' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="None"
-                  onClick={() => updatePassphraseOptions({ separator: 'none' })}
+                  onClick={() => { updatePassphraseOptions({ separator: 'none' }); }}
                   color={passphraseOptions.separator === 'none' ? 'primary' : 'default'}
                   variant={passphraseOptions.separator === 'none' ? 'filled' : 'outlined'}
                 />
@@ -480,25 +480,25 @@ export default function PasswordGeneratorPage() {
               <Stack direction="row" spacing={1} sx={{ mb: 2 }}>
                 <Chip
                   label="None"
-                  onClick={() => updatePassphraseOptions({ capitalize: 'none' })}
+                  onClick={() => { updatePassphraseOptions({ capitalize: 'none' }); }}
                   color={passphraseOptions.capitalize === 'none' ? 'primary' : 'default'}
                   variant={passphraseOptions.capitalize === 'none' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="First"
-                  onClick={() => updatePassphraseOptions({ capitalize: 'first' })}
+                  onClick={() => { updatePassphraseOptions({ capitalize: 'first' }); }}
                   color={passphraseOptions.capitalize === 'first' ? 'primary' : 'default'}
                   variant={passphraseOptions.capitalize === 'first' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="All"
-                  onClick={() => updatePassphraseOptions({ capitalize: 'all' })}
+                  onClick={() => { updatePassphraseOptions({ capitalize: 'all' }); }}
                   color={passphraseOptions.capitalize === 'all' ? 'primary' : 'default'}
                   variant={passphraseOptions.capitalize === 'all' ? 'filled' : 'outlined'}
                 />
                 <Chip
                   label="Random"
-                  onClick={() => updatePassphraseOptions({ capitalize: 'random' })}
+                  onClick={() => { updatePassphraseOptions({ capitalize: 'random' }); }}
                   color={passphraseOptions.capitalize === 'random' ? 'primary' : 'default'}
                   variant={passphraseOptions.capitalize === 'random' ? 'filled' : 'outlined'}
                 />
@@ -511,7 +511,7 @@ export default function PasswordGeneratorPage() {
                 control={
                   <Switch
                     checked={passphraseOptions.includeNumbers}
-                    onChange={(e) => updatePassphraseOptions({ includeNumbers: e.target.checked })}
+                    onChange={(e) => { updatePassphraseOptions({ includeNumbers: e.target.checked }); }}
                   />
                 }
                 label="Include numbers (2-4 digits)"

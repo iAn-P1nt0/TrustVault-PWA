@@ -246,7 +246,7 @@ describe('Encryption Edge Cases', () => {
 
       it('should handle empty Uint8Array', () => {
         const data = new Uint8Array([]);
-        expect(() => secureWipe(data)).not.toThrow();
+        expect(() => { secureWipe(data); }).not.toThrow();
       });
 
       it('should handle large data wiping', () => {

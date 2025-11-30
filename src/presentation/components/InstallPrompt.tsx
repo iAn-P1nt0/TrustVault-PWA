@@ -51,7 +51,7 @@ export default function InstallPrompt() {
           Install
         </Button>
       }
-      onClose={() => setOpen(false)}
+      onClose={() => { setOpen(false); }}
     />
   );
 }
